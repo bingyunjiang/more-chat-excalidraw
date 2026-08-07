@@ -4,10 +4,16 @@
  * a headless Chromium. Produces a preview the agent can inspect before delivery.
  *
  * Usage:
- *   node render_preview.js <file.excalidraw> [outdir]
+ *   node render_preview.js <file.excalidraw> [outdir] [--format png|svg|both]
+ *
+ * Options:
+ *   --format   Output format: png (default), svg, or both
+ *   --no-server  Skip Playwright HTTP server, use fallback SVG render
  *
  * The render bundle is located at $EXCALIDRAW_RENDER_BUNDLE or defaults to
  * /Users/Bing/WorkSpace/render-test (index.html + render-entry.js + render-bundle.js).
+ *
+ * Exit codes: 0 = OK, 1 = errors, 2 = usage error.
  */
 
 const fs = require("fs");
@@ -18,6 +24,21 @@ const http = require("http");
 const DEFAULT_BUNDLE = path.join(os.homedir(), "WorkSpace", "render-test");
 const REQUIRED_BUNDLE_FILES = ["index.html", "render-entry.js", "render-bundle.js"];
 
+function parseArgs(argv) {
+  const args = argv.slice(2);
+  const positional = [];
+  const opts = { format: "png", noServer: false };
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a === "--format" || a === "-f") { opts.format = args[++i]; continue; }
+    if (a.startsWith("--format=")) { opts.format = a.split("=")[1]; continue; }
+    if (a === "--no-server") { opts.noServer = true; continue; }
+    if (a === "--help" || a === "-h") { opts.help = true; continue; }
+    positional.push(a);
+  }
+  return { positional, opts };
+}
+
 function findPlaywright() {
   try {
     return require("playwright");
@@ -27,9 +48,7 @@ function findPlaywright() {
     try {
       return require(globalPath);
     } catch (err) {
-      throw new Error(
-        `Playwright module not found. Install it or run from a machine with @playwright/cli. (${err.message})`
-      );
+      return null;
     }
   }
 }
@@ -45,57 +64,165 @@ function findChromium() {
   return candidates.find((p) => fs.existsSync(p)) || null;
 }
 
-function serveDir(dir) {
-  return http
-    .createServer((req, res) => {
-      let urlPath;
-      try {
-        urlPath = decodeURIComponent(new URL(req.url, "http://127.0.0.1").pathname);
-      } catch (_) {
-        res.writeHead(400);
-        res.end("bad url");
+function createServer(dir) {
+  const server = http.createServer((req, res) => {
+    let urlPath;
+    try {
+      urlPath = decodeURIComponent(new URL(req.url, "http://127.0.0.1").pathname);
+    } catch (_) {
+      res.writeHead(400);
+      res.end("bad url");
+      return;
+    }
+    const file = path.normalize(path.join(dir, urlPath));
+    if (!file.startsWith(dir)) {
+      res.writeHead(403);
+      res.end("forbidden");
+      return;
+    }
+    fs.readFile(file, (err, data) => {
+      if (err) {
+        res.writeHead(404);
+        res.end("not found");
         return;
       }
-      const file = path.normalize(path.join(dir, urlPath));
-      if (!file.startsWith(dir)) {
-        res.writeHead(403);
-        res.end("forbidden");
-        return;
-      }
-      fs.readFile(file, (err, data) => {
-        if (err) {
-          res.writeHead(404);
-          res.end("not found");
-          return;
-        }
-        const ext = path.extname(file);
-        const mime =
-          ext === ".html"
-            ? "text/html; charset=utf-8"
-            : ext === ".js"
-              ? "text/javascript; charset=utf-8"
-              : ext === ".json"
-                ? "application/json; charset=utf-8"
-                : "application/octet-stream";
-        res.writeHead(200, { "Content-Type": mime });
-        res.end(data);
-      });
-    })
-    .listen(0, "127.0.0.1");
+      const ext = path.extname(file);
+      const mime =
+        ext === ".html" ? "text/html; charset=utf-8"
+          : ext === ".js" ? "text/javascript; charset=utf-8"
+          : ext === ".json" ? "application/json; charset=utf-8"
+          : "application/octet-stream";
+      res.writeHead(200, { "Content-Type": mime });
+      res.end(data);
+    });
+  });
+  return server;
 }
 
-async function main() {
-  const sceneFile = process.argv[2];
-  const outdir = process.argv[3] || path.dirname(sceneFile);
-  if (!sceneFile) {
-    console.error("Usage: node render_preview.js <file.excalidraw> [outdir]");
-    process.exit(2);
-  }
-  if (!fs.existsSync(sceneFile)) {
-    console.error(`[ERROR] Scene not found: ${sceneFile}`);
-    process.exit(1);
+function startServer(server) {
+  return new Promise((resolve, reject) => {
+    server.on("error", (err) => {
+      reject(err);
+    });
+    server.listen(0, "127.0.0.1", () => {
+      resolve(server);
+    });
+  });
+}
+
+/**
+ * Fallback SVG render: extract a simple SVG from the .excalidraw JSON
+ * without needing the Excalidraw render bundle or HTTP server.
+ * Uses Playwright to set SVG content and screenshot to PNG.
+ */
+async function renderFallbackSvg(sceneFile, outdir, opts) {
+  const playwright = findPlaywright();
+  if (!playwright) {
+    console.error("[ERROR] Playwright not found. Cannot render preview.");
+    return false;
   }
 
+  const sceneData = JSON.parse(fs.readFileSync(sceneFile, "utf-8"));
+  const elements = sceneData.elements || [];
+  const bgColor = (sceneData.appState || {}).viewBackgroundColor || "#ffffff";
+
+  // Compute bounding box
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const el of elements) {
+    if (el.x < minX) minX = el.x;
+    if (el.y < minY) minY = el.y;
+    if (el.x + el.width > maxX) maxX = el.x + el.width;
+    if (el.y + el.height > maxY) maxY = el.y + el.height;
+  }
+  const pad = 60;
+  minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+  const vw = Math.max(maxX - minX, 400);
+  const vh = Math.max(maxY - minY, 300);
+
+  let svgParts = [];
+  svgParts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${vw}" height="${vh}" viewBox="${minX} ${minY} ${vw} ${vh}">`);
+  svgParts.push(`<rect x="${minX}" y="${minY}" width="${vw}" height="${vh}" fill="${bgColor}"/>`);
+  svgParts.push(`<defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#868e96"/></marker></defs>`);
+
+  for (const el of elements) {
+    if (el.isDeleted) continue;
+    if (el.type === "rectangle") {
+      const rx = el.roundness ? 8 : 0;
+      svgParts.push(`<rect x="${el.x}" y="${el.y}" width="${el.width}" height="${el.height}" fill="${el.backgroundColor === "transparent" ? "none" : el.backgroundColor || "#fff"}" stroke="${el.strokeColor || "#1e1e1e"}" stroke-width="${el.strokeWidth || 2}" rx="${rx}"/>`);
+    } else if (el.type === "ellipse") {
+      svgParts.push(`<ellipse cx="${el.x + el.width/2}" cy="${el.y + el.height/2}" rx="${el.width/2}" ry="${el.height/2}" fill="${el.backgroundColor === "transparent" ? "none" : el.backgroundColor || "#fff"}" stroke="${el.strokeColor || "#1e1e1e"}" stroke-width="${el.strokeWidth || 2}"/>`);
+    } else if (el.type === "diamond") {
+      const cx = el.x + el.width/2, cy = el.y + el.height/2;
+      svgParts.push(`<polygon points="${cx},${el.y} ${el.x+el.width},${cy} ${cx},${el.y+el.height} ${el.x},${cy}" fill="${el.backgroundColor === "transparent" ? "none" : el.backgroundColor || "#fff"}" stroke="${el.strokeColor || "#1e1e1e"}" stroke-width="${el.strokeWidth || 2}"/>`);
+    } else if (el.type === "text" && el.text) {
+      const anchor = el.textAlign === "center" ? "middle" : el.textAlign === "right" ? "end" : "start";
+      const tx = el.containerId ? el.x + el.width/2 : el.x + (el.width || 0)/2;
+      const ty = el.containerId ? el.y + el.height/2 : el.y + (el.height || 25)/2;
+      const escaped = el.text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      svgParts.push(`<text x="${tx}" y="${ty}" text-anchor="${anchor}" dominant-baseline="central" font-size="${el.fontSize || 20}" font-family="sans-serif" fill="${el.strokeColor || "#1e1e1e"}">${escaped}</text>`);
+    } else if ((el.type === "arrow" || el.type === "line") && el.points) {
+      const pts = el.points.map(p => [p[0] + el.x, p[1] + el.y]);
+      const d = pts.map((p, i) => (i === 0 ? "M" : "L") + p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+      const marker = el.type === "arrow" ? ' marker-end="url(#arrowhead)"' : "";
+      svgParts.push(`<path d="${d}" fill="none" stroke="${el.strokeColor || "#868e96"}" stroke-width="${el.strokeWidth || 2}"${marker}/>`);
+    }
+  }
+  svgParts.push("</svg>");
+  const svg = svgParts.join("\n");
+
+  fs.mkdirSync(outdir, { recursive: true });
+  const base = path.basename(sceneFile, path.extname(sceneFile));
+
+  let svgSaved = false;
+  if (opts.format === "svg" || opts.format === "both") {
+    const svgPath = path.join(outdir, `${base}.svg`);
+    fs.writeFileSync(svgPath, svg);
+    console.log(`[OK] ${svgPath} (fallback SVG)`);
+    svgSaved = true;
+  }
+
+  if (opts.format === "png" || opts.format === "both") {
+    const executablePath = findChromium();
+    let browser;
+    try {
+      browser = await playwright.chromium.launch({
+        headless: true,
+        executablePath: executablePath || undefined,
+      });
+    } catch (err) {
+      if (err.message && (err.message.includes("EPERM") || err.message.includes("closed"))) {
+        console.error("[WARN] Cannot launch Chromium in sandbox. PNG skipped; SVG is available.");
+        if (opts.format === "both") return true; // SVG already saved
+        // If only PNG was requested, still save SVG as a fallback
+        if (!svgSaved) {
+          const svgPath2 = path.join(outdir, `${base}.svg`);
+          fs.writeFileSync(svgPath2, svg);
+          console.log(`[OK] ${svgPath2} (fallback SVG, PNG unavailable in sandbox)`);
+        }
+        return true;
+      }
+      console.error(`[ERROR] Failed to launch Chromium for PNG: ${err.message}`);
+      if (opts.format === "both") return true; // SVG already saved
+      return false;
+    }
+    try {
+      const page = await browser.newPage({ viewport: { width: vw, height: vh } });
+      await page.setContent(svg, { waitUntil: "load" });
+      const pngPath = path.join(outdir, `${base}.png`);
+      await page.screenshot({ path: pngPath, fullPage: true });
+      console.log(`[OK] ${pngPath} (fallback PNG from SVG)`);
+    } catch (err) {
+      console.error(`[ERROR] PNG screenshot failed: ${err.message}`);
+      return false;
+    } finally {
+      await browser.close();
+    }
+  }
+
+  return true;
+}
+
+async function renderWithPlaywright(sceneFile, outdir, opts) {
   const bundleDir = process.env.EXCALIDRAW_RENDER_BUNDLE || DEFAULT_BUNDLE;
   const missing = REQUIRED_BUNDLE_FILES.filter((f) => !fs.existsSync(path.join(bundleDir, f)));
   if (missing.length) {
@@ -103,7 +230,13 @@ async function main() {
       `[ERROR] Render bundle incomplete at ${bundleDir}, missing: ${missing.join(", ")}\n` +
         "Set EXCALIDRAW_RENDER_BUNDLE to a directory with index.html, render-entry.js, render-bundle.js"
     );
-    process.exit(1);
+    return false;
+  }
+
+  const playwright = findPlaywright();
+  if (!playwright) {
+    console.error("[ERROR] Playwright not found.");
+    return false;
   }
 
   const workdir = fs.mkdtempSync(path.join(os.tmpdir(), "excalidraw-render-"));
@@ -112,11 +245,23 @@ async function main() {
     fs.copyFileSync(path.join(bundleDir, f), path.join(workdir, f));
   }
 
-  const server = serveDir(workdir);
-  await new Promise((resolve) => server.once("listening", resolve));
-  const port = server.address().port;
+  const server = createServer(workdir);
+  let port;
+  try {
+    await startServer(server);
+    port = server.address().port;
+  } catch (err) {
+    if (err.code === "EPERM" || err.code === "EACCES") {
+      console.error("[WARN] Cannot start HTTP server (sandbox/permission restriction).");
+      console.error("[INFO] Falling back to direct SVG render...");
+      fs.rmSync(workdir, { recursive: true, force: true });
+      return renderFallbackSvg(sceneFile, outdir, opts);
+    }
+    console.error(`[ERROR] Failed to start HTTP server: ${err.message}`);
+    fs.rmSync(workdir, { recursive: true, force: true });
+    return false;
+  }
 
-  const playwright = findPlaywright();
   const executablePath = findChromium();
   let browser;
   try {
@@ -127,7 +272,8 @@ async function main() {
   } catch (err) {
     console.error(`[ERROR] Failed to launch Chromium: ${err.message}`);
     server.close();
-    process.exit(1);
+    fs.rmSync(workdir, { recursive: true, force: true });
+    return false;
   }
 
   try {
@@ -144,30 +290,84 @@ async function main() {
     const status = await page.evaluate(() => (document.querySelector("#status") || {}).textContent);
     if (!status.includes("Render complete")) {
       console.error(`[ERROR] Render did not complete: ${status}`);
-      process.exitCode = 1;
-    } else {
-      fs.mkdirSync(outdir, { recursive: true });
-      const base = path.basename(sceneFile, path.extname(sceneFile));
+      return false;
+    }
+
+    fs.mkdirSync(outdir, { recursive: true });
+    const base = path.basename(sceneFile, path.extname(sceneFile));
+
+    if (opts.format === "png" || opts.format === "both") {
       const png = path.join(outdir, `${base}.png`);
-      const svgPath = path.join(outdir, `${base}.svg`);
       await new Promise((resolve) => setTimeout(resolve, 300));
       await page.screenshot({ path: png, fullPage: true });
+      console.log(`[OK] ${png}`);
+    }
+
+    if (opts.format === "svg" || opts.format === "both") {
+      const svgPath = path.join(outdir, `${base}.svg`);
       const svg = await page.evaluate(
         () => document.querySelector("#excalidraw-container svg")?.outerHTML || ""
       );
-      if (svg) fs.writeFileSync(svgPath, svg);
-      const info = await page.evaluate(() => (document.querySelector("#info") || {}).textContent);
-      console.log(`[OK] ${png}`);
-      if (svgPath && fs.existsSync(svgPath)) console.log(`[OK] ${svgPath}`);
-      console.log(`[INFO] ${info || ""}`.trim());
+      if (svg) {
+        fs.writeFileSync(svgPath, svg);
+        console.log(`[OK] ${svgPath}`);
+      }
     }
+
+    const info = await page.evaluate(() => (document.querySelector("#info") || {}).textContent);
+    console.log(`[INFO] ${info || ""}`.trim());
+    return true;
   } catch (err) {
     console.error(`[ERROR] ${err.message}`);
-    process.exitCode = 1;
+    return false;
   } finally {
     await browser.close();
     server.close();
     fs.rmSync(workdir, { recursive: true, force: true });
+  }
+}
+
+async function main() {
+  const { positional, opts } = parseArgs(process.argv);
+
+  if (opts.help) {
+    console.log(`Usage: node render_preview.js <file.excalidraw> [outdir] [--format png|svg|both] [--no-server]
+
+Render a .excalidraw file to PNG and/or SVG using the local render bundle.
+
+Options:
+  --format png|svg|both   Output format (default: png)
+  --no-server             Skip HTTP server, use fallback SVG render
+
+Environment:
+  EXCALIDRAW_RENDER_BUNDLE  Path to render bundle directory (default: ~/WorkSpace/render-test)
+`);
+    process.exit(0);
+  }
+
+  const sceneFile = positional[0];
+  const outdir = positional[1] || path.dirname(sceneFile);
+
+  if (!sceneFile) {
+    console.error("Usage: node render_preview.js <file.excalidraw> [outdir] [--format png|svg|both]");
+    process.exit(2);
+  }
+  if (!fs.existsSync(sceneFile)) {
+    console.error(`[ERROR] Scene not found: ${sceneFile}`);
+    process.exit(1);
+  }
+
+  if (!["png", "svg", "both"].includes(opts.format)) {
+    console.error(`[ERROR] Invalid format: ${opts.format}. Use png, svg, or both.`);
+    process.exit(2);
+  }
+
+  if (opts.noServer) {
+    const ok = await renderFallbackSvg(sceneFile, outdir, opts);
+    process.exit(ok ? 0 : 1);
+  } else {
+    const ok = await renderWithPlaywright(sceneFile, outdir, opts);
+    process.exit(ok ? 0 : 1);
   }
 }
 

@@ -1,0 +1,24 @@
+{
+  "name": "more-chat-excalidraw",
+  "version": "0.1.0",
+  "description": "Chat-to-Excalidraw: generate, preview, and edit local Excalidraw canvases from natural conversation",
+  "private": true,
+  "scripts": {
+    "validate": "python3 scripts/validate_excalidraw.py",
+    "render": "node scripts/render_preview.js",
+    "open": "node scripts/open_in_excalidraw.js",
+    "test": "echo 'No tests yet' && exit 0"
+  },
+  "peerDependencies": {
+    "playwright": ">=1.40.0"
+  },
+  "peerDependenciesMeta": {
+    "playwright": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
