@@ -3,3 +3,5 @@ output/*.png
 output/*.svg
 *.bak
 .DS_Store
+__pycache__/
+*.pyc
