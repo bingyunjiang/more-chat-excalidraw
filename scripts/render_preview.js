@@ -122,53 +122,9 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
     return false;
   }
 
+  const { renderSvgFromScene } = require("./lib/svg_render");
   const sceneData = JSON.parse(fs.readFileSync(sceneFile, "utf-8"));
-  const elements = sceneData.elements || [];
-  const bgColor = (sceneData.appState || {}).viewBackgroundColor || "#ffffff";
-
-  // Compute bounding box
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const el of elements) {
-    if (el.x < minX) minX = el.x;
-    if (el.y < minY) minY = el.y;
-    if (el.x + el.width > maxX) maxX = el.x + el.width;
-    if (el.y + el.height > maxY) maxY = el.y + el.height;
-  }
-  const pad = 60;
-  minX -= pad; minY -= pad; maxX += pad; maxY += pad;
-  const vw = Math.max(maxX - minX, 400);
-  const vh = Math.max(maxY - minY, 300);
-
-  let svgParts = [];
-  svgParts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${vw}" height="${vh}" viewBox="${minX} ${minY} ${vw} ${vh}">`);
-  svgParts.push(`<rect x="${minX}" y="${minY}" width="${vw}" height="${vh}" fill="${bgColor}"/>`);
-  svgParts.push(`<defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#868e96"/></marker></defs>`);
-
-  for (const el of elements) {
-    if (el.isDeleted) continue;
-    if (el.type === "rectangle") {
-      const rx = el.roundness ? 8 : 0;
-      svgParts.push(`<rect x="${el.x}" y="${el.y}" width="${el.width}" height="${el.height}" fill="${el.backgroundColor === "transparent" ? "none" : el.backgroundColor || "#fff"}" stroke="${el.strokeColor || "#1e1e1e"}" stroke-width="${el.strokeWidth || 2}" rx="${rx}"/>`);
-    } else if (el.type === "ellipse") {
-      svgParts.push(`<ellipse cx="${el.x + el.width/2}" cy="${el.y + el.height/2}" rx="${el.width/2}" ry="${el.height/2}" fill="${el.backgroundColor === "transparent" ? "none" : el.backgroundColor || "#fff"}" stroke="${el.strokeColor || "#1e1e1e"}" stroke-width="${el.strokeWidth || 2}"/>`);
-    } else if (el.type === "diamond") {
-      const cx = el.x + el.width/2, cy = el.y + el.height/2;
-      svgParts.push(`<polygon points="${cx},${el.y} ${el.x+el.width},${cy} ${cx},${el.y+el.height} ${el.x},${cy}" fill="${el.backgroundColor === "transparent" ? "none" : el.backgroundColor || "#fff"}" stroke="${el.strokeColor || "#1e1e1e"}" stroke-width="${el.strokeWidth || 2}"/>`);
-    } else if (el.type === "text" && el.text) {
-      const anchor = el.textAlign === "center" ? "middle" : el.textAlign === "right" ? "end" : "start";
-      const tx = el.containerId ? el.x + el.width/2 : el.x + (el.width || 0)/2;
-      const ty = el.containerId ? el.y + el.height/2 : el.y + (el.height || 25)/2;
-      const escaped = el.text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-      svgParts.push(`<text x="${tx}" y="${ty}" text-anchor="${anchor}" dominant-baseline="central" font-size="${el.fontSize || 20}" font-family="sans-serif" fill="${el.strokeColor || "#1e1e1e"}">${escaped}</text>`);
-    } else if ((el.type === "arrow" || el.type === "line") && el.points) {
-      const pts = el.points.map(p => [p[0] + el.x, p[1] + el.y]);
-      const d = pts.map((p, i) => (i === 0 ? "M" : "L") + p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
-      const marker = el.type === "arrow" ? ' marker-end="url(#arrowhead)"' : "";
-      svgParts.push(`<path d="${d}" fill="none" stroke="${el.strokeColor || "#868e96"}" stroke-width="${el.strokeWidth || 2}"${marker}/>`);
-    }
-  }
-  svgParts.push("</svg>");
-  const svg = svgParts.join("\n");
+  const { svg } = renderSvgFromScene(sceneData);
 
   fs.mkdirSync(outdir, { recursive: true });
   const base = path.basename(sceneFile, path.extname(sceneFile));

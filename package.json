@@ -7,6 +7,8 @@
     "validate": "python3 scripts/validate_excalidraw.py",
     "render": "node scripts/render_preview.js",
     "open": "node scripts/open_in_excalidraw.js",
+    "preview": "node scripts/preview_server.js",
+    "push": "node scripts/push_preview.js",
     "test": "echo 'No tests yet' && exit 0"
   },
   "peerDependencies": {

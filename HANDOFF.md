@@ -4,9 +4,9 @@
 
 ## 当前状态
 
-**Phase 1-2 完成，Phase 3 进行中。**
+**Phase 1-3 完成，Phase 4 进行中（实时预览已完成，10/10 测试通过）。**
 
-核心闭环已跑通：validate → render → open 全链路在 escalation 下正常工作，沙箱内有 fallback SVG 渲染。
+核心闭环已跑通：validate → 实时预览 → render → open 全链路在 escalation 下正常工作，沙箱内有 fallback SVG 渲染。
 
 ## 已完成
 
@@ -19,21 +19,21 @@
   - 端到端测试 5/5 通过
   - fixture-flowchart.excalidraw（14 元素流程图）
   - test_e2e.sh 集成测试脚本
+- [x] Phase 3：质量与文档
+  - README.md、HANDOFF.md
+  - validate_excalidraw.py 增强（--json、类型必填字段、箭头绑定交叉检查）
+- [x] Phase 4（部分）：实时预览服务器（参考 al1y/mcp-excalidraw）
+  - preview_server.js：内存存储 + 轮询 API（/api/current-diagram、/api/preview、/api/diagram.svg）
+  - push_preview.js：推送 .excalidraw 到预览服务器，预览页 ~1.5s 实时刷新
+  - lib/svg_render.js：共享轻量 SVG 渲染器（render fallback + 预览复用）
+  - 端到端测试扩展至 10/10 通过
 
 ## 进行中
 
-- [ ] Phase 3：质量与文档
-  - [x] README.md
-  - [x] HANDOFF.md
-  - [ ] 增强 validate_excalidraw.py（--json 输出、更多校验规则）
-  - [ ] 增强 render_preview.js（--format 支持）
-
-## 待做
-
 - [ ] Phase 4：增强功能
+  - Mermaid → Excalidraw 转换（参考项目核心能力，本地 node_modules 已含依赖）
   - 增量更新（merge_excalidraw.py）
-  - 更多图表模板
-  - 智能布局
+  - 更多图表模板、智能布局
 - [ ] Phase 5：发布与维护
   - 版本号与 CHANGELOG
   - CI/CD
@@ -49,14 +49,16 @@
 | Chromium | `~/Library/Caches/ms-playwright/chromium-1228/` | Playwright 浏览器 |
 | Render bundle | `~/WorkSpace/render-test/` | Excalidraw 渲染包 |
 | 本地 Excalidraw | `http://localhost:5001/` | launchd 自启的 http-server |
+| @excalidraw/mermaid-to-excalidraw | `~/.local/share/excalidraw/node_modules/` | Phase 4 Mermaid 转换复用 |
 
 ## 已知问题
 
 1. **沙箱内无法渲染 PNG**：Chromium EPERM，只能输出 SVG
 2. **沙箱内无法推送画布**：`~/.local/share/` 写入受限，需 escalation
-3. **Excalidraw 服务可能未运行**：`--check-only` 可检测，`--start` 可尝试启动
-4. **Render bundle 路径硬编码**：默认 `~/WorkSpace/render-test/`，需通过 `EXCALIDRAW_RENDER_BUNDLE` 环境变量覆盖
-5. **Playwright 全局安装**：非项目本地，版本可能漂移
+3. **沙箱内无法启动预览服务器**：端口绑定 EPERM，需 escalation；用 `preview_server.js` 时推荐常驻进程
+4. **Excalidraw 服务可能未运行**：`--check-only` 可检测，`--start` 可尝试启动
+5. **Render bundle 路径硬编码**：默认 `~/WorkSpace/render-test/`，需通过 `EXCALIDRAW_RENDER_BUNDLE` 环境变量覆盖
+6. **Playwright 全局安装**：非项目本地，版本可能漂移
 
 ## Git 历史
 

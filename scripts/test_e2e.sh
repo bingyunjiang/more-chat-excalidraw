@@ -84,6 +84,75 @@ else
   log_warn "Excalidraw service not reachable (may need --start)"
 fi
 
+# --- Test 6: Preview server (real-time polling API) ---
+echo "=== Test 6: Preview server ==="
+PREVIEW_PORT="${PREVIEW_TEST_PORT:-6099}"
+PREVIEW_LOG="/tmp/e2e-preview-server.log"
+rm -f "$PREVIEW_LOG"
+
+node "$PROJECT_DIR/scripts/preview_server.js" --port "$PREVIEW_PORT" \
+  "$PROJECT_DIR/output/fixture-flowchart.excalidraw" > "$PREVIEW_LOG" 2>&1 &
+PREVIEW_PID=$!
+
+# Wait for server to come up
+SERVER_UP=0
+for i in $(seq 1 20); do
+  if curl -s -o /dev/null "http://localhost:${PREVIEW_PORT}/api/status"; then
+    SERVER_UP=1
+    break
+  fi
+  sleep 0.5
+done
+
+if [ "$SERVER_UP" = "1" ]; then
+  log_pass "preview server started on port $PREVIEW_PORT"
+
+  # 6a: GET /api/status has element counts
+  STATUS_JSON=$(curl -s "http://localhost:${PREVIEW_PORT}/api/status")
+  if echo "$STATUS_JSON" | grep -q '"total":14'; then
+    log_pass "preview server loaded fixture (14 elements)"
+  else
+    log_fail "preview server fixture load (got: $STATUS_JSON)"
+  fi
+
+  # 6b: GET /api/diagram.svg returns SVG with arrows and texts
+  SVG_OUT=$(curl -s "http://localhost:${PREVIEW_PORT}/api/diagram.svg")
+  if echo "$SVG_OUT" | grep -q "<svg" && echo "$SVG_OUT" | grep -q "<path"; then
+    log_pass "preview server renders SVG with paths"
+  else
+    log_fail "preview server SVG render"
+  fi
+
+  # 6c: POST a different diagram, verify it replaces the scene
+  if node "$PROJECT_DIR/scripts/push_preview.js" "$MINIMAL" --url "http://localhost:${PREVIEW_PORT}" >/dev/null 2>&1; then
+    sleep 0.3
+    STATUS_JSON2=$(curl -s "http://localhost:${PREVIEW_PORT}/api/status")
+    if echo "$STATUS_JSON2" | grep -q '"total":2'; then
+      log_pass "push_preview.js updates the scene in real time (2 elements)"
+    else
+      log_fail "push_preview.js update (got: $STATUS_JSON2)"
+    fi
+  else
+    log_fail "push_preview.js"
+  fi
+
+  # 6d: GET / serves the preview page
+  PAGE_OUT=$(curl -s "http://localhost:${PREVIEW_PORT}/")
+  if echo "$PAGE_OUT" | grep -q "实时预览"; then
+    log_pass "preview page served"
+  else
+    log_fail "preview page"
+  fi
+else
+  log_fail "preview server failed to start"
+  cat "$PREVIEW_LOG" 2>/dev/null | tail -5
+fi
+
+kill "$PREVIEW_PID" 2>/dev/null
+wait "$PREVIEW_PID" 2>/dev/null
+echo "--- preview server log ---"
+cat "$PREVIEW_LOG" 2>/dev/null | tail -3
+
 # --- Summary ---
 echo ""
 echo "=== Summary ==="

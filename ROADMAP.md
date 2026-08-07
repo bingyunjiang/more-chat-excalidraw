@@ -96,20 +96,31 @@
 
 ### Phase 4：增强功能
 
+- [x] **4.0 实时预览服务器（参考 al1y/mcp-excalidraw）**
+  - 新增 scripts/preview_server.js：内存存储 + 轮询 API（/api/current-diagram、/api/preview、/api/diagram.svg）
+  - 新增 scripts/push_preview.js：把 .excalidraw 推送到预览服务器，预览页 ~1.5s 实时刷新
+  - 共享 SVG 渲染器 scripts/lib/svg_render.js，render_preview.js fallback 与预览服务器复用
+  - 端到端测试扩展至 10 项（10/10 通过）
+
 - [ ] **4.1 增量更新支持**
   - SKILL.md 要求"保持既有 id 不变"的增量更新
   - 编写 scripts/merge_excalidraw.py：合并新旧元素，保留旧 id，新增元素用新 id
   - 支持删除元素（标记 isDeleted）
 
-- [ ] **4.2 更多图表模板**
+- [ ] **4.2 Mermaid → Excalidraw 转换（参考项目核心能力）**
+  - 参考 al1y/mcp-excalidraw 的 draw-diagram 工具，用 @excalidraw/mermaid-to-excalidraw 把 Mermaid 源码转成 Excalidraw 元素
+  - 本地 Excalidraw 仓库 node_modules 已含 @excalidraw/mermaid-to-excalidraw 与 mermaid，可复用
+  - 作为 SKILL 的输入通道之一：用户给 Mermaid 代码时直接转换，而不是手写元素
+
+- [ ] **4.3 更多图表模板**
   - 补充：甘特图、鱼骨图、价值流图、状态机图
   - 模板中增加中文标注和实用示例
 
-- [ ] **4.3 智能布局**
+- [ ] **4.4 智能布局**
   - 编写 scripts/auto_layout.py：自动排列节点位置
   - 支持纵向/横向/层次/力导向布局
 
-- [ ] **4.4 多语言支持**
+- [ ] **4.5 多语言支持**
   - 文本宽度估算：中文 1.0×fontSize，英文 0.6×fontSize
   - 混合文本精确估算
 
@@ -131,7 +142,7 @@
 
 ## 已知问题与风险
 
-1. **沙箱权限**：render 和 open 脚本在 Codex 沙箱内无法直接运行，需要 escalation 或备选方案
+1. **沙箱权限**：render、open、preview 脚本在 Codex 沙箱内无法直接运行（端口/写盘受限），需要 escalation 或备选方案
 2. **Excalidraw 本地服务**：当前未运行，launchd 配置存在但可能未加载
 3. **Playwright 依赖**：全局安装而非项目本地，版本可能漂移
 4. **render bundle 路径硬编码**：默认指向 ~/WorkSpace/render-test/，不够通用
@@ -139,10 +150,10 @@
 
 ## 里程碑
 
-| 里程碑 | 目标 | 预计完成 |
+| 里程碑 | 目标 | 状态 |
 |---|---|---|
-| M1：基础设施 | git + package.json + 权限修复 | Phase 1 完成时 |
-| M2：闭环跑通 | 端到端测试通过 | Phase 2 完成时 |
-| M3：可交付 | README + HANDOFF + 增强校验 | Phase 3 完成时 |
-| M4：可用 | 增量更新 + 更多模板 + 智能布局 | Phase 4 完成时 |
-| M5：可发布 | 版本号 + CI + 文档 | Phase 5 完成时 |
+| M1：基础设施 | git + package.json + 权限修复 | ✅ 完成 |
+| M2：闭环跑通 | 端到端测试通过 | ✅ 完成 |
+| M3：可交付 | README + HANDOFF + 增强校验 | ✅ 完成 |
+| M4：可用 | 实时预览 + 增量更新 + 模板 + Mermaid | 🔄 进行中（实时预览已完成） |
+| M5：可发布 | 版本号 + CI + 文档 | 待开始 |

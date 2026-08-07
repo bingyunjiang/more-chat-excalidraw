@@ -23,6 +23,12 @@
 # 校验 .excalidraw 文件
 python3 scripts/validate_excalidraw.py output/fixture-flowchart.excalidraw
 
+# 实时预览（推荐）：启动预览服务器并打开浏览器
+node scripts/preview_server.js --open
+
+# 推送图表到预览页（约 1.5 秒内实时更新）
+node scripts/push_preview.js output/fixture-flowchart.excalidraw
+
 # 渲染为 PNG + SVG
 node scripts/render_preview.js output/fixture-flowchart.excalidraw output/ --format both
 
@@ -53,8 +59,11 @@ bash scripts/test_e2e.sh
 │   └── diagram-templates.md          # 六类图表模板与色板
 ├── scripts/
 │   ├── validate_excalidraw.py        # 校验 .excalidraw 结构与引用完整性
+│   ├── preview_server.js             # 实时预览服务器（轮询 API 模式）
+│   ├── push_preview.js               # 推送 .excalidraw 到预览服务器
 │   ├── render_preview.js             # 渲染 PNG/SVG（Playwright + fallback）
 │   ├── open_in_excalidraw.js         # 推送到本地 Excalidraw 并打开
+│   ├── lib/svg_render.js             # 共享轻量 SVG 渲染器（预览/fallback 复用）
 │   └── test_e2e.sh                   # 端到端测试
 └── output/
     └── fixture-flowchart.excalidraw  # 测试用流程图
@@ -62,8 +71,24 @@ bash scripts/test_e2e.sh
 
 ## 沙箱兼容性
 
+- **preview_server.js**：需要绑定端口，沙箱内运行需 escalation；启动后一切写入都在内存和预览页，不碰本地 Excalidraw web root
 - **render_preview.js**：沙箱内无法启动 HTTP 服务器或 Chromium 时，自动 fallback 到 SVG 渲染
 - **open_in_excalidraw.js**：沙箱内无法写入 web root 时，给出明确提示和手动操作命令（exit code 3）
+
+## 实时预览（参考 al1y/mcp-excalidraw）
+
+预览服务器采用 al1y/mcp-excalidraw 的"内存图 + 轮询 API"模式：
+
+```
+push_preview.js ──POST /api/current-diagram──▶ preview_server.js（内存存储）
+                                                        │
+预览页 ◀──每 1.5s 轮询 /api/preview─────────────────────┘
+```
+
+- `POST /api/current-diagram`：接收 `{elements, appState}` 或原始 `.excalidraw` JSON
+- `GET /api/preview`：返回 `{svg, stats, updated}`，预览页据此实时刷新
+- `GET /api/diagram.svg`：可直接取当前图的 SVG
+- 与参考项目的区别：参考项目内嵌完整 Excalidraw React 编辑器，本 skill 用轻量 SVG 渲染做快速预览，完整编辑仍走本地 Excalidraw（localhost:5001）
 
 ## 支持的图表类型
 
