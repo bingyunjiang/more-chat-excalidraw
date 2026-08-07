@@ -1,0 +1,81 @@
+# more-chat-excalidraw（笔谈）
+
+通过自然对话生成、预览、打开和迭代编辑本地 Excalidraw 画布。
+
+核心闭环：**理解意图 → 生成 JSON → 校验 → 渲染预览 → 打开/迭代**
+
+## 快速开始
+
+### 依赖
+
+- Node.js ≥ 18
+- Python 3
+- Playwright（可选，用于高质量渲染）— `npm install -g playwright`
+- 本地 Excalidraw（可选，用于打开画布）— `http://localhost:5001/`
+
+### 使用
+
+作为 Codex skill 使用：当用户要求"画一张图/流程图/架构图"时自动触发。
+
+也可手动运行脚本：
+
+```bash
+# 校验 .excalidraw 文件
+python3 scripts/validate_excalidraw.py output/fixture-flowchart.excalidraw
+
+# 渲染为 PNG + SVG
+node scripts/render_preview.js output/fixture-flowchart.excalidraw output/ --format both
+
+# 仅输出 SVG（不依赖 HTTP 服务器）
+node scripts/render_preview.js output/fixture-flowchart.excalidraw output/ --format svg --no-server
+
+# 推送到本地 Excalidraw 并打开浏览器
+node scripts/open_in_excalidraw.js output/fixture-flowchart.excalidraw
+
+# 检查 Excalidraw 服务是否可达
+node scripts/open_in_excalidraw.js --check-only
+
+# 运行端到端测试
+bash scripts/test_e2e.sh
+```
+
+## 项目结构
+
+```
+├── SKILL.md                          # Skill 定义（工作流、质量规则）
+├── ROADMAP.md                        # 开发大纲与里程碑
+├── README.md                         # 本文件
+├── package.json                      # npm 脚本与依赖声明
+├── agents/
+│   └── openai.yaml                   # Codex 接口定义
+├── references/
+│   ├── excalidraw-schema.md          # v2 JSON 结构速查
+│   └── diagram-templates.md          # 六类图表模板与色板
+├── scripts/
+│   ├── validate_excalidraw.py        # 校验 .excalidraw 结构与引用完整性
+│   ├── render_preview.js             # 渲染 PNG/SVG（Playwright + fallback）
+│   ├── open_in_excalidraw.js         # 推送到本地 Excalidraw 并打开
+│   └── test_e2e.sh                   # 端到端测试
+└── output/
+    └── fixture-flowchart.excalidraw  # 测试用流程图
+```
+
+## 沙箱兼容性
+
+- **render_preview.js**：沙箱内无法启动 HTTP 服务器或 Chromium 时，自动 fallback 到 SVG 渲染
+- **open_in_excalidraw.js**：沙箱内无法写入 web root 时，给出明确提示和手动操作命令（exit code 3）
+
+## 支持的图表类型
+
+| 类型 | 说明 |
+|---|---|
+| 流程图 | 纵向/横向步骤 + 菱形决策 + 箭头 |
+| 架构图 | 分层：用户层 → 应用层 → 服务层 → 数据层 |
+| 时序图 | 角色竖线 + 横向箭头消息 |
+| 思维导图 | 中心主题 + 一级/二级分支 |
+| 泳道图 | 水平泳道按角色分区 |
+| ER 图 | 实体矩形 + 关系菱形 + 基数标注 |
+
+## 许可
+
+MIT
