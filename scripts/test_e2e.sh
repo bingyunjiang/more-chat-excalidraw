@@ -253,6 +253,38 @@ else
   log_fail "mermaid sequence conversion"
 fi
 
+# --- Test 8: Knowledge graph -> architecture (C.8) ---
+echo "=== Test 8: Knowledge graph generation ==="
+KG_TEXT="/tmp/e2e-kg.txt"
+cat > "$KG_TEXT" << 'KGEOF'
+entity: Web前端|component|用户层
+entity: 订单服务|service|应用层
+entity: PostgreSQL|database|数据层
+rel: Web前端 -> 订单服务 调用
+rel: 订单服务 -> PostgreSQL 读写
+KGEOF
+if python3 "$PROJECT_DIR/scripts/knowledge_graph.py" --text "$KG_TEXT" --output /tmp/e2e-kg.excalidraw >/dev/null 2>&1; then
+  if python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" /tmp/e2e-kg.excalidraw >/dev/null 2>&1; then
+    log_pass "knowledge graph generates valid architecture excalidraw"
+  else
+    log_fail "knowledge graph output failed validation"
+  fi
+else
+  log_fail "knowledge_graph.py"
+fi
+
+# --- Test 9: Incremental merge (C.5) ---
+echo "=== Test 9: Incremental merge ==="
+if python3 "$PROJECT_DIR/scripts/merge_excalidraw.py" patch /tmp/e2e-kg.excalidraw --set 'n2.backgroundColor=#ffc9c9' --history-dir /tmp/e2e-merge-history >/dev/null 2>&1; then
+  if grep -q "#ffc9c9" /tmp/e2e-kg.excalidraw; then
+    log_pass "merge patch updates element color"
+  else
+    log_fail "merge patch color not applied"
+  fi
+else
+  log_fail "merge_excalidraw.py patch"
+fi
+
 # --- Summary ---
 echo ""
 echo "=== Summary ==="

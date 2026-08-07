@@ -32,6 +32,9 @@ node scripts/mermaid_to_excalidraw.js --string "graph TD; A-->B" --output output
 # 增量编辑：合并/微调/回退
 python3 scripts/merge_excalidraw.py patch output/flow.excalidraw --set 'n3.backgroundColor=#ffc9c9' --move 'n5:20,0'
 
+# 知识图谱 → 架构图：从实体/关系描述自动分层生成
+python3 scripts/knowledge_graph.py --text arch.txt --output output/kg.excalidraw
+
 # 列出/预览模板（--preview 渲染 SVG）
 node scripts/list_templates.js --preview flowchart
 
@@ -83,6 +86,7 @@ bash scripts/test_e2e.sh
 │   ├── ir_to_excalidraw.py           # IR → Excalidraw JSON 转换器（自动布局+配色+动画元数据）
 │   ├── mermaid_to_excalidraw.js      # Mermaid → Excalidraw（flowchart/sequence 子集）
 │   ├── merge_excalidraw.py           # 增量编辑：merge/patch/restore
+│   ├── knowledge_graph.py            # 知识图谱 → 架构图（实体/关系自动分层）
 │   ├── list_templates.js             # 模板列表与 SVG 预览
 │   ├── validate_excalidraw.py        # 校验 .excalidraw 结构与引用完整性
 │   ├── preview_server.js             # 实时预览服务器（轮询 API 模式）

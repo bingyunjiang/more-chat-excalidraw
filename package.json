@@ -1,21 +1,27 @@
 {
   "name": "more-chat-excalidraw",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Chat-to-Excalidraw: generate, preview, and edit local Excalidraw canvases from natural conversation",
   "private": true,
   "scripts": {
     "validate": "python3 scripts/validate_excalidraw.py",
+    "validate:visual": "python3 scripts/validate_excalidraw.py --visual",
     "render": "node scripts/render_preview.js",
     "open": "node scripts/open_in_excalidraw.js",
     "preview": "node scripts/preview_server.js",
     "push": "node scripts/push_preview.js",
-    "test": "echo 'No tests yet' && exit 0",
+    "editor": "node scripts/preview_server.js",
     "templates": "node scripts/list_templates.js",
     "templates:json": "node scripts/list_templates.js --json",
     "recommend": "python3 scripts/template_selector.py --recommend",
     "template-info": "python3 scripts/template_selector.py --info",
     "ir": "python3 scripts/ir_to_excalidraw.py",
-    "ir:example": "python3 scripts/ir_to_excalidraw.py --example"
+    "ir:example": "python3 scripts/ir_to_excalidraw.py --example",
+    "mermaid": "node scripts/mermaid_to_excalidraw.js",
+    "merge": "python3 scripts/merge_excalidraw.py",
+    "build:editor": "cd scripts/web && npm run build",
+    "test": "bash scripts/test_e2e.sh",
+    "kg": "python3 scripts/knowledge_graph.py"
   },
   "peerDependencies": {
     "playwright": ">=1.40.0"
