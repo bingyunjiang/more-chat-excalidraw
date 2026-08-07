@@ -26,6 +26,12 @@ python3 scripts/template_selector.py --recommend "画一个微服务架构图"
 # IR → Excalidraw（推荐流程）：文案整理为 IR 后自动布局生成
 python3 scripts/ir_to_excalidraw.py --example flowchart --output output/flow.excalidraw --validate
 
+# Mermaid → Excalidraw（支持 flowchart/sequenceDiagram 子集）
+node scripts/mermaid_to_excalidraw.js --string "graph TD; A-->B" --output output/mmd.excalidraw
+
+# 增量编辑：合并/微调/回退
+python3 scripts/merge_excalidraw.py patch output/flow.excalidraw --set 'n3.backgroundColor=#ffc9c9' --move 'n5:20,0'
+
 # 列出/预览模板（--preview 渲染 SVG）
 node scripts/list_templates.js --preview flowchart
 
@@ -74,7 +80,9 @@ bash scripts/test_e2e.sh
 │   └── animation-template.md         # 动画关键帧模板
 ├── scripts/
 │   ├── template_selector.py          # 模板选择器（意图推荐 + 参数调整）
-│   ├── ir_to_excalidraw.py           # IR → Excalidraw JSON 转换器（自动布局+配色）
+│   ├── ir_to_excalidraw.py           # IR → Excalidraw JSON 转换器（自动布局+配色+动画元数据）
+│   ├── mermaid_to_excalidraw.js      # Mermaid → Excalidraw（flowchart/sequence 子集）
+│   ├── merge_excalidraw.py           # 增量编辑：merge/patch/restore
 │   ├── list_templates.js             # 模板列表与 SVG 预览
 │   ├── validate_excalidraw.py        # 校验 .excalidraw 结构与引用完整性
 │   ├── preview_server.js             # 实时预览服务器（轮询 API 模式）

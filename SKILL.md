@@ -15,7 +15,7 @@ description: 通过自然对话生成、预览、打开和迭代编辑本地 Exc
 2. **生成结构化文案（IR）**：把用户意图整理为 IR 中间格式（见 [references/ir-format.md](references/ir-format.md)），包含 nodes/edges/groups/template/theme。IR 独立于 Excalidraw，便于后续迭代与版本化。
 3. **IR → `.excalidraw` JSON**：运行 `python3 scripts/ir_to_excalidraw.py <ir.json> --output output/<topic>.excalidraw` 自动完成布局、元素生成、箭头绑定与配色。也可手工按 [references/excalidraw-schema.md](references/excalidraw-schema.md) 与元素模板生成。默认输出到当前工作区，文件名建议 `output/<topic>-YYYYMMDD-HHMM.excalidraw`。
 4. **校验**：运行 `python3 scripts/validate_excalidraw.py <file>`，修复所有 error 后再交付。
-5. **实时预览**：启动 `node scripts/preview_server.js [<file>] [--open]`（默认端口 6060，预览页会轮询 API 实时刷新，模式参考 al1y/mcp-excalidraw）。之后每次生成或修改 `.excalidraw`，用 `node scripts/push_preview.js <file>` 推送，已打开的预览页约 1.5 秒内自动更新。交付前先看预览，检查元素是否重叠、文字是否溢出、连线是否绑定正确；发现问题直接修正后重新推送。
+5. **实时预览**：启动 `node scripts/preview_server.js [<file>] [--open]`（默认端口 6060，预览页会轮询 API 实时刷新，模式参考 al1y/mcp-excalidraw）。之后每次生成或修改 `.excalidraw`，用 `node scripts/push_preview.js <file>` 推送，已打开的预览页约 1.5 秒内自动更新。交付前先看预览，检查元素是否重叠、文字是否溢出、连线是否绑定正确；发现问题直接修正后重新推送。需要浏览器内编辑时访问 `http://localhost:6060/editor`（完整 Excalidraw 编辑器，编辑后点"保存到服务器"写回文件）；需要分步讲解动画时访问 `http://localhost:6060/animate`（按 customData.animate 顺序逐帧播放）。
 6. **静态渲染**（可选，出图）：需要 PNG/SVG 文件时运行 `node scripts/render_preview.js <file> --format both` 生成同目录预览文件；沙箱内无法起浏览器时自动降级为纯 SVG。
 7. **打开与迭代**：运行 `node scripts/open_in_excalidraw.js <file>` 把画布推送到本地 Excalidraw（http://localhost:5001/）并打开浏览器；页面会自动刷新导入，用户可直接编辑。用户提出修改时增量更新元素（保持既有 `id` 不变，被替换的元素用新 `id`），不要整图重画。
 
@@ -33,7 +33,9 @@ description: 通过自然对话生成、预览、打开和迭代编辑本地 Exc
 ### scripts/
 
 - `template_selector.py`：模板选择器。`--list` 列出 10 种模板；`--recommend "<意图>"` 根据关键词推荐最佳模板与主题；`--info <模板>` 查看详情；`--params <模板> --theme <主题>` 输出带参数的模板元数据。
-- `ir_to_excalidraw.py`：IR → Excalidraw JSON 转换器。`--example flowchart/architecture/mindmap` 生成内置示例；`--validate` 转换后自动校验。支持 10 种模板布局与 4 套主题。
+- `ir_to_excalidraw.py`：IR → Excalidraw JSON 转换器。`--example flowchart/architecture/mindmap` 生成内置示例；`--validate` 转换后自动校验（含视觉质量检查）。支持 10 种模板布局、4 套主题，并自动注入 `customData.animate` 动画元数据。
+- `mermaid_to_excalidraw.js`：Mermaid → Excalidraw 转换（flowchart/sequenceDiagram 子集）。解析为 IR 后复用 ir_to_excalidraw.py 完成布局。
+- `merge_excalidraw.py`：增量编辑与迭代。`merge` 合并新旧场景（保留旧 id）；`patch --set id.field=value --move id:dx,dy` 微调；`restore` 从 `output/history/` 备份回退。
 - `list_templates.js`：模板列表与预览。`--json` 输出元数据；`--preview <模板> [--out 目录]` 渲染 10 种模板的 SVG 预览图。
 - `validate_excalidraw.py`：校验 `.excalidraw` 文件结构与引用完整性，返回非零退出码表示有错误。
 - `preview_server.js`：实时预览服务器（轮询 API 模式）。启动后 `push_preview.js` 推送的图会实时出现在预览页，无需写本地 Excalidraw web root。

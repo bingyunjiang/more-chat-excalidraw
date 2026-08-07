@@ -158,6 +158,25 @@ function svgResponse(res, svg) {
   res.end(svg);
 }
 
+/**
+ * Collect unique animate.order values present in the scene (sorted ascending),
+ * plus the list of element ids per order for frame-by-frame playback.
+ */
+function collectAnimationFrames(scene) {
+  const orders = new Map();
+  for (const el of scene.elements || []) {
+    const order = el.customData?.animate?.order;
+    if (order === undefined) continue;
+    if (!orders.has(order)) orders.set(order, []);
+    orders.get(order).push(el.id);
+  }
+  const sorted = [...orders.keys()].sort((a, b) => a - b);
+  return sorted.map((order) => ({
+    order,
+    elementIds: orders.get(order),
+  }));
+}
+
 const EDITOR_PAGE = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -196,6 +215,88 @@ const EDITOR_PAGE = `<!DOCTYPE html>
         });
       } catch (e) { /* ignore */ }
     });
+  })();
+</script>
+</body>
+</html>`;
+
+const ANIMATE_PAGE = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excalidraw 动画预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; }
+  #header { padding: 12px 20px; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  #header h1 { font-size: 15px; font-weight: 600; }
+  button { padding: 6px 14px; font-size: 13px; border-radius: 6px; border: 1px solid #ced4da; background: #fff; cursor: pointer; }
+  button:hover { background: #f1f3f5; }
+  #frame-info { font-size: 13px; color: #868e96; }
+  #canvas { padding: 24px; overflow: auto; display: flex; justify-content: center; }
+  #canvas svg { display: block; box-shadow: 0 1px 3px rgba(0,0,0,0.12); background: #fff; max-width: 100%; height: auto; transition: opacity 0.25s; }
+  #empty { padding: 60px; text-align: center; color: #adb5bd; font-size: 14px; }
+  #progress { height: 4px; background: #e0e0e0; border-radius: 2px; width: 100%; margin-top: 8px; }
+  #progress > div { height: 100%; background: #4dabf7; border-radius: 2px; transition: width 0.3s; }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>Excalidraw 动画预览</h1>
+  <button id="play">▶ 播放</button>
+  <button id="prev">◀ 上一帧</button>
+  <button id="next">下一帧 ▶</button>
+  <span id="frame-info">加载中...</span>
+</div>
+<div id="progress"><div id="progress-bar" style="width:0%"></div></div>
+<div id="canvas"><div id="empty">正在加载动画序列...</div></div>
+<script>
+  const canvas = document.getElementById("canvas");
+  const infoEl = document.getElementById("frame-info");
+  const bar = document.getElementById("progress-bar");
+  let frames = [];
+  let idx = 0;
+  let timer = null;
+
+  function render() {
+    if (!frames.length) return;
+    const frame = frames[idx];
+    canvas.innerHTML = frame.svg;
+    infoEl.textContent = "第 " + (idx + 1) + " / " + frames.length + " 帧（order " + frame.order + "，元素 " + frame.elementIds.length + " 个）";
+    bar.style.width = (((idx + 1) / frames.length) * 100) + "%";
+  }
+
+  function play() {
+    stop();
+    if (!frames.length) return;
+    idx = 0;
+    render();
+    timer = setInterval(() => {
+      idx++;
+      if (idx >= frames.length) { stop(); return; }
+      render();
+    }, 1200);
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+  document.getElementById("play").onclick = () => (timer ? stop() : play());
+  document.getElementById("prev").onclick = () => { stop(); if (frames.length) { idx = Math.max(0, idx - 1); render(); } };
+  document.getElementById("next").onclick = () => { stop(); if (frames.length) { idx = Math.min(frames.length - 1, idx + 1); render(); } };
+
+  (async () => {
+    try {
+      const resp = await fetch("/api/animate?t=" + Date.now(), { cache: "no-store" });
+      const data = await resp.json();
+      frames = data.frames || [];
+      if (frames.length === 0) {
+        canvas.innerHTML = '<div id="empty">该画布没有动画元数据（customData.animate）。用 ir_to_excalidraw.py 生成后自动注入。</div>';
+        infoEl.textContent = "无动画帧";
+        return;
+      }
+      render();
+    } catch (err) {
+      canvas.innerHTML = '<div id="empty">加载失败: ' + err.message + "</div>";
+    }
   })();
 </script>
 </body>
@@ -285,6 +386,12 @@ function createServer() {
     if (pathname === "/editor" && req.method === "GET") {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       res.end(EDITOR_PAGE);
+      return;
+    }
+
+    if (pathname === "/animate" && req.method === "GET") {
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(ANIMATE_PAGE);
       return;
     }
 
@@ -421,6 +528,21 @@ function createServer() {
     if (pathname === "/api/preview" && req.method === "GET") {
       const { svg, stats } = renderSvgFromScene(current, { padding: 40 });
       json(res, 200, { svg, stats, updated: current.timestamp });
+      return;
+    }
+
+    if (pathname === "/api/animate" && req.method === "GET") {
+      // Animation sequence playback (excalimate-style): frame-by-frame SVG.
+      const frames = collectAnimationFrames(current);
+      const sequence = frames.map((frame) => {
+        const { svg } = renderSvgFromScene(current, { padding: 40, maxOrder: frame.order });
+        return { ...frame, svg };
+      });
+      json(res, 200, {
+        total: frames.length,
+        frames: sequence,
+        updated: current.timestamp,
+      });
       return;
     }
 

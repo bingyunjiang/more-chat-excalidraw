@@ -4,10 +4,10 @@
  * a headless Chromium. Produces a preview the agent can inspect before delivery.
  *
  * Usage:
- *   node render_preview.js <file.excalidraw> [outdir] [--format png|svg|both]
+ *   node render_preview.js <file.excalidraw> [outdir] [--format png|svg|pdf|both]
  *
  * Options:
- *   --format   Output format: png (default), svg, or both
+ *   --format   Output format: png (default), svg, pdf, or both
  *   --no-server  Skip Playwright HTTP server, use fallback SVG render
  *
  * The render bundle is located at $EXCALIDRAW_RENDER_BUNDLE or defaults to
@@ -175,6 +175,17 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
     }
   }
 
+  if (opts.format === "pdf") {
+    // PDF requires Playwright + Chromium; in sandbox fallback to SVG.
+    if (fs.existsSync(path.join(outdir, `${base}.svg`)) || svgSaved) {
+      console.error("[WARN] PDF requires Chromium; SVG already saved as fallback.");
+    } else {
+      const svgPath = path.join(outdir, `${base}.svg`);
+      fs.writeFileSync(svgPath, svg);
+      console.log(`[OK] ${svgPath} (fallback SVG, PDF unavailable in sandbox)`);
+    }
+  }
+
   return true;
 }
 
@@ -270,6 +281,12 @@ async function renderWithPlaywright(sceneFile, outdir, opts) {
       }
     }
 
+    if (opts.format === "pdf" || opts.format === "both") {
+      const pdfPath = path.join(outdir, `${base}.pdf`);
+      await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
+      console.log(`[OK] ${pdfPath}`);
+    }
+
     const info = await page.evaluate(() => (document.querySelector("#info") || {}).textContent);
     console.log(`[INFO] ${info || ""}`.trim());
     return true;
@@ -287,7 +304,7 @@ async function main() {
   const { positional, opts } = parseArgs(process.argv);
 
   if (opts.help) {
-    console.log(`Usage: node render_preview.js <file.excalidraw> [outdir] [--format png|svg|both] [--no-server]
+    console.log(`Usage: node render_preview.js <file.excalidraw> [outdir] [--format png|svg|pdf|both] [--no-server]
 
 Render a .excalidraw file to PNG and/or SVG using the local render bundle.
 
@@ -313,8 +330,8 @@ Environment:
     process.exit(1);
   }
 
-  if (!["png", "svg", "both"].includes(opts.format)) {
-    console.error(`[ERROR] Invalid format: ${opts.format}. Use png, svg, or both.`);
+  if (!["png", "svg", "pdf", "both"].includes(opts.format)) {
+    console.error(`[ERROR] Invalid format: ${opts.format}. Use png, svg, pdf, or both.`);
     process.exit(2);
   }
 

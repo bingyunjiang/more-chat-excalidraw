@@ -67,7 +67,16 @@ function fillOrNone(color) {
  * @returns {string} SVG markup
  */
 function renderSvgFromScene(data, opts = {}) {
-  const elements = (data.elements || []).filter((el) => el && !el.isDeleted);
+  let elements = (data.elements || []).filter((el) => el && !el.isDeleted);
+  // Animation frame support: only keep elements whose animate.order <= maxOrder.
+  // Elements without customData.animate are always included (maxOrder >= 1).
+  if (typeof opts.maxOrder === "number") {
+    elements = elements.filter((el) => {
+      const order = el.customData?.animate?.order;
+      if (order === undefined) return opts.maxOrder >= 1;
+      return order <= opts.maxOrder;
+    });
+  }
   const bgColor = (data.appState || {}).viewBackgroundColor || "#ffffff";
   const padding = opts.padding ?? 60;
 

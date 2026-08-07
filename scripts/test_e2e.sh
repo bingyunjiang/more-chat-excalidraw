@@ -207,6 +207,22 @@ if [ "$SERVER_UP" = "1" ]; then
   else
     log_fail "/api/canvases list (got: $CANVAS_LIST)"
   fi
+
+  # 6k: GET /animate serves the animation playback page
+  ANIM_PAGE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${PREVIEW_PORT}/animate")
+  if [ "$ANIM_PAGE" = "200" ]; then
+    log_pass "animation page served (HTTP 200)"
+  else
+    log_fail "animation page (HTTP $ANIM_PAGE)"
+  fi
+
+  # 6l: GET /api/animate returns frame sequence
+  ANIM_JSON=$(curl -s "http://localhost:${PREVIEW_PORT}/api/animate")
+  if echo "$ANIM_JSON" | grep -q '"total":'; then
+    log_pass "/api/animate returns frame sequence"
+  else
+    log_fail "/api/animate (got: $ANIM_JSON)"
+  fi
 else
   log_fail "preview server failed to start"
   cat "$PREVIEW_LOG" 2>/dev/null | tail -5
@@ -216,6 +232,26 @@ kill "$PREVIEW_PID" 2>/dev/null
 wait "$PREVIEW_PID" 2>/dev/null
 echo "--- preview server log ---"
 cat "$PREVIEW_LOG" 2>/dev/null | tail -3
+
+# --- Test 7: Mermaid -> Excalidraw conversion (C.6) ---
+echo "=== Test 7: Mermaid conversion ==="
+MMD_INLINE='graph TD; A[开始] --> B[处理]; B --> C{成功?}; C -->|是| D[完成]'
+if node "$PROJECT_DIR/scripts/mermaid_to_excalidraw.js" --string "$MMD_INLINE" --output /tmp/e2e-mermaid.excalidraw >/dev/null 2>&1; then
+  if python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" /tmp/e2e-mermaid.excalidraw >/dev/null 2>&1; then
+    log_pass "mermaid flowchart converts to valid excalidraw"
+  else
+    log_fail "mermaid output failed validation"
+  fi
+else
+  log_fail "mermaid_to_excalidraw.js"
+fi
+
+MMD_SEQ='sequenceDiagram; participant 用户; participant 服务端; 用户->>服务端: 请求'
+if node "$PROJECT_DIR/scripts/mermaid_to_excalidraw.js" --string "$MMD_SEQ" --output /tmp/e2e-mermaid-seq.excalidraw >/dev/null 2>&1; then
+  log_pass "mermaid sequence converts to excalidraw"
+else
+  log_fail "mermaid sequence conversion"
+fi
 
 # --- Summary ---
 echo ""

@@ -518,6 +518,22 @@ def convert(ir, template_override=None):
             "gridSize": 20,
         },
     }
+
+    # 7.1 动画元数据注入（借鉴 excalimate：customData.animate + 7 级顺序规则）
+    # 标题(1) → 框架(2) → 主要节点(3) → 连线(4) → 细节文字(5)
+    for el in elements:
+        etype = el["type"]
+        if etype == "text" and el.get("id") == "title-0":
+            el["customData"] = {"animate": {"order": 1, "duration": 400, "type": "fade-in"}}
+        elif etype == "frame":
+            el["customData"] = {"animate": {"order": 2, "duration": 400, "type": "fade-in"}}
+        elif etype in ("rectangle", "ellipse", "diamond"):
+            el["customData"] = {"animate": {"order": 3, "duration": 500, "type": "slide-up"}}
+        elif etype == "arrow":
+            el["customData"] = {"animate": {"order": 4, "duration": 300, "type": "draw"}}
+        elif etype == "text":
+            el["customData"] = {"animate": {"order": 5, "duration": 400, "type": "fade-in"}}
+
     return result
 
 
@@ -644,7 +660,12 @@ def main():
     if args.validate:
         import subprocess
         r = subprocess.run(
-            [sys.executable, os.path.join(os.path.dirname(__file__), "validate_excalidraw.py"), out_path],
+            [
+                sys.executable,
+                os.path.join(os.path.dirname(__file__), "validate_excalidraw.py"),
+                out_path,
+                "--visual",
+            ],
             capture_output=True, text=True,
         )
         print(r.stdout)
