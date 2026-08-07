@@ -31,7 +31,90 @@ TYPE_REQUIRED_FIELDS = {
 }
 
 
-def validate_file(filepath, strict=False):
+def _bbox(el):
+    """Bounding box of an element as (x, y, x2, y2) or None."""
+    if not isinstance(el, dict):
+        return None
+    x, y = el.get("x"), el.get("y")
+    w, h = el.get("width"), el.get("height")
+    if not all(isinstance(v, (int, float)) for v in (x, y, w, h)):
+        return None
+    return (x, y, x + w, y + h)
+
+
+def _rects_overlap(a, b):
+    """Return overlap area (px^2) between two bboxes, or 0 if none."""
+    ax1, ay1, ax2, ay2 = a
+    bx1, by1, bx2, by2 = b
+    ox = max(0, min(ax2, bx2) - max(ax1, bx1))
+    oy = max(0, min(ay2, by2) - max(ay1, by1))
+    return ox * oy
+
+
+def _visual_checks(elements, warnings):
+    """Layout quality heuristics: overlaps, dangling arrows, density."""
+    # Skip connector elements and tiny markers when computing overlaps
+    shapes = []
+    for i, el in enumerate(elements):
+        if not isinstance(el, dict):
+            continue
+        etype = el.get("type")
+        if etype not in ("rectangle", "ellipse", "diamond", "text"):
+            continue
+        # Skip zero-size markers (timeline dots etc.)
+        w, h = el.get("width", 0), el.get("height", 0)
+        if w < 10 or h < 10:
+            continue
+        bb = _bbox(el)
+        if bb:
+            shapes.append((i, el, bb))
+
+    # Overlap detection (only for containers, not free text)
+    containers = [s for s in shapes if s[1].get("type") in ("rectangle", "ellipse", "diamond")]
+    for i in range(len(containers)):
+        for j in range(i + 1, len(containers)):
+            (ia, ea, ba), (ib, eb, bb) = containers[i], containers[j]
+            area = _rects_overlap(ba, bb)
+            if area <= 0:
+                continue
+            small = min((ba[2] - ba[0]) * (ba[3] - ba[1]), (bb[2] - bb[0]) * (bb[3] - bb[1]))
+            ratio = area / small if small > 0 else 0
+            if ratio > 0.35:
+                warnings.append(
+                    f"visual: element {ea.get('id')!r} overlaps {eb.get('id')!r} "
+                    f"({area:.0f}px^2, {ratio:.0%} of smaller)"
+                )
+
+    # Dangling arrows (no binding at all)
+    for el in elements:
+        if not isinstance(el, dict) or el.get("type") != "arrow":
+            continue
+        start = el.get("startBinding") or {}
+        end = el.get("endBinding") or {}
+        if not start.get("elementId") and not end.get("elementId"):
+            warnings.append(
+                f"visual: arrow {el.get('id')!r} is not bound to any node (dangling)"
+            )
+
+    # Layout density: minimum spacing between containers
+    for i in range(len(containers)):
+        for j in range(i + 1, len(containers)):
+            (ia, ea, ba), (ib, eb, bb) = containers[i], containers[j]
+            ax1, ay1, ax2, ay2 = ba
+            bx1, by1, bx2, by2 = bb
+            gap_x = max(bx1 - ax2, ax1 - bx2, 0)
+            gap_y = max(by1 - ay2, ay1 - by2, 0)
+            if gap_x == 0 and gap_y == 0:
+                continue
+            distance = (gap_x**2 + gap_y**2) ** 0.5
+            if distance < 20:
+                warnings.append(
+                    f"visual: {ea.get('id')!r} and {eb.get('id')!r} are too close "
+                    f"(gap {distance:.0f}px < 20px)"
+                )
+
+
+def validate_file(filepath, strict=False, visual=False):
     """Validate a .excalidraw file. Returns (errors, warnings, stats)."""
     errors, warnings = [], []
     stats = {"total_elements": 0, "by_type": {}}
@@ -190,6 +273,9 @@ def validate_file(filepath, strict=False):
                     f"{label}: text may overflow (estimated width {est:.0f}px > box {el.get('width')}px)"
                 )
 
+    if visual:
+        _visual_checks(elements, warnings)
+
     return errors, warnings, stats
 
 
@@ -197,10 +283,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("file", help="Path to .excalidraw file")
     parser.add_argument("--strict", action="store_true", help="Treat warnings as errors")
+    parser.add_argument("--visual", action="store_true", help="Run layout quality heuristics (overlap/dangling/density)")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     args = parser.parse_args()
 
-    errors, warnings, stats = validate_file(args.file, args.strict)
+    errors, warnings, stats = validate_file(args.file, args.strict, args.visual)
 
     if args.json:
         result = {

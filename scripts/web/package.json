@@ -1,0 +1,18 @@
+{
+  "name": "more-chat-excalidraw-web",
+  "private": true,
+  "version": "0.3.0",
+  "description": "In-browser Excalidraw editor bundle for more-chat-excalidraw preview server",
+  "scripts": {
+    "build": "esbuild editor-entry.jsx --bundle --format=iife --global-name=ExcalidrawEditorBundle --outfile=editor-bundle.js --loader:.js=jsx --jsx=automatic --define:process.env.NODE_ENV='\"production\"' --log-level=warning",
+    "build:dev": "esbuild editor-entry.jsx --bundle --format=iife --global-name=ExcalidrawEditorBundle --outfile=editor-bundle.js --loader:.js=jsx --jsx=automatic --define:process.env.NODE_ENV='\"development\"' --log-level=warning"
+  },
+  "dependencies": {
+    "@excalidraw/excalidraw": "0.18.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.0"
+  }
+}

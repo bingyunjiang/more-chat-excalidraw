@@ -143,6 +143,70 @@ if [ "$SERVER_UP" = "1" ]; then
   else
     log_fail "preview page"
   fi
+
+  # 6e: GET /editor serves the embedded Excalidraw editor page
+  EDITOR_OUT=$(curl -s "http://localhost:${PREVIEW_PORT}/editor")
+  if echo "$EDITOR_OUT" | grep -q "editor-bundle.js" && echo "$EDITOR_OUT" | grep -q "editor-mount"; then
+    log_pass "editor page served with bundle script"
+  else
+    log_fail "editor page"
+  fi
+
+  # 6f: GET /editor-bundle.js serves the bundled Excalidraw editor
+  BUNDLE_TMP="/tmp/e2e-editor-bundle.js"
+  curl -s "http://localhost:${PREVIEW_PORT}/editor-bundle.js" -o "$BUNDLE_TMP"
+  if grep -q "ExcalidrawEditorBundle" "$BUNDLE_TMP"; then
+    log_pass "editor bundle served"
+  else
+    log_warn "editor bundle not served (build with: cd scripts/web && npm run build)"
+  fi
+
+  # 6g: GET /excalidraw-css serves the Excalidraw stylesheet
+  CSS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${PREVIEW_PORT}/excalidraw-css")
+  if [ "$CSS_STATUS" = "200" ]; then
+    log_pass "excalidraw css served (HTTP 200)"
+  else
+    log_warn "excalidraw css (HTTP $CSS_STATUS)"
+  fi
+
+  # 6h: POST /api/save persists the scene (write-through to scene file)
+  SAVE_PORT=$((PREVIEW_PORT + 1))
+  SAVE_FILE="/tmp/e2e-save-scene.excalidraw"
+  echo '{"type":"excalidraw","version":2,"elements":[{"id":"base1","type":"rectangle","x":0,"y":0,"width":100,"height":50,"angle":0,"strokeColor":"#000","backgroundColor":"#fff","fillStyle":"solid","strokeWidth":2,"strokeStyle":"solid","roughness":1,"opacity":100,"groupIds":[],"frameId":null,"roundness":{"type":3},"seed":1,"version":1,"versionNonce":0,"isDeleted":false,"boundElements":null,"updated":1,"link":null,"locked":false}],"appState":{}}' > "$SAVE_FILE"
+  node "$PROJECT_DIR/scripts/preview_server.js" --port "$SAVE_PORT" "$SAVE_FILE" > /tmp/e2e-save-server.log 2>&1 &
+  SAVE_PID=$!
+  for i in $(seq 1 20); do
+    if curl -s -o /dev/null "http://localhost:${SAVE_PORT}/api/status"; then
+      break
+    fi
+    sleep 0.5
+  done
+  SAVE_BODY='{"elements":[{"id":"s1","type":"rectangle","x":0,"y":0,"width":100,"height":50,"angle":0,"strokeColor":"#000","backgroundColor":"#fff","fillStyle":"solid","strokeWidth":2,"strokeStyle":"solid","roughness":1,"opacity":100,"groupIds":[],"frameId":null,"roundness":{"type":3},"seed":1,"version":1,"versionNonce":0,"isDeleted":false,"boundElements":null,"updated":1,"link":null,"locked":false}],"appState":{}}'
+  SAVE_RESULT=$(curl -s -X POST "http://localhost:${SAVE_PORT}/api/save" -H "Content-Type: application/json" -d "$SAVE_BODY")
+  if echo "$SAVE_RESULT" | grep -q '"success":true' && grep -q '"s1"' "$SAVE_FILE"; then
+    log_pass "/api/save persisted write-through to scene file"
+  else
+    log_fail "/api/save (got: $SAVE_RESULT)"
+  fi
+  kill "$SAVE_PID" 2>/dev/null
+  wait "$SAVE_PID" 2>/dev/null
+
+  # 6i: POST /api/canvases creates a named canvas
+  CANVAS_BODY='{"name":"e2e-canvas","elements":[{"id":"c1","type":"rectangle","x":0,"y":0,"width":100,"height":50,"angle":0,"strokeColor":"#000","backgroundColor":"#fff","fillStyle":"solid","strokeWidth":2,"strokeStyle":"solid","roughness":1,"opacity":100,"groupIds":[],"frameId":null,"roundness":{"type":3},"seed":1,"version":1,"versionNonce":0,"isDeleted":false,"boundElements":null,"updated":1,"link":null,"locked":false}],"appState":{}}'
+  CANVAS_RESULT=$(curl -s -X POST "http://localhost:${PREVIEW_PORT}/api/canvases" -H "Content-Type: application/json" -d "$CANVAS_BODY")
+  if echo "$CANVAS_RESULT" | grep -q '"e2e-canvas"'; then
+    log_pass "/api/canvases created named canvas"
+  else
+    log_fail "/api/canvases create (got: $CANVAS_RESULT)"
+  fi
+
+  # 6j: GET /api/canvases lists canvases
+  CANVAS_LIST=$(curl -s "http://localhost:${PREVIEW_PORT}/api/canvases")
+  if echo "$CANVAS_LIST" | grep -q '"e2e-canvas"'; then
+    log_pass "/api/canvases lists canvases"
+  else
+    log_fail "/api/canvases list (got: $CANVAS_LIST)"
+  fi
 else
   log_fail "preview server failed to start"
   cat "$PREVIEW_LOG" 2>/dev/null | tail -5

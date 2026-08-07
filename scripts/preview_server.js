@@ -9,11 +9,17 @@
  *
  * Endpoints:
  *   GET  /                       -> preview page (auto-refreshes by polling)
+ *   GET  /editor                  -> full Excalidraw editor (in-browser editing)
+ *   GET  /editor-bundle.js        -> bundled Excalidraw editor (esbuild output)
  *   GET  /api/current-diagram    -> {elements, appState, timestamp}
  *   POST /api/current-diagram    -> accept {elements, appState} or raw .excalidraw JSON
  *   GET  /api/diagram.svg        -> server-rendered SVG of the current diagram
  *   GET  /api/preview            -> {svg, stats, updated} (one fetch per poll tick)
  *   GET  /api/status             -> {stats, updated, clients}
+ *   POST /api/save               -> persist editor scene (write-through to scene file)
+ *   GET  /api/canvases           -> list canvases (multi-canvas management)
+ *   POST /api/canvases           -> create/switch canvas {name, elements, appState}
+ *   GET  /api/canvases/:name     -> fetch a named canvas
  *
  * Usage:
  *   node scripts/preview_server.js [file.excalidraw] [--port 6060] [--open]
@@ -36,6 +42,57 @@ const POLL_INTERVAL_MS = 1500;
 
 // In-memory store of the latest diagram (same pattern as mcp-excalidraw).
 let current = { elements: [], appState: {}, timestamp: 0 };
+
+// Multi-canvas store: name -> { elements, appState, timestamp }.
+const canvases = {};
+
+// Optional write-through target: set via positional arg; /api/save writes here.
+let sceneFile = null;
+
+function registerCanvas(name, scene) {
+  const existing = canvases[name] || { timestamp: 0 };
+  canvases[name] = {
+    elements: scene.elements || [],
+    appState: scene.appState || {},
+    timestamp: Date.now(),
+    created: existing.created || Date.now(),
+  };
+  return canvases[name];
+}
+
+function switchCurrent(name) {
+  const c = canvases[name];
+  if (c) {
+    current = { elements: c.elements, appState: c.appState, timestamp: c.timestamp };
+    return true;
+  }
+  return false;
+}
+
+function persistCurrent() {
+  if (!sceneFile) return false;
+  try {
+    fs.writeFileSync(
+      sceneFile,
+      JSON.stringify(
+        {
+          type: "excalidraw",
+          version: 2,
+          source: "https://excalidraw.com",
+          elements: current.elements,
+          appState: current.appState,
+        },
+        null,
+        2
+      )
+    );
+    console.log(`[OK] persisted to ${sceneFile} (${current.elements.length} elements)`);
+    return true;
+  } catch (err) {
+    console.error(`[ERROR] failed to persist ${sceneFile}: ${err.message}`);
+    return false;
+  }
+}
 
 function normalizeDiagram(data) {
   if (!data || typeof data !== "object") return null;
@@ -100,6 +157,49 @@ function svgResponse(res, svg) {
   });
   res.end(svg);
 }
+
+const EDITOR_PAGE = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excalidraw 编辑器</title>
+<link rel="stylesheet" href="/excalidraw-css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  #editor-mount { height: 100vh; }
+</style>
+</head>
+<body>
+<div id="editor-mount"></div>
+<script src="/editor-bundle.js"></script>
+<script>
+  (async function () {
+    const mount = document.getElementById("editor-mount");
+    let scene = { elements: [], appState: {} };
+    try {
+      const resp = await fetch("/api/current-diagram", { cache: "no-store" });
+      if (resp.ok) scene = await resp.json();
+    } catch (e) { /* start empty */ }
+
+    window.ExcalidrawEditor.mount(mount, scene, async (next) => {
+      // Throttle auto-save: persist to server on each change is expensive;
+      // the "保存到服务器" button does the write-through. We still update the
+      // server's in-memory copy so /api/current-diagram stays fresh.
+      try {
+        await fetch("/api/current-diagram", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(next),
+        });
+      } catch (e) { /* ignore */ }
+    });
+  })();
+</script>
+</body>
+</html>`;
 
 const PREVIEW_PAGE = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -182,6 +282,47 @@ function createServer() {
       return;
     }
 
+    if (pathname === "/editor" && req.method === "GET") {
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(EDITOR_PAGE);
+      return;
+    }
+
+    if (pathname === "/editor-bundle.js" && req.method === "GET") {
+      const bundlePath = path.join(__dirname, "web", "editor-bundle.js");
+      try {
+        const body = fs.readFileSync(bundlePath);
+        res.writeHead(200, { "Content-Type": "application/javascript; charset=utf-8" });
+        res.end(body);
+      } catch (err) {
+        res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+        res.end("editor-bundle.js not found. Build it with: cd scripts/web && npm run build");
+      }
+      return;
+    }
+
+    if (pathname === "/excalidraw-css" && req.method === "GET") {
+      const cssPath = path.join(
+        __dirname,
+        "web",
+        "node_modules",
+        "@excalidraw",
+        "excalidraw",
+        "dist",
+        "prod",
+        "index.css"
+      );
+      try {
+        const body = fs.readFileSync(cssPath);
+        res.writeHead(200, { "Content-Type": "text/css; charset=utf-8" });
+        res.end(body);
+      } catch (err) {
+        res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+        res.end("excalidraw index.css not found");
+      }
+      return;
+    }
+
     if (pathname === "/api/current-diagram" && req.method === "GET") {
       json(res, 200, current);
       return;
@@ -202,6 +343,72 @@ function createServer() {
       } catch (err) {
         json(res, 400, { error: err.message });
       }
+      return;
+    }
+
+    if (pathname === "/api/save" && req.method === "POST") {
+      try {
+        const body = await readJsonBody(req);
+        const normalized = normalizeDiagram(body);
+        if (!normalized) {
+          json(res, 400, { error: 'Body must contain "elements" array' });
+          return;
+        }
+        current = { ...normalized, timestamp: Date.now() };
+        const persisted = persistCurrent();
+        json(res, 200, { success: true, persisted, timestamp: current.timestamp });
+      } catch (err) {
+        json(res, 400, { error: err.message });
+      }
+      return;
+    }
+
+    if (pathname === "/api/canvases" && req.method === "GET") {
+      json(res, 200, {
+        canvases: Object.entries(canvases).map(([name, c]) => ({
+          name,
+          elements: c.elements.length,
+          updated: c.timestamp,
+          created: c.created,
+        })),
+        current: Object.keys(canvases).find(
+          (n) =>
+            canvases[n].timestamp === current.timestamp &&
+            canvases[n].elements === current.elements
+        ) || null,
+      });
+      return;
+    }
+
+    if (pathname === "/api/canvases" && req.method === "POST") {
+      try {
+        const body = await readJsonBody(req);
+        const name = body && body.name;
+        if (!name || typeof name !== "string") {
+          json(res, 400, { error: 'Body must contain "name" string' });
+          return;
+        }
+        const scene = normalizeDiagram(body) || { elements: [], appState: {} };
+        const registered = registerCanvas(name, scene);
+        switchCurrent(name);
+        json(res, 200, {
+          success: true,
+          canvas: { name, elements: registered.elements.length, updated: registered.timestamp },
+        });
+      } catch (err) {
+        json(res, 400, { error: err.message });
+      }
+      return;
+    }
+
+    if (pathname.startsWith("/api/canvases/") && req.method === "GET") {
+      const name = decodeURIComponent(pathname.slice("/api/canvases/".length));
+      const c = canvases[name];
+      if (!c) {
+        json(res, 404, { error: `Canvas not found: ${name}` });
+        return;
+      }
+      json(res, 200, { name, elements: c.elements, appState: c.appState, timestamp: c.timestamp });
       return;
     }
 
@@ -265,7 +472,7 @@ Push updates with: node scripts/push_preview.js <file.excalidraw>
     process.exit(0);
   }
 
-  const sceneFile = positional[0];
+  sceneFile = positional[0];
   if (sceneFile && !fs.existsSync(sceneFile)) {
     console.error(`[ERROR] Scene not found: ${sceneFile}`);
     process.exit(1);

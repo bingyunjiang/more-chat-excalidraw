@@ -1,4 +1,4 @@
-# more-chat-excalidraw（笔谈）
+# more-chat-excalidraw
 
 通过自然对话生成、预览、打开和迭代编辑本地 Excalidraw 画布。
 
