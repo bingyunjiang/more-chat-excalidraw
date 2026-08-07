@@ -20,6 +20,15 @@
 也可手动运行脚本：
 
 ```bash
+# 模板选择：根据意图推荐最佳模板
+python3 scripts/template_selector.py --recommend "画一个微服务架构图"
+
+# IR → Excalidraw（推荐流程）：文案整理为 IR 后自动布局生成
+python3 scripts/ir_to_excalidraw.py --example flowchart --output output/flow.excalidraw --validate
+
+# 列出/预览模板（--preview 渲染 SVG）
+node scripts/list_templates.js --preview flowchart
+
 # 校验 .excalidraw 文件
 python3 scripts/validate_excalidraw.py output/fixture-flowchart.excalidraw
 
@@ -56,6 +65,7 @@ bash scripts/test_e2e.sh
 │   └── openai.yaml                   # Codex 接口定义
 ├── references/
 │   ├── excalidraw-schema.md          # v2 JSON 结构速查
+│   ├── ir-format.md                  # IR 中间格式（文案引擎 ↔ JSON 生成器接口）
 │   ├── diagram-templates.md          # 10 种图表模板（含完整 JSON 示例）
 │   ├── color-palette.md              # 语义色板与 4 套主题系统
 │   ├── element-templates.md          # 元素级构建块模板
@@ -64,7 +74,8 @@ bash scripts/test_e2e.sh
 │   └── animation-template.md         # 动画关键帧模板
 ├── scripts/
 │   ├── template_selector.py          # 模板选择器（意图推荐 + 参数调整）
-│   ├── list_templates.js             # 模板列表与预览
+│   ├── ir_to_excalidraw.py           # IR → Excalidraw JSON 转换器（自动布局+配色）
+│   ├── list_templates.js             # 模板列表与 SVG 预览
 │   ├── validate_excalidraw.py        # 校验 .excalidraw 结构与引用完整性
 │   ├── preview_server.js             # 实时预览服务器（轮询 API 模式）
 │   ├── push_preview.js               # 推送 .excalidraw 到预览服务器

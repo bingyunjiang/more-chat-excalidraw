@@ -11,12 +11,13 @@ description: 通过自然对话生成、预览、打开和迭代编辑本地 Exc
 
 ## Workflow
 
-1. **理解意图**：确定图表类型（流程图、架构图、时序图、思维导图、ER 图、泳道图等）、节点、连线关系和要强调的内容。类型与布局规范见 [references/diagram-templates.md](references/diagram-templates.md)。
-2. **生成 `.excalidraw` JSON**：先读 [references/excalidraw-schema.md](references/excalidraw-schema.md) 了解 v2 结构，再按模板生成合法文件。默认输出到当前工作区，文件名建议 `output/<topic>-YYYYMMDD-HHMM.excalidraw`。
-3. **校验**：运行 `python3 scripts/validate_excalidraw.py <file>`，修复所有 error 后再交付。
-4. **实时预览**：启动 `node scripts/preview_server.js [<file>] [--open]`（默认端口 6060，预览页会轮询 API 实时刷新，模式参考 al1y/mcp-excalidraw）。之后每次生成或修改 `.excalidraw`，用 `node scripts/push_preview.js <file>` 推送，已打开的预览页约 1.5 秒内自动更新。交付前先看预览，检查元素是否重叠、文字是否溢出、连线是否绑定正确；发现问题直接修正后重新推送。
-5. **静态渲染**（可选，出图）：需要 PNG/SVG 文件时运行 `node scripts/render_preview.js <file> --format both` 生成同目录预览文件；沙箱内无法起浏览器时自动降级为纯 SVG。
-6. **打开与迭代**：运行 `node scripts/open_in_excalidraw.js <file>` 把画布推送到本地 Excalidraw（http://localhost:5001/）并打开浏览器；页面会自动刷新导入，用户可直接编辑。用户提出修改时增量更新元素（保持既有 `id` 不变，被替换的元素用新 `id`），不要整图重画。
+1. **理解意图**：确定图表类型（流程图、架构图、时序图、思维导图、ER 图、泳道图、层级图、关系图、对比图、时间线图等）、节点、连线关系和要强调的内容。可用 `python3 scripts/template_selector.py --recommend "<意图>"` 获得模板推荐。类型与布局规范见 [references/diagram-templates.md](references/diagram-templates.md)。
+2. **生成结构化文案（IR）**：把用户意图整理为 IR 中间格式（见 [references/ir-format.md](references/ir-format.md)），包含 nodes/edges/groups/template/theme。IR 独立于 Excalidraw，便于后续迭代与版本化。
+3. **IR → `.excalidraw` JSON**：运行 `python3 scripts/ir_to_excalidraw.py <ir.json> --output output/<topic>.excalidraw` 自动完成布局、元素生成、箭头绑定与配色。也可手工按 [references/excalidraw-schema.md](references/excalidraw-schema.md) 与元素模板生成。默认输出到当前工作区，文件名建议 `output/<topic>-YYYYMMDD-HHMM.excalidraw`。
+4. **校验**：运行 `python3 scripts/validate_excalidraw.py <file>`，修复所有 error 后再交付。
+5. **实时预览**：启动 `node scripts/preview_server.js [<file>] [--open]`（默认端口 6060，预览页会轮询 API 实时刷新，模式参考 al1y/mcp-excalidraw）。之后每次生成或修改 `.excalidraw`，用 `node scripts/push_preview.js <file>` 推送，已打开的预览页约 1.5 秒内自动更新。交付前先看预览，检查元素是否重叠、文字是否溢出、连线是否绑定正确；发现问题直接修正后重新推送。
+6. **静态渲染**（可选，出图）：需要 PNG/SVG 文件时运行 `node scripts/render_preview.js <file> --format both` 生成同目录预览文件；沙箱内无法起浏览器时自动降级为纯 SVG。
+7. **打开与迭代**：运行 `node scripts/open_in_excalidraw.js <file>` 把画布推送到本地 Excalidraw（http://localhost:5001/）并打开浏览器；页面会自动刷新导入，用户可直接编辑。用户提出修改时增量更新元素（保持既有 `id` 不变，被替换的元素用新 `id`），不要整图重画。
 
 ## 质量规则
 
@@ -31,6 +32,9 @@ description: 通过自然对话生成、预览、打开和迭代编辑本地 Exc
 
 ### scripts/
 
+- `template_selector.py`：模板选择器。`--list` 列出 10 种模板；`--recommend "<意图>"` 根据关键词推荐最佳模板与主题；`--info <模板>` 查看详情；`--params <模板> --theme <主题>` 输出带参数的模板元数据。
+- `ir_to_excalidraw.py`：IR → Excalidraw JSON 转换器。`--example flowchart/architecture/mindmap` 生成内置示例；`--validate` 转换后自动校验。支持 10 种模板布局与 4 套主题。
+- `list_templates.js`：模板列表与预览。`--json` 输出元数据；`--preview <模板> [--out 目录]` 渲染 10 种模板的 SVG 预览图。
 - `validate_excalidraw.py`：校验 `.excalidraw` 文件结构与引用完整性，返回非零退出码表示有错误。
 - `preview_server.js`：实时预览服务器（轮询 API 模式）。启动后 `push_preview.js` 推送的图会实时出现在预览页，无需写本地 Excalidraw web root。
 - `push_preview.js`：把 `.excalidraw` 推送到运行中的预览服务器。
@@ -46,3 +50,4 @@ description: 通过自然对话生成、预览、打开和迭代编辑本地 Exc
 - `tech-node-templates.md`：**50+** 常见技术组件（Kafka / PostgreSQL / Redis / K8s 等）预定义样式，架构图生成时自动匹配形状/颜色。
 - `visual-patterns.md`：常见关系模式模板（扇出、汇聚、时间线、分组、请求-响应、流水线、星型、矩阵、循环），每种模式提供 DSL 描述与 JSON 骨架。
 - `animation-template.md`：动画关键帧模板，支持 `customData.animate` 字段，定义 7 级动画顺序规则，可拖入 excalidraw-animate 生成动画。
+- `ir-format.md`：IR 中间格式定义——独立于 Excalidraw 的图表语义表示，是文案引擎与 JSON 生成器之间的标准接口（19 种节点类型、边/分组/模板专用字段、转换规则）。

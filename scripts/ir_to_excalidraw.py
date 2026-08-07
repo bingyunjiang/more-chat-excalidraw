@@ -1,0 +1,657 @@
+#!/usr/bin/env python3
+"""
+IR → Excalidraw JSON 转换器（Pillar C 核心引擎）
+
+把 Pillar A 输出的 IR 中间格式（references/ir-format.md）转为完整的 .excalidraw v2 JSON：
+模板布局 → 节点元素生成 → 箭头绑定 → 应用色板 → 输出文件。
+
+用法：
+  python3 scripts/ir_to_excalidraw.py <ir.json> [--output out.excalidraw] [--validate]
+  python3 scripts/ir_to_excalidraw.py --example flowchart   # 生成示例 IR 并转换
+  python3 scripts/ir_to_excalidraw.py --template-list       # 列出支持的模板
+"""
+
+import json
+import sys
+import os
+import time
+import argparse
+
+# ─── 语义色板（对应 references/color-palette.md）───────────────────────────
+SEMANTIC_FILL = {
+    "input": "#a5d8ff", "output": "#b2f2bb", "warning": "#ffd8a8",
+    "processing": "#d0bfff", "error": "#ffc9c9", "note": "#fff3bf",
+    "storage": "#c3fae8", "analysis": "#fcc2d7",
+}
+
+NODE_TYPE_STYLE = {
+    "start":    {"shape": "ellipse",   "fill": SEMANTIC_FILL["input"],      "w": 120, "h": 60},
+    "end":      {"shape": "ellipse",   "fill": SEMANTIC_FILL["output"],     "w": 120, "h": 60},
+    "process":  {"shape": "rectangle", "fill": "#ffffff",                   "w": 200, "h": 80},
+    "decision": {"shape": "diamond",   "fill": SEMANTIC_FILL["note"],       "w": 160, "h": 80},
+    "actor":    {"shape": "rectangle", "fill": SEMANTIC_FILL["input"],      "w": 100, "h": 40},
+    "entity":   {"shape": "rectangle", "fill": SEMANTIC_FILL["input"],      "w": 160, "h": 70},
+    "relation": {"shape": "diamond",   "fill": SEMANTIC_FILL["note"],       "w": 140, "h": 60},
+    "component":{"shape": "rectangle", "fill": "#ffffff",                   "w": 160, "h": 60},
+    "service":  {"shape": "rectangle", "fill": SEMANTIC_FILL["processing"], "w": 160, "h": 60},
+    "database": {"shape": "ellipse",   "fill": SEMANTIC_FILL["storage"],    "w": 140, "h": 60},
+    "topic":    {"shape": "ellipse",   "fill": SEMANTIC_FILL["input"],      "w": 120, "h": 60},
+    "branch":   {"shape": "rectangle", "fill": SEMANTIC_FILL["processing"], "w": 140, "h": 50},
+    "leaf":     {"shape": "rectangle", "fill": SEMANTIC_FILL["analysis"],   "w": 140, "h": 50},
+    "input":    {"shape": "rectangle", "fill": SEMANTIC_FILL["input"],      "w": 160, "h": 60},
+    "output":   {"shape": "rectangle", "fill": SEMANTIC_FILL["output"],     "w": 160, "h": 60},
+    "marker":   {"shape": "ellipse",   "fill": "#ffffff",                   "w": 14,  "h": 14},
+    "milestone":{"shape": "ellipse",   "fill": SEMANTIC_FILL["input"],      "w": 60,  "h": 60},
+    "plain":    {"shape": "rectangle", "fill": "#ffffff",                   "w": 160, "h": 60},
+}
+
+# 简单 tech 名称 → 节点类型映射（完整版见 tech-node-templates.md）
+TECH_TYPE_HINTS = {
+    "postgres": "database", "postgresql": "database", "mysql": "database",
+    "mongodb": "database", "redis": "database", "elasticsearch": "database",
+    "sqlite": "database", "dynamodb": "database", "cassandra": "database",
+    "kafka": "service", "rabbitmq": "service", "sqs": "service", "sns": "service",
+    "s3": "component", "gcs": "component", "hdfs": "component",
+    "nginx": "component", "kong": "component", "envoy": "component", "traefik": "component",
+    "lambda": "component", "ec2": "component", "fargate": "component",
+    "k8s": "component", "kubernetes": "component", "docker": "component",
+    "cd": "component", "prometheus": "component", "grafana": "component",
+}
+
+# 主题（对应 color-palette.md）
+THEMES = {
+    "default": {
+        "strokeColor": "#1e1e1e", "bg": "#ffffff", "lineColor": "#868e96",
+        "roughness": 1, "strokeWidth": 2, "textColor": "#374151",
+        "titleColor": "#1e40af", "frameText": "#1971c2",
+    },
+    "sketch": {
+        "strokeColor": "#2b2b2b", "bg": "#ffffff", "lineColor": "#868e96",
+        "roughness": 2, "strokeWidth": 3, "textColor": "#374151",
+        "titleColor": "#1e40af", "frameText": "#1971c2",
+    },
+    "blueprint": {
+        "strokeColor": "#e8f4ff", "bg": "#1e3a5f", "lineColor": "#64b5f6",
+        "roughness": 0, "strokeWidth": 1, "textColor": "#e8f4ff",
+        "titleColor": "#e8f4ff", "frameText": "#e8f4ff",
+    },
+    "minimal": {
+        "strokeColor": "#000000", "bg": "#ffffff", "lineColor": "#666666",
+        "roughness": 0, "strokeWidth": 1, "textColor": "#000000",
+        "titleColor": "#000000", "frameText": "#000000",
+    },
+}
+
+LAYER_BG = ["#dbe4ff", "#e5dbff", "#d3f9d8", "#ffe8cc", "#fcc2d7"]
+LAYER_FRAME_TEXT = ["#1971c2", "#6741d9", "#2f9e44", "#e8590c", "#c2255c"]
+
+
+# ─── 基础元素构造 ─────────────────────────────────────────────────────────
+def _base_el(el_id, etype, x, y, w, h, theme, extra=None):
+    el = {
+        "id": el_id, "type": etype, "x": x, "y": y,
+        "width": w, "height": h, "angle": 0,
+        "strokeColor": theme["strokeColor"],
+        "backgroundColor": "#ffffff",
+        "fillStyle": "solid", "strokeWidth": theme["strokeWidth"],
+        "strokeStyle": "solid", "roughness": theme["roughness"],
+        "opacity": 100, "groupIds": [], "frameId": None,
+        "roundness": None, "seed": abs(hash(el_id)) % 100000,
+        "version": 1, "versionNonce": 0, "isDeleted": False,
+        "boundElements": None, "updated": int(time.time() * 1000),
+        "link": None, "locked": False,
+    }
+    if etype == "rectangle":
+        el["roundness"] = {"type": 3}
+    if etype == "frame":
+        el["name"] = ""
+    if extra:
+        el.update(extra)
+    return el
+
+
+def _text_el(el_id, x, y, text, theme, fontSize=18, w=None, h=None, color=None, container_id=None):
+    if w is None:
+        w = max(40, int(estimate_text_width(text, fontSize) + 20))
+    if h is None:
+        h = fontSize + 8
+    el = _base_el(el_id, "text", x, y, w, h, theme, {
+        "strokeColor": color or theme["textColor"],
+        "backgroundColor": "transparent",
+        "text": text, "fontSize": fontSize, "fontFamily": 1,
+        "textAlign": "center", "verticalAlign": "middle",
+        "containerId": container_id, "originalText": text, "lineHeight": 1.25,
+    })
+    return el
+
+
+def estimate_text_width(text, font_size):
+    w = 0
+    for ch in str(text):
+        w += 1.0 if ord(ch) > 0x2E80 else 0.6
+    return w * font_size
+
+
+def _arrow_el(el_id, x, y, points, theme, from_id, to_id, style="solid", bidirectional=False):
+    return _base_el(el_id, "arrow", x, y, 0, 0, theme, {
+        "strokeColor": theme["lineColor"],
+        "backgroundColor": "transparent",
+        "strokeStyle": style, "roundness": {"type": 2},
+        "points": points,
+        "startBinding": {"elementId": from_id, "focus": 0.5, "gap": 8},
+        "endBinding": {"elementId": to_id, "focus": 0.5, "gap": 8},
+        "startArrowhead": "arrow" if bidirectional else None,
+        "endArrowhead": "arrow",
+    })
+
+
+# ─── 布局计算（内置简单布局器）─────────────────────────────────────────────
+def _layout_vertical(nodes, node_styles, start_x=100, start_y=60, v_gap=100):
+    """流程/顺序布局：从上到下排列"""
+    positions = {}
+    y = start_y
+    max_w = 0
+    for node in nodes:
+        st = node_styles[node["id"]]
+        x = start_x + (max_w - st["w"]) // 2
+        positions[node["id"]] = (x, y)
+        y += st["h"] + v_gap
+        max_w = max(max_w, st["w"])
+    return positions
+
+
+def _layout_tree(nodes, node_styles, root_id=None, start_x=100, start_y=60, h_gap=140, v_gap=80):
+    """树形布局（思维导图/层级图）：DFS 逐层展开"""
+    children_map = {}
+    for node in nodes:
+        for cid in node.get("children", []):
+            children_map.setdefault(node["id"], []).append(cid)
+    # roots = 不是任何其他节点 children 的节点
+    child_ids = set()
+    for kids in children_map.values():
+        child_ids.update(kids)
+    roots = [n["id"] for n in nodes if n["id"] not in child_ids]
+    if root_id:
+        roots = [root_id]
+    positions = {}
+
+    def place(nid, x, y):
+        st = node_styles.get(nid, {"w": 140, "h": 50})
+        positions[nid] = (x, y)
+        kids = children_map.get(nid, [])
+        if not kids:
+            return y
+        child_y = y
+        for kid in kids:
+            child_y = place(kid, x + st["w"] + h_gap, child_y)
+            child_y += v_gap
+        # 居中父节点
+        first = positions.get(kids[0])
+        last = positions.get(kids[-1])
+        if first and last:
+            cy = (first[1] + last[1]) / 2
+            positions[nid] = (x, cy)
+        return child_y
+
+    y = start_y
+    for rid in roots:
+        y = place(rid, start_x, y)
+        y += v_gap * 2
+    return positions
+
+
+def _layout_layered(nodes, node_styles, groups, start_x=60, start_y=60, v_gap=120, h_gap=100):
+    """分层布局（架构图）：按 group level 分列"""
+    positions = {}
+    # group level → 节点
+    level_nodes = {}
+    node_level = {}
+    for g in groups:
+        for nid in g.get("nodes", []):
+            level_nodes.setdefault(g.get("level", 0), []).append(nid)
+            node_level[nid] = g.get("level", 0)
+    ungrouped = [n["id"] for n in nodes if n["id"] not in node_level]
+    if ungrouped:
+        level_nodes.setdefault(0, []).extend(ungrouped)
+    y = start_y
+    for level in sorted(level_nodes.keys()):
+        ids = level_nodes[level]
+        x = start_x
+        for nid in ids:
+            st = node_styles[nid]
+            positions[nid] = (x, y)
+            x += st["w"] + h_gap
+        y += max((node_styles[i]["h"] for i in ids), default=60) + v_gap
+    return positions
+
+
+def _layout_horizontal(nodes, node_styles, start_x=80, start_y=60, h_gap=200, v_gap=60):
+    """水平布局（时序图/时间线）"""
+    positions = {}
+    x = start_x
+    for node in nodes:
+        st = node_styles[node["id"]]
+        positions[node["id"]] = (x, start_y)
+        x += st["w"] + h_gap
+    return positions
+
+
+def _layout_swimlane(nodes, node_styles, groups, start_x=60, start_y=60, h_gap=100, v_gap=100):
+    """泳道布局：每个 group 一横行，节点从左到右"""
+    positions = {}
+    lane_nodes = {}
+    for g in groups:
+        for nid in g.get("nodes", []):
+            lane_nodes.setdefault(g["id"], []).append(nid)
+    lane_ids = [g["id"] for g in groups]
+    y = start_y
+    for gid in lane_ids:
+        ids = lane_nodes.get(gid, [])
+        x = start_x + 80
+        for nid in ids:
+            st = node_styles[nid]
+            positions[nid] = (x, y)
+            x += st["w"] + h_gap
+        y += max((node_styles[i]["h"] for i in ids), default=50) + v_gap
+    return positions
+
+
+def _layout_table(nodes, node_styles, metadata, start_x=20, start_y=80, col_w=180, row_h=35):
+    """表格布局（对比图）"""
+    positions = {}
+    cmp = metadata.get("comparison", {})
+    dims = cmp.get("dimensions", [])
+    cols = cmp.get("columns", [])
+    rows = cmp.get("rows", [])
+    # 表头
+    positions["header-a"] = (start_x + 80, start_y - 40)
+    positions["header-b"] = (start_x + 80 + col_w, start_y - 40)
+    y = start_y
+    for i, dim in enumerate(dims):
+        positions[f"dim-{i}"] = (start_x, y)
+        positions[f"val-a-{i}"] = (start_x + 80, y)
+        positions[f"val-b-{i}"] = (start_x + 80 + col_w, y)
+        y += row_h
+    return positions
+
+
+# ─── 主转换 ────────────────────────────────────────────────────────────────
+def convert(ir, template_override=None):
+    """IR dict → .excalidraw dict"""
+    template = template_override or ir.get("template", "flowchart")
+    theme_key = ir.get("theme", "default")
+    theme = THEMES.get(theme_key, THEMES["default"])
+    direction = ir.get("direction")
+    metadata = ir.get("metadata", {})
+    ir_nodes = ir.get("nodes", [])
+    ir_edges = ir.get("edges", [])
+    ir_groups = ir.get("groups", [])
+
+    # 1. 解析节点样式
+    node_styles = {}
+    for node in ir_nodes:
+        nid = node["id"]
+        style = dict(NODE_TYPE_STYLE.get(node.get("type", "plain"), NODE_TYPE_STYLE["plain"]))
+        # tech 名称提示（style 字段优先）
+        hint_key = str(node.get("style", "")).lower() or node.get("label", "").lower()
+        for tech, ntype in TECH_TYPE_HINTS.items():
+            if tech in hint_key:
+                style = dict(NODE_TYPE_STYLE[ntype])
+                break
+        # 用户自定义形状/颜色
+        if isinstance(node.get("style"), str) and node["style"].startswith("#"):
+            style["fill"] = node["style"]
+        node_styles[nid] = style
+
+    # 2. 布局
+    if template == "flowchart":
+        positions = _layout_vertical(ir_nodes, node_styles)
+    elif template in ("mindmap", "hierarchy"):
+        positions = _layout_tree(ir_nodes, node_styles)
+    elif template == "architecture":
+        positions = _layout_layered(ir_nodes, node_styles, ir_groups)
+    elif template == "swimlane":
+        positions = _layout_swimlane(ir_nodes, node_styles, ir_groups)
+    elif template in ("sequence", "timeline"):
+        positions = _layout_horizontal(ir_nodes, node_styles)
+    elif template == "comparison":
+        positions = _layout_table(ir_nodes, node_styles, metadata)
+    else:
+        positions = _layout_vertical(ir_nodes, node_styles)
+
+    # 手动位置覆盖
+    for node in ir_nodes:
+        if node.get("position"):
+            positions[node["id"]] = (node["position"]["x"], node["position"]["y"])
+
+    elements = []
+
+    # 3. 生成分组 frame
+    frame_ids = set()
+    for gi, g in enumerate(ir_groups):
+        gid = g["id"]
+        frame_ids.add(gid)
+        xs = [positions.get(nid, (0, 0))[0] for nid in g.get("nodes", []) if nid in positions]
+        ys = [positions.get(nid, (0, 0))[1] for nid in g.get("nodes", []) if nid in positions]
+        ws = [node_styles[nid]["w"] for nid in g.get("nodes", []) if nid in positions]
+        hs = [node_styles[nid]["h"] for nid in g.get("nodes", []) if nid in positions]
+        if not xs:
+            continue
+        fx = min(xs) - 20
+        fy = min(ys) - 40
+        fw = max(x + w for x, w in zip(xs, ws)) - fx + 20
+        fh = max(y + h for y, h in zip(ys, hs)) - fy + 20
+        bg = g.get("backgroundColor") or LAYER_BG[gi % len(LAYER_BG)]
+        frame = _base_el(f"frame-{gid}", "frame", fx, fy, fw, fh, theme, {
+            "backgroundColor": bg, "opacity": 30, "name": g.get("name", ""),
+            "strokeWidth": 1,
+        })
+        elements.append(frame)
+        # frame 标题
+        elements.append(_text_el(
+            f"ftxt-{gid}", fx + 8, fy + 4,
+            g.get("name", ""), theme, fontSize=16,
+            w=fw - 16, h=22, color=LAYER_FRAME_TEXT[gi % len(LAYER_FRAME_TEXT)],
+        ))
+
+    # 4. 生成节点元素
+    for node in ir_nodes:
+        nid = node["id"]
+        if nid not in positions:
+            continue
+        x, y = positions[nid]
+        st = node_styles[nid]
+        shape = st["shape"]
+        w, h = st["w"], st["h"]
+        frame_id = None
+        for g in ir_groups:
+            if nid in g.get("nodes", []):
+                frame_id = f"frame-{g['id']}"
+                break
+        el = _base_el(nid, shape, x, y, w, h, theme, {
+            "backgroundColor": st["fill"],
+            "frameId": frame_id,
+            "boundElements": [{"id": f"txt-{nid}", "type": "text"}],
+        })
+        elements.append(el)
+        # 节点文字（容器内绑定）
+        label = node.get("label", "")
+        tw = max(40, w - 40)
+        tx = x + (w - tw) / 2
+        ty = y + (h - (node.get("type") in ("start", "end", "topic", "marker", "milestone") and 24 or 26)) / 2
+        if shape == "diamond":
+            ty = y + (h - 24) / 2
+        text_color = theme["textColor"]
+        if shape == "ellipse" and st["fill"] in (SEMANTIC_FILL["input"], SEMANTIC_FILL["storage"]):
+            text_color = "#1e3a5f" if theme_key == "default" else theme["textColor"]
+        elements.append(_text_el(
+            f"txt-{nid}", tx, ty, label, theme, fontSize=18 if shape != "diamond" else 16,
+            w=tw, h=24, color=text_color, container_id=nid,
+        ))
+
+    # 4.3 对比图：从 metadata.comparison 生成表格元素
+    if template == "comparison":
+        cmp = metadata.get("comparison", {})
+        dims = cmp.get("dimensions", [])
+        cols = cmp.get("columns", ["方案A", "方案B"])
+        rows = cmp.get("rows", [])
+        start_x = 60
+        start_y = 100
+        col_w = 180
+        row_h = 35
+        # 表头
+        for ci, col in enumerate(cols):
+            cx = start_x + 80 + ci * col_w
+            el = _base_el(f"cmp-head-{ci}", "rectangle", cx - 10, start_y - 45, col_w - 20, 34, theme, {
+                "backgroundColor": SEMANTIC_FILL["input"] if ci == 0 else SEMANTIC_FILL["processing"],
+                "roundness": {"type": 3},
+                "boundElements": [{"id": f"cmp-head-txt-{ci}", "type": "text"}],
+            })
+            elements.append(el)
+            elements.append(_text_el(f"cmp-head-txt-{ci}", cx, start_y - 38, col, theme, fontSize=16, w=col_w - 40, h=22, container_id=f"cmp-head-{ci}"))
+        # 分隔线
+        elements.append(_base_el("cmp-sep", "line", start_x + 70, start_y - 40, 0, 0, theme, {
+            "strokeStyle": "dashed", "strokeWidth": 1, "opacity": 50, "roughness": 0,
+            "points": [[0, 0], [0, len(dims) * row_h + 10]],
+        }))
+        # 维度行
+        for i, dim in enumerate(dims):
+            dy = start_y + i * row_h
+            elements.append(_text_el(f"cmp-dim-{i}", start_x, dy, dim, theme, fontSize=15, w=60, h=22, color=theme["titleColor"]))
+            if i < len(rows):
+                for ci in range(len(cols)):
+                    val = rows[i][ci] if ci < len(rows[i]) else ""
+                    vx = start_x + 80 + ci * col_w
+                    elements.append(_text_el(f"cmp-val-{i}-{ci}", vx, dy, val, theme, fontSize=14, w=col_w - 20, h=22))
+        # 已有 table positions 键保留（兼容）
+
+    # 4.4 时间线图：生成水平时间轴
+    if template == "timeline":
+        axis_y = 140
+        title_w = 200
+        n = len(ir_nodes)
+        if n > 0:
+            first_x = positions.get(ir_nodes[0]["id"], (100, 0))[0]
+            last_node = ir_nodes[-1]
+            last_x, _ = positions.get(last_node["id"], (500, 0))
+            axis_x = first_x - 20
+            axis_len = (last_x - first_x) + 60
+            elements.append(_base_el("tl-axis", "line", axis_x, axis_y, 0, 0, theme, {
+                "strokeWidth": 3, "strokeColor": theme["strokeColor"],
+                "points": [[0, 0], [axis_len, 0]],
+            }))
+
+    # 4.5 树形模板：从 children 关系自动生成边（mindmap/hierarchy）
+    if template in ("mindmap", "hierarchy") and not ir_edges:
+        auto_edges = []
+        eidx = 1
+        for node in ir_nodes:
+            for cid in node.get("children", []):
+                auto_edges.append({
+                    "id": f"auto{eidx}", "from": node["id"], "to": cid,
+                    "style": "solid", "label": None,
+                })
+                eidx += 1
+        ir_edges = auto_edges
+
+    # 5. 生成边（箭头）
+    for edge in ir_edges:
+        eid = edge["id"]
+        frm, to = edge["from"], edge["to"]
+        if frm not in positions or to not in positions:
+            continue
+        fx, fy = positions[frm]
+        tx2, ty2 = positions[to]
+        st_from = node_styles[frm]
+        st_to = node_styles[to]
+        # 简单正交：从 from 下边缘到 to 上边缘（垂直流），或水平
+        ax = fx + st_from["w"] / 2
+        ay = fy + st_from["h"]
+        dx = tx2 + st_to["w"] / 2 - ax
+        dy = ty2 - ay
+        pts = [[0, 0], [dx, dy]]
+        if direction == "horizontal" or (abs(dy) < 30 and dx != 0):
+            ax = fx + st_from["w"]
+            ay = fy + st_from["h"] / 2
+            dx = tx2 - ax
+            dy = ty2 + st_to["h"] / 2 - ay
+            pts = [[0, 0], [dx, dy]]
+        arrow_id = f"arrow-{eid}"
+        el = _arrow_el(
+            arrow_id, ax, ay, pts, theme,
+            frm, to, style=edge.get("style", "solid"),
+            bidirectional=edge.get("bidirectional", False),
+        )
+        elements.append(el)
+        # 箭头反向绑定：起点/终点节点的 boundElements 追加该箭头
+        for nid in (frm, to):
+            for existing in elements:
+                if existing["id"] == nid and existing["type"] in ("rectangle", "ellipse", "diamond"):
+                    if existing.get("boundElements") is None:
+                        existing["boundElements"] = []
+                    existing["boundElements"].append({"id": arrow_id, "type": "arrow"})
+                    break
+        # 边标签
+        if edge.get("label"):
+            lx = ax + dx / 2 - 20
+            ly = ay + dy / 2 - 14
+            elements.append(_text_el(
+                f"elbl-{eid}", lx, ly, edge["label"], theme,
+                fontSize=13, w=60, h=20, color=theme["lineColor"],
+            ))
+
+    # 6. 标题
+    if ir.get("title"):
+        elements.append(_text_el(
+            "title-0", 40, 10, ir["title"], theme,
+            fontSize=24, w=400, h=30, color=theme["titleColor"],
+        ))
+
+    # 7. 组装
+    result = {
+        "type": "excalidraw",
+        "version": 2,
+        "source": "https://excalidraw.com",
+        "elements": elements,
+        "appState": {
+            "viewBackgroundColor": theme["bg"],
+            "gridSize": 20,
+        },
+    }
+    return result
+
+
+# ─── 示例 IR ───────────────────────────────────────────────────────────────
+EXAMPLES = {
+    "flowchart": {
+        "version": 1,
+        "title": "用户注册流程",
+        "template": "flowchart",
+        "theme": "default",
+        "direction": "vertical",
+        "nodes": [
+            {"id": "n1", "label": "开始", "type": "start"},
+            {"id": "n2", "label": "填写注册信息", "type": "process"},
+            {"id": "n3", "label": "信息合法？", "type": "decision"},
+            {"id": "n4", "label": "创建账号", "type": "process"},
+            {"id": "n5", "label": "完成", "type": "end"},
+        ],
+        "edges": [
+            {"id": "e1", "from": "n1", "to": "n2"},
+            {"id": "e2", "from": "n2", "to": "n3"},
+            {"id": "e3", "from": "n3", "to": "n4", "label": "是"},
+            {"id": "e4", "from": "n3", "to": "n5", "label": "否"},
+            {"id": "e5", "from": "n4", "to": "n5"},
+        ],
+        "metadata": {"scene": "business-process", "complexity": "simple"},
+    },
+    "architecture": {
+        "version": 1,
+        "title": "微服务架构",
+        "template": "architecture",
+        "theme": "default",
+        "nodes": [
+            {"id": "n1", "label": "Web 前端", "type": "component"},
+            {"id": "n2", "label": "API 网关", "type": "component"},
+            {"id": "n3", "label": "订单服务", "type": "service"},
+            {"id": "n4", "label": "支付服务", "type": "service"},
+            {"id": "n5", "label": "PostgreSQL", "type": "database"},
+            {"id": "n6", "label": "Redis", "type": "database"},
+        ],
+        "edges": [
+            {"id": "e1", "from": "n1", "to": "n2"},
+            {"id": "e2", "from": "n2", "to": "n3"},
+            {"id": "e3", "from": "n2", "to": "n4"},
+            {"id": "e4", "from": "n3", "to": "n5"},
+            {"id": "e5", "from": "n4", "to": "n6"},
+        ],
+        "groups": [
+            {"id": "g1", "name": "用户层", "nodes": ["n1", "n2"], "level": 0},
+            {"id": "g2", "name": "应用层", "nodes": ["n3", "n4"], "level": 1},
+            {"id": "g3", "name": "数据层", "nodes": ["n5", "n6"], "level": 2},
+        ],
+        "metadata": {"scene": "tech-arch", "complexity": "medium"},
+    },
+    "mindmap": {
+        "version": 1,
+        "title": "项目计划",
+        "template": "mindmap",
+        "theme": "default",
+        "nodes": [
+            {"id": "n1", "label": "项目", "type": "topic"},
+            {"id": "n2", "label": "需求", "type": "branch", "children": ["n5", "n6"]},
+            {"id": "n3", "label": "开发", "type": "branch", "children": ["n7"]},
+            {"id": "n4", "label": "测试", "type": "branch"},
+            {"id": "n5", "label": "调研", "type": "leaf"},
+            {"id": "n6", "label": "评审", "type": "leaf"},
+            {"id": "n7", "label": "编码", "type": "leaf"},
+        ],
+        "edges": [],
+        "metadata": {"scene": "knowledge", "complexity": "medium"},
+    },
+}
+
+
+def main():
+    ap = argparse.ArgumentParser(description="IR → Excalidraw JSON 转换器")
+    ap.add_argument("input", nargs="?", help="IR JSON 文件路径")
+    ap.add_argument("--output", "-o", help="输出 .excalidraw 文件路径")
+    ap.add_argument("--validate", action="store_true", help="转换后运行校验")
+    ap.add_argument("--example", help="使用内置示例：flowchart/architecture/mindmap")
+    ap.add_argument("--template-list", action="store_true", help="列出支持的模板")
+    ap.add_argument("--theme", help="覆盖主题：default/sketch/blueprint/minimal")
+    args = ap.parse_args()
+
+    if args.template_list:
+        print("支持模板:", ", ".join(NODE_TYPE_STYLE.keys()))
+        print("节点类型:", ", ".join(sorted(set(n["type"] for n in NODE_TYPE_STYLE.values()) or [])) or "见 NODE_TYPE_STYLE")
+        return
+
+    if args.example:
+        if args.example not in EXAMPLES:
+            print(f"示例不存在: {args.example}，可用: {', '.join(EXAMPLES.keys())}")
+            sys.exit(1)
+        ir = EXAMPLES[args.example]
+    elif args.input:
+        with open(args.input, "r") as f:
+            ir = json.load(f)
+    else:
+        ap.print_help()
+        sys.exit(1)
+
+    if args.theme:
+        ir = dict(ir)
+        ir["theme"] = args.theme
+
+    result = convert(ir)
+
+    out_path = args.output
+    if not out_path:
+        name = ir.get("title") or args.example or os.path.splitext(os.path.basename(args.input or ""))[0] or "diagram"
+        out_path = f"output/{name}-{time.strftime('%Y%m%d-%H%M')}.excalidraw"
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+    with open(out_path, "w") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+
+    print(f"已生成: {out_path}")
+    print(f"  元素数: {len(result['elements'])}")
+    by_type = {}
+    for el in result["elements"]:
+        by_type[el["type"]] = by_type.get(el["type"], 0) + 1
+    print(f"  类型统计: {by_type}")
+    print(f"  主题: {ir.get('theme', 'default')}")
+
+    if args.validate:
+        import subprocess
+        r = subprocess.run(
+            [sys.executable, os.path.join(os.path.dirname(__file__), "validate_excalidraw.py"), out_path],
+            capture_output=True, text=True,
+        )
+        print(r.stdout)
+        if r.returncode != 0:
+            print(r.stderr)
+            sys.exit(r.returncode)
+
+
+if __name__ == "__main__":
+    main()
