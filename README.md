@@ -56,8 +56,15 @@ bash scripts/test_e2e.sh
 │   └── openai.yaml                   # Codex 接口定义
 ├── references/
 │   ├── excalidraw-schema.md          # v2 JSON 结构速查
-│   └── diagram-templates.md          # 六类图表模板与色板
+│   ├── diagram-templates.md          # 10 种图表模板（含完整 JSON 示例）
+│   ├── color-palette.md              # 语义色板与 4 套主题系统
+│   ├── element-templates.md          # 元素级构建块模板
+│   ├── tech-node-templates.md        # 50+ 技术组件预定义样式
+│   ├── visual-patterns.md            # 9 种视觉模式模板
+│   └── animation-template.md         # 动画关键帧模板
 ├── scripts/
+│   ├── template_selector.py          # 模板选择器（意图推荐 + 参数调整）
+│   ├── list_templates.js             # 模板列表与预览
 │   ├── validate_excalidraw.py        # 校验 .excalidraw 结构与引用完整性
 │   ├── preview_server.js             # 实时预览服务器（轮询 API 模式）
 │   ├── push_preview.js               # 推送 .excalidraw 到预览服务器
@@ -100,6 +107,10 @@ push_preview.js ──POST /api/current-diagram──▶ preview_server.js（内
 | 思维导图 | 中心主题 + 一级/二级分支 |
 | 泳道图 | 水平泳道按角色分区 |
 | ER 图 | 实体矩形 + 关系菱形 + 基数标注 |
+| 层级图 | 自上而下树形结构，适合组织/系统拆解 |
+| 关系图 | 节点+连线+关系标注，无严格方向 |
+| 对比图 | 左右两栏或表格，标明比较维度 |
+| 时间线图 | 水平时间轴+关键节点+事件标注 |
 
 ## 许可
 

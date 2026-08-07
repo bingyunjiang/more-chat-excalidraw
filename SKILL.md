@@ -40,4 +40,9 @@ description: 通过自然对话生成、预览、打开和迭代编辑本地 Exc
 ### references/
 
 - `excalidraw-schema.md`：v2 JSON 结构、元素字段、箭头绑定、分组、文本与图片的完整说明。
-- `diagram-templates.md`：六类常见图表的布局模板、色板与最小示例。
+- `diagram-templates.md`：**10 种**图表模板（流程图、架构图、时序图、思维导图、泳道图、ER图、层级图、关系图、对比图、时间线图），含完整 JSON 示例与布局参数。
+- `color-palette.md`：按语义组织的颜色体系（8 种语义填充色 + 3 种分层背景色），以及 4 套一键切换主题（default/sketch/blueprint/minimal）。
+- `element-templates.md`：元素级构建块模板，按需组合生成（rectangle / ellipse / diamond / arrow / text / line / frame），标注必填字段与默认值。
+- `tech-node-templates.md`：**50+** 常见技术组件（Kafka / PostgreSQL / Redis / K8s 等）预定义样式，架构图生成时自动匹配形状/颜色。
+- `visual-patterns.md`：常见关系模式模板（扇出、汇聚、时间线、分组、请求-响应、流水线、星型、矩阵、循环），每种模式提供 DSL 描述与 JSON 骨架。
+- `animation-template.md`：动画关键帧模板，支持 `customData.animate` 字段，定义 7 级动画顺序规则，可拖入 excalidraw-animate 生成动画。
