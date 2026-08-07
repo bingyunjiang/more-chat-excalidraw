@@ -1,0 +1,4 @@
+interface:
+  display_name: "笔谈 Chat-to-Excalidraw"
+  short_description: "用自然对话生成、预览和编辑本地 Excalidraw 画布"
+  default_prompt: "Use $more-chat-excalidraw to draw a diagram from this conversation and open it in local Excalidraw."

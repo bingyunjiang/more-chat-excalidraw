@@ -1,0 +1,5 @@
+node_modules/
+output/*.png
+output/*.svg
+*.bak
+.DS_Store
