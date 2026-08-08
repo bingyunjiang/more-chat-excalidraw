@@ -6,7 +6,7 @@
 
 ### 变更
 
-- **完全自包含化**：render bundle 从外部 `~/WorkSpace/render-test/` 内联到 `scripts/render-bundle/`（index.html + render-entry.js + render-bundle.js，可 `cd scripts/web && npm run build:render` 复现）；`render_preview.js` 默认使用内置 bundle，Playwright 查找改为动态探测 `npm root -g`
+- **完全自包含化**：render bundle 内联到 `scripts/render-bundle/`（index.html + render-entry.js + render-bundle.js，可 `cd scripts/web && npm run build:render` 复现）；`render_preview.js` 默认使用内置 bundle，Playwright 查找改为动态探测 `npm root -g`
 - 确认并记录：本 skill 不依赖其他 skill，所有代码依赖均为标准库、本 skill 内文件或常规第三方包（@excalidraw/excalidraw、react、esbuild、MCP SDK、zod、graphviz、playwright）
 
 ## [0.6.0] - 2026-08-08

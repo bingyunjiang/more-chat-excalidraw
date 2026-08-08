@@ -15,7 +15,7 @@
  *   --start        Try to start the Excalidraw service if not running
  *
  * Web root override: EXCALIDRAW_WEB_ROOT (default:
- * /Users/Bing/.local/share/excalidraw/excalidraw-app/build)
+ * ~/.local/share/excalidraw/excalidraw-app/build)
  *
  * Exit codes: 0 = OK, 1 = errors, 2 = usage error, 3 = sandbox restriction
  */

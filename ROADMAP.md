@@ -32,7 +32,7 @@
 - 本地 Excalidraw：http-server on localhost:5001，launchd 自启，当前未运行
 - 实时预览服务器：scripts/preview_server.js（端口 6060，轮询 API 模式，参考 al1y/mcp-excalidraw）
 - Mermaid 转换依赖：本地 Excalidraw node_modules 含 @excalidraw/mermaid-to-excalidraw 与 mermaid
-- Playwright：全局安装于 ~/.npm-global/，Chromium 在 ~/Library/Caches/ms-playwright/
+- Playwright：全局安装（可选），Chromium 在标准缓存目录
 - Render bundle：scripts/render-bundle/（内置，index.html + render-entry.js + render-bundle.js）
 - 自定义 Node：~/.local/bin/node
 
