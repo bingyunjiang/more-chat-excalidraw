@@ -327,15 +327,15 @@
 
 ### Phase E：发布与维护（P3，M10）
 
-- [ ] **E.1 版本号与 CHANGELOG**
-  - 语义化版本号（当前 v0.0.1）
+- [x] **E.1 版本号与 CHANGELOG**
+  - 语义化版本号（当前 v0.0.1 初始版本）
   - CHANGELOG.md 追踪每次变更
-- [ ] **E.2 CI/CD**
-  - GitHub Actions：validate + render smoke test
-  - 自动发布到 skill 仓库
+- [x] **E.2 CI/CD**
+  - GitHub Actions：validate + smoke + e2e（.github/workflows/ci.yml），两个 job 全绿
+  - 推送至 bingyunjiang/more-chat-excalidraw（main 分支自动触发）
 - [ ] **E.3 用户文档与示例**
-  - 各类图表的完整示例文件
-  - 使用视频或 GIF 动画
+  - 各类图表的完整示例文件（13 个 example-*.excalidraw）
+  - 使用视频或 GIF 动画（待补充）
 
 ---
 
