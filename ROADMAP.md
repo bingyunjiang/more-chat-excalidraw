@@ -33,7 +33,7 @@
 - 实时预览服务器：scripts/preview_server.js（端口 6060，轮询 API 模式，参考 al1y/mcp-excalidraw）
 - Mermaid 转换依赖：本地 Excalidraw node_modules 含 @excalidraw/mermaid-to-excalidraw 与 mermaid
 - Playwright：全局安装于 ~/.npm-global/，Chromium 在 ~/Library/Caches/ms-playwright/
-- Render bundle：~/WorkSpace/render-test/（index.html + render-entry.js + render-bundle.js）
+- Render bundle：scripts/render-bundle/（内置，index.html + render-entry.js + render-bundle.js）
 - 自定义 Node：~/.local/bin/node
 
 ---
@@ -346,7 +346,7 @@
 1. **沙箱权限**：render、open、preview 脚本在 Codex 沙箱内无法直接运行（端口/写盘受限），需要 escalation 或备选方案
 2. **Excalidraw 本地服务**：当前未运行，launchd 配置存在但可能未加载
 3. **Playwright 依赖**：全局安装而非项目本地，版本可能漂移
-4. **render bundle 路径硬编码**：默认指向 ~/WorkSpace/render-test/，不够通用
+4. **render bundle 已内联**：默认 scripts/render-bundle/，可用 EXCALIDRAW_RENDER_BUNDLE 覆盖
 5. **无 git 历史**：无法追踪变更，回滚困难
 
 ## 调研参考摘要

@@ -9,6 +9,10 @@ description: 通过自然对话生成、预览、打开和迭代编辑本地 Exc
 
 把用户的自然语言转化为可打开的 `.excalidraw` v2 画布文件，并在本地 Excalidraw 中展示。核心闭环：理解意图 → 生成 JSON → 校验 → 渲染预览 → 打开/迭代。
 
+本 skill 完全自包含，不依赖其他 skill。编辑器/渲染 bundle 与 MCP SDK 均从本 skill 内
+（scripts/web/、scripts/render-bundle/）加载；可选外部依赖仅有 Playwright（渲染）、
+Graphviz（自动布局）、本地 Excalidraw 应用（打开画布）。
+
 ## Workflow
 
 1. **理解意图**：确定图表类型（流程图、架构图、时序图、思维导图、ER 图、泳道图、层级图、关系图、对比图、时间线图等）、节点、连线关系和要强调的内容。可用 `python3 scripts/template_selector.py --recommend "<意图>"` 获得模板推荐。类型与布局规范见 [references/diagram-templates.md](references/diagram-templates.md)。

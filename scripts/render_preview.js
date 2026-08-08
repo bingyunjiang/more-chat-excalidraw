@@ -10,8 +10,9 @@
  *   --format   Output format: png (default), svg, pdf, or both
  *   --no-server  Skip Playwright HTTP server, use fallback SVG render
  *
- * The render bundle is located at $EXCALIDRAW_RENDER_BUNDLE or defaults to
- * /Users/Bing/WorkSpace/render-test (index.html + render-entry.js + render-bundle.js).
+ * The render bundle is self-contained at scripts/render-bundle/
+ * (index.html + render-entry.js + render-bundle.js). Override with
+ * EXCALIDRAW_RENDER_BUNDLE if you have a custom bundle.
  *
  * Exit codes: 0 = OK, 1 = errors, 2 = usage error.
  */
@@ -21,7 +22,7 @@ const os = require("os");
 const path = require("path");
 const http = require("http");
 
-const DEFAULT_BUNDLE = path.join(os.homedir(), "WorkSpace", "render-test");
+const DEFAULT_BUNDLE = path.join(__dirname, "render-bundle");
 const REQUIRED_BUNDLE_FILES = ["index.html", "render-entry.js", "render-bundle.js"];
 
 function parseArgs(argv) {
@@ -43,13 +44,25 @@ function findPlaywright() {
   try {
     return require("playwright");
   } catch (_) {
-    const globalPath =
-      "/Users/Bing/.npm-global/lib/node_modules/@playwright/cli/node_modules/playwright";
+    // Fallback: probe npm's global root (npm root -g) for a playwright install.
     try {
-      return require(globalPath);
-    } catch (err) {
-      return null;
+      const { execSync } = require("child_process");
+      const npmRoot = execSync("npm root -g", { encoding: "utf-8" }).trim();
+      const candidates = [
+        path.join(npmRoot, "playwright"),
+        path.join(npmRoot, "@playwright", "cli", "node_modules", "playwright"),
+      ];
+      for (const p of candidates) {
+        try {
+          return require(p);
+        } catch (_) {
+          /* try next candidate */
+        }
+      }
+    } catch (_) {
+      /* npm not available */
     }
+    return null;
   }
 }
 
@@ -313,7 +326,7 @@ Options:
   --no-server             Skip HTTP server, use fallback SVG render
 
 Environment:
-  EXCALIDRAW_RENDER_BUNDLE  Path to render bundle directory (default: ~/WorkSpace/render-test)
+  EXCALIDRAW_RENDER_BUNDLE  Path to render bundle directory (default: scripts/render-bundle)
 `);
     process.exit(0);
   }

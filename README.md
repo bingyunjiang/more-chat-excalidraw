@@ -10,8 +10,13 @@
 
 - Node.js ≥ 18
 - Python 3
-- Playwright（可选，用于高质量渲染）— `npm install -g playwright`
+- Playwright（可选，用于高质量渲染）— `npm install -g playwright`（自包含 bundle 在 scripts/render-bundle/）
+- Graphviz（可选，自动布局）— `brew install graphviz`
 - 本地 Excalidraw（可选，用于打开画布）— `http://localhost:5001/`
+
+本 skill 完全自包含：不依赖其他 skill。编辑器与渲染 bundle 的源码在
+`scripts/web/`（@excalidraw/excalidraw 0.18.1 + React 19，`cd scripts/web && npm run build`），
+MCP SDK/zod 从本 skill 内 scripts/web/node_modules 加载。
 
 ### 使用
 

@@ -6,6 +6,9 @@
 
 **M1-M9 全部完成，M10 完成（版本号 + CHANGELOG + 文档），e2e 24/24 通过。**
 
+本 skill 完全自包含，不依赖其他 skill：render bundle 已内联到 scripts/render-bundle/，
+编辑器 bundle 源码在 scripts/web/，MCP SDK/zod 从本 skill 内加载。
+
 开发路线以四大核心功能支柱组织（Pillar A 交互沟通 / B 预设模板 / C JSON 生成 / D 本地预览），详见 [ROADMAP.md](ROADMAP.md)。
 
 ## 完成情况
@@ -64,7 +67,7 @@ node scripts/mcp_server.mjs   # 工具: generate_diagram / validate_diagram / pu
 | @excalidraw/excalidraw 0.18.1 + React 19 | scripts/web/node_modules | 内嵌编辑器 bundle 源码（npm run build 重建） |
 | @modelcontextprotocol/sdk + zod | scripts/web/node_modules | MCP 服务器 |
 | 本地 Excalidraw | localhost:5001 | open_in_excalidraw.js 打开画布 |
-| render bundle | ~/WorkSpace/render-test/ | render_preview Playwright 路径（EXCALIDRAW_RENDER_BUNDLE 覆盖） |
+| render bundle | scripts/render-bundle/（内置） | render_preview 自包含 bundle（EXCALIDRAW_RENDER_BUNDLE 可覆盖） |
 
 ## 已知问题与后续
 
