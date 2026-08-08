@@ -328,6 +328,24 @@ else
   log_warn "MCP SDK not installed; skipping MCP test (cd scripts/web && npm install @modelcontextprotocol/sdk)"
 fi
 
+# --- Test 12: Cloud architecture icon injection (C.7) ---
+echo "=== Test 12: Icon library ==="
+if python3 "$PROJECT_DIR/scripts/icon_library.py" --list >/dev/null 2>&1; then
+  log_pass "icon_library.py lists tech icons"
+else
+  log_fail "icon_library.py --list"
+fi
+
+if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example architecture --icons --output /tmp/e2e-icons.excalidraw >/dev/null 2>&1; then
+  if grep -q '"type": "image"' /tmp/e2e-icons.excalidraw && grep -q '"files"' /tmp/e2e-icons.excalidraw; then
+    log_pass "architecture --icons injects image elements + files"
+  else
+    log_fail "icons injection output missing image/files"
+  fi
+else
+  log_fail "ir_to_excalidraw.py --icons"
+fi
+
 # --- Summary ---
 echo ""
 echo "=== Summary ==="

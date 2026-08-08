@@ -23,7 +23,7 @@
 | M6 文案引擎 | template_selector --recommend + ir-format.md（IR 中间格式） | ✅ |
 | M7 JSON 生成 | ir_to_excalidraw.py + Graphviz 布局 + merge 增量编辑 + --visual 质量门 | ✅ |
 | M8 完整预览 | 内嵌 Excalidraw 编辑器(/editor) + 双向同步(/api/save) + 多画布 + PDF 导出 | ✅ |
-| M9 创新功能 | 动画(D.4) + Mermaid(C.6) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) | ✅（C.7 图标库可选扩展） |
+| M9 创新功能 | 动画(D.4) + Mermaid(C.6) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) + 图标库(C.7) | ✅ 全部完成 |
 | M10 发布 | v0.0.1 + CHANGELOG + 全套文档示例 + CI（GitHub Actions 两 job 全绿） | ✅ |
 
 ## 核心脚本速查
@@ -40,6 +40,9 @@ node scripts/mermaid_to_excalidraw.js --string "graph TD; A-->B" --output out.ex
 
 # 知识图谱 → 架构图
 python3 scripts/knowledge_graph.py --text arch.txt --output out.excalidraw
+
+# 云架构技术图标（自包含 67 个 SVG）
+python3 scripts/ir_to_excalidraw.py --example architecture --icons --output out-icons.excalidraw
 
 # 增量编辑（合并/微调/回退）
 python3 scripts/merge_excalidraw.py patch out.excalidraw --set 'n3.backgroundColor=#ffc9c9' --move 'n5:20,0'

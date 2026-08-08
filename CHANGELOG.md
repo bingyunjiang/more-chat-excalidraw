@@ -18,6 +18,7 @@
 - **实时预览**：`preview_server.js` 轮询 SVG 预览 + 内嵌完整 Excalidraw 编辑器（/editor）+ 动画播放页（/animate）+ 双向同步保存（/api/save）+ 多画布（/api/canvases）
 - **多格式导出**：`render_preview.js` PNG / SVG / PDF（沙箱内自动降级 SVG）
 - **自纠错质量门**：`validate_excalidraw.py --visual` 检查元素重叠、悬空箭头、布局密度
+- **云架构图标库**：`icon_library.py` 自包含 67 个技术图标（SVG data URL），`ir_to_excalidraw.py --icons` 注入 image 元素 + files 资源（借鉴 excalidraw-icons-mcp）
 - **MCP 协议**：`mcp_server.mjs` 暴露 generate_diagram / validate_diagram / push_preview / list_templates 四个工具
 - **测试**：e2e 24 项（生成 → 校验 → 渲染 → 预览 → 编辑器 → 保存 → 多画布 → 动画 → Mermaid → 知识图谱 → Graphviz → 增量编辑 → MCP）
 - **CI**：GitHub Actions（validate + smoke + e2e）

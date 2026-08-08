@@ -323,7 +323,7 @@ def _layout_graphviz(ir_nodes, ir_edges, node_styles, engine="dot"):
 
 
 # ─── 主转换 ────────────────────────────────────────────────────────────────
-def convert(ir, template_override=None, layout_engine=None):
+def convert(ir, template_override=None, layout_engine=None, icons=False):
     """IR dict → .excalidraw dict"""
     template = template_override or ir.get("template", "flowchart")
     theme_key = ir.get("theme", "default")
@@ -572,12 +572,52 @@ def convert(ir, template_override=None, layout_engine=None):
             fontSize=24, w=400, h=30, color=theme["titleColor"],
         ))
 
+    # 6.5 云架构图标注入（C.7，借鉴 excalidraw-icons-mcp）
+    # 架构图节点按 label 匹配技术名，叠加 image 元素 + files 资源
+    files = {}
+    if icons:
+        try:
+            sys.path.insert(0, os.path.dirname(__file__))
+            import icon_library
+        except ImportError:
+            print("[WARN] icon_library.py 不可用，跳过图标注入", file=sys.stderr)
+            icons = False
+    if icons:
+        registry = icon_library.build_registry()
+        icon_elements = []
+        used_files = set()
+        for node in ir_nodes:
+            nid = node["id"]
+            if nid not in positions:
+                continue
+            hit = icon_library.match_icon(node.get("label", ""), registry)
+            if not hit:
+                continue
+            x, y = positions[nid]
+            st = node_styles.get(nid, {"w": 160, "h": 60})
+            file_id = f"icon-{nid}"
+            files[file_id] = {
+                "mimeType": hit["mimeType"],
+                "dataURL": hit["dataURL"],
+            }
+            # 图标放在节点左上角，尺寸 36x36
+            icon_elements.append(_base_el(
+                f"img-{nid}", "image", x + 6, y + 6, 36, 36, theme, {
+                    "fileId": file_id,
+                    "opacity": 90,
+                    "customData": {"animate": {"order": 3, "duration": 500, "type": "fade-in", "delay": 300}},
+                }
+            ))
+        # 图标追加到元素列表末尾（避免覆盖节点文字）
+        elements.extend(icon_elements)
+
     # 7. 组装
     result = {
         "type": "excalidraw",
         "version": 2,
         "source": "https://excalidraw.com",
         "elements": elements,
+        "files": files,
         "appState": {
             "viewBackgroundColor": theme["bg"],
             "gridSize": 20,
@@ -682,6 +722,7 @@ def main():
     ap.add_argument("--template-list", action="store_true", help="列出支持的模板")
     ap.add_argument("--theme", help="覆盖主题：default/sketch/blueprint/minimal")
     ap.add_argument("--layout", help="布局引擎：dot/neato/twopi（Graphviz，需 brew install graphviz）")
+    ap.add_argument("--icons", action="store_true", help="注入云架构技术图标（自包含 SVG，icon_library.py）")
     args = ap.parse_args()
 
     if args.template_list:
@@ -705,7 +746,7 @@ def main():
         ir = dict(ir)
         ir["theme"] = args.theme
 
-    result = convert(ir, layout_engine=args.layout)
+    result = convert(ir, layout_engine=args.layout, icons=args.icons)
 
     out_path = args.output
     if not out_path:
@@ -721,7 +762,7 @@ def main():
     for el in result["elements"]:
         by_type[el["type"]] = by_type.get(el["type"], 0) + 1
     print(f"  类型统计: {by_type}")
-    print(f"  主题: {ir.get('theme', 'default')}  布局: {args.layout or '内置'}")
+    print(f"  主题: {ir.get('theme', 'default')}  布局: {args.layout or '内置'}  图标: {'是' if args.icons else '否'}")
 
     if args.validate:
         import subprocess

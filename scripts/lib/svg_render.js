@@ -175,13 +175,23 @@ function renderSvgFromScene(data, opts = {}) {
           `stroke="${el.strokeColor || "#1e1e1e"}" stroke-width="${el.strokeWidth || 2}"/>`
       );
     } else if (el.type === "image") {
-      parts.push(
-        `<rect x="${el.x}" y="${el.y}" width="${el.width}" height="${el.height}" ` +
-          `fill="#f1f3f5" stroke="#868e96" stroke-width="1.5" stroke-dasharray="4 3"/>` +
-          `<text x="${el.x + el.width / 2}" y="${el.y + el.height / 2}" ` +
-          `text-anchor="middle" dominant-baseline="central" font-size="14" ` +
-          `fill="#868e96">image</text>`
-      );
+      // Embed the actual image data (dataURL from top-level files) when present.
+      const fileId = el.fileId;
+      const file = (data.files || {})[fileId];
+      if (file && file.dataURL) {
+        parts.push(
+          `<image x="${el.x}" y="${el.y}" width="${el.width}" height="${el.height}" ` +
+            `href="${escapeXml(file.dataURL)}" preserveAspectRatio="xMidYMid meet"/>`
+        );
+      } else {
+        parts.push(
+          `<rect x="${el.x}" y="${el.y}" width="${el.width}" height="${el.height}" ` +
+            `fill="#f1f3f5" stroke="#868e96" stroke-width="1.5" stroke-dasharray="4 3"/>` +
+            `<text x="${el.x + el.width / 2}" y="${el.y + el.height / 2}" ` +
+            `text-anchor="middle" dominant-baseline="central" font-size="14" ` +
+            `fill="#868e96">image</text>`
+        );
+      }
     } else if (el.type === "text" && el.text) {
       const fontSize = el.fontSize || 20;
       const container = el.containerId ? elements.find((e) => e.id === el.containerId) : null;

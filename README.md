@@ -93,7 +93,7 @@ node scripts/mermaid_to_excalidraw.js --string "graph TD; A-->B" --output output
 python3 scripts/knowledge_graph.py --text arch.txt --output output/kg.excalidraw
 ```
 
-### 3. 自动布局与主题
+### 3. 自动布局、主题与图标
 
 ```bash
 # Graphviz 自动布局（可选）：dot 层次 / neato 力导向 / twopi 树形
@@ -101,6 +101,9 @@ python3 scripts/ir_to_excalidraw.py --example architecture --layout dot --output
 
 # 4 套主题一键切换：default / sketch / blueprint / minimal
 python3 scripts/ir_to_excalidraw.py --example flowchart --theme blueprint --output output/flow.excalidraw
+
+# 云架构技术图标（自包含 67 个 SVG，无需外部资源）
+python3 scripts/ir_to_excalidraw.py --example architecture --icons --output output/arch-icons.excalidraw
 ```
 
 ### 4. 实时预览、编辑与动画

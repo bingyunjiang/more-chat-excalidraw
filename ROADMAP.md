@@ -243,9 +243,9 @@
   - Mermaid 源码 → IR → Excalidraw 元素
   - 作为 Pillar A 的输入通道之一
 
-- [ ] **C.7 云架构图标库（参考 excalidraw-icons-mcp，28★）**
-  - 内置 AWS/Azure/GCP/Kubernetes 常用图标文件
-  - 架构图生成时自动根据技术名称匹配对应图标
+- [x] **C.7 云架构图标库（参考 excalidraw-icons-mcp，28★）**
+  - 自包含 67 个技术图标（icon_library.py，SVG data URL，无需外部资源）
+  - 架构图生成时自动根据技术名称匹配对应图标（ir_to_excalidraw.py --icons）
 
 - [ ] **C.8 知识图谱架构生成（参考 excalidraw-architect-mcp，139★）**
   - 从架构描述提取实体/关系 → 知识图谱 → 自动布局
@@ -320,7 +320,7 @@
 | M6：文案引擎 | 意图分类 + 文案生成 + IR 中间格式 | A | ✅ 完成（template_selector --recommend + ir-format.md + mermaid/文本导入通道） |
 | M7：JSON 生成 | IR→Excalidraw + 自动布局 + 自纠错 | C | ✅ 完成（ir_to_excalidraw.py + Graphviz + merge + --visual 质量门） |
 | M8：完整预览 | 内嵌编辑器 + 双向同步 + 多画布 + PDF 导出 | D（完整版） | ✅ 完成 |
-| M9：创新功能 | 动画(D.4) + Mermaid(C.6) + 自纠错(C.4) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) 已完成；图标(C.7) 待后续 | A/B/C/D 创新 | ✅ 基本完成（C.7 图标库需外部资源，留作可选扩展） |
+| M9：创新功能 | 动画(D.4) + Mermaid(C.6) + 自纠错(C.4) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) + 图标库(C.7) 全部完成 | A/B/C/D 创新 | ✅ 完成 |
 | M10：可发布 | 版本号 + CHANGELOG + 文档 + 示例 | — | ✅ 完成（v0.0.1 初始版本 + CHANGELOG + 全套文档与示例 + CI） |
 
 ## 后续阶段（P3）
