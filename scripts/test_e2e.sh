@@ -27,9 +27,14 @@ fi
 # --- Test 2: Validate minimal file ---
 echo "=== Test 2: Validate minimal file ==="
 MINIMAL="/tmp/test-minimal.excalidraw"
-if [ ! -f "$MINIMAL" ]; then
-  echo '{"type":"excalidraw","version":2,"source":"https://excalidraw.com","elements":[{"id":"r1","type":"rectangle","x":0,"y":0,"width":100,"height":60,"strokeColor":"#1e1e1e","backgroundColor":"#ffffff","fillStyle":"solid","strokeWidth":1,"roughness":0,"opacity":100,"angle":0,"seed":1,"groupIds":[],"boundElements":[],"updated":1,"link":null,"locked":false}],"appState":{"viewBackgroundColor":"#ffffff"}}' > "$MINIMAL"
-fi
+# Always rebuild: CI environments have no stale /tmp file. Two elements
+# (rectangle + text) keep the later "push_preview updates scene" check at total:2.
+cat > "$MINIMAL" << 'MINEOF'
+{"type":"excalidraw","version":2,"source":"https://excalidraw.com","elements":[
+  {"id":"r1","type":"rectangle","x":0,"y":0,"width":100,"height":60,"strokeColor":"#1e1e1e","backgroundColor":"#ffffff","fillStyle":"solid","strokeWidth":1,"roughness":0,"opacity":100,"angle":0,"seed":1,"groupIds":[],"boundElements":[],"updated":1,"link":null,"locked":false},
+  {"id":"t1","type":"text","x":10,"y":20,"width":80,"height":20,"text":"hello","fontSize":14,"fontFamily":1,"textAlign":"left","verticalAlign":"top","containerId":null,"originalText":"hello","lineHeight":1.25,"strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":0,"opacity":100,"angle":0,"seed":2,"groupIds":[],"boundElements":[],"updated":1,"link":null,"locked":false}
+],"appState":{"viewBackgroundColor":"#ffffff"}}
+MINEOF
 if python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" "$MINIMAL"; then
   log_pass "validate minimal file"
 else

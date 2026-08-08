@@ -129,12 +129,8 @@ function startServer(server) {
  * Uses Playwright to set SVG content and screenshot to PNG.
  */
 async function renderFallbackSvg(sceneFile, outdir, opts) {
-  const playwright = findPlaywright();
-  if (!playwright) {
-    console.error("[ERROR] Playwright not found. Cannot render preview.");
-    return false;
-  }
-
+  // Fallback path must work without Playwright (pure SVG rendering).
+  // Playwright is only needed for PNG/PDF branches below.
   const { renderSvgFromScene } = require("./lib/svg_render");
   const sceneData = JSON.parse(fs.readFileSync(sceneFile, "utf-8"));
   const { svg } = renderSvgFromScene(sceneData);
@@ -151,6 +147,17 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
   }
 
   if (opts.format === "png" || opts.format === "both") {
+    const playwright = findPlaywright();
+    if (!playwright) {
+      console.error("[WARN] Playwright not found. PNG skipped; SVG is available.");
+      if (opts.format === "both") return true; // SVG already saved
+      if (!svgSaved) {
+        const svgPath = path.join(outdir, `${base}.svg`);
+        fs.writeFileSync(svgPath, svg);
+        console.log(`[OK] ${svgPath} (fallback SVG, PNG unavailable)`);
+      }
+      return true;
+    }
     const executablePath = findChromium();
     let browser;
     try {
