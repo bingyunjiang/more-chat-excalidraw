@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate & syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install graphviz (auto-layout)
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Python syntax check
+        run: |
+          python3 -m py_compile scripts/validate_excalidraw.py scripts/template_selector.py scripts/ir_to_excalidraw.py scripts/merge_excalidraw.py scripts/knowledge_graph.py
+
+      - name: Node syntax check
+        run: |
+          for f in scripts/preview_server.js scripts/push_preview.js scripts/render_preview.js scripts/open_in_excalidraw.js scripts/list_templates.js scripts/mermaid_to_excalidraw.js scripts/lib/svg_render.js; do
+            node --check "$f"
+          done
+
+      - name: Validate all example .excalidraw files
+        run: |
+          for f in output/example-*.excalidraw; do
+            echo "== $f =="
+            python3 scripts/validate_excalidraw.py "$f" --visual || exit 1
+          done
+
+      - name: IR conversion smoke test (built-in layouts + Graphviz)
+        run: |
+          python3 scripts/ir_to_excalidraw.py --example flowchart --output /tmp/ci-flow.excalidraw --validate
+          python3 scripts/ir_to_excalidraw.py --example architecture --layout dot --output /tmp/ci-arch.excalidraw --validate
+          python3 scripts/ir_to_excalidraw.py --example mindmap --layout neato --output /tmp/ci-mm.excalidraw --validate
+
+      - name: Mermaid conversion smoke test
+        run: |
+          node scripts/mermaid_to_excalidraw.js --string "graph TD; A[开始] --> B[处理]; B --> C{成功?}; C -->|是| D[完成]" --output /tmp/ci-mermaid.excalidraw
+          python3 scripts/validate_excalidraw.py /tmp/ci-mermaid.excalidraw
+
+      - name: Knowledge graph smoke test
+        run: |
+          printf 'entity: Web前端|component|用户层\nentity: 订单服务|service|应用层\nentity: PostgreSQL|database|数据层\nrel: Web前端 -> 订单服务 调用\nrel: 订单服务 -> PostgreSQL 读写\n' > /tmp/ci-kg.txt
+          python3 scripts/knowledge_graph.py --text /tmp/ci-kg.txt --output /tmp/ci-kg.excalidraw
+          python3 scripts/validate_excalidraw.py /tmp/ci-kg.excalidraw
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Run e2e suite (sandbox mode)
+        run: bash scripts/test_e2e.sh --sandbox
+        env:
+          PREVIEW_TEST_PORT: 6199
