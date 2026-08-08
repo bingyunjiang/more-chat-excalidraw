@@ -38,6 +38,9 @@ python3 scripts/merge_excalidraw.py patch output/flow.excalidraw --set 'n3.backg
 # 知识图谱 → 架构图：从实体/关系描述自动分层生成
 python3 scripts/knowledge_graph.py --text arch.txt --output output/kg.excalidraw
 
+# MCP 服务器（stdio，供 agent 调用）：node scripts/mcp_server.mjs
+# 工具：generate_diagram / validate_diagram / push_preview / list_templates
+
 # 列出/预览模板（--preview 渲染 SVG）
 node scripts/list_templates.js --preview flowchart
 

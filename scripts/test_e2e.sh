@@ -301,6 +301,28 @@ else
   log_fail "merge_excalidraw.py patch"
 fi
 
+# --- Test 11: MCP server (D.6) ---
+echo "=== Test 11: MCP server ==="
+if [ -f "$PROJECT_DIR/scripts/web/node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js" ]; then
+  cat > /tmp/e2e-mcp-req.jsonl << 'MCPEOF'
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"e2e","version":"1"}}}
+{"jsonrpc":"2.0","method":"notifications/initialized"}
+{"jsonrpc":"2.0","id":2,"method":"tools/list"}
+MCPEOF
+  node "$PROJECT_DIR/scripts/mcp_server.mjs" < /tmp/e2e-mcp-req.jsonl > /tmp/e2e-mcp-out.log 2>/dev/null &
+  MCP_PID=$!
+  sleep 4
+  kill "$MCP_PID" 2>/dev/null
+  MCP_OUT=$(cat /tmp/e2e-mcp-out.log)
+  if echo "$MCP_OUT" | grep -q '"generate_diagram"' && echo "$MCP_OUT" | grep -q '"list_templates"'; then
+    log_pass "MCP server registers tools over stdio"
+  else
+    log_fail "MCP server tool registration"
+  fi
+else
+  log_warn "MCP SDK not installed; skipping MCP test (cd scripts/web && npm install @modelcontextprotocol/sdk)"
+fi
+
 # --- Summary ---
 echo ""
 echo "=== Summary ==="

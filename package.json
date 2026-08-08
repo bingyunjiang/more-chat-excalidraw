@@ -1,6 +1,6 @@
 {
   "name": "more-chat-excalidraw",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Chat-to-Excalidraw: generate, preview, and edit local Excalidraw canvases from natural conversation",
   "private": true,
   "scripts": {
@@ -21,7 +21,8 @@
     "merge": "python3 scripts/merge_excalidraw.py",
     "build:editor": "cd scripts/web && npm run build",
     "test": "bash scripts/test_e2e.sh",
-    "kg": "python3 scripts/knowledge_graph.py"
+    "kg": "python3 scripts/knowledge_graph.py",
+    "mcp": "node scripts/mcp_server.mjs"
   },
   "peerDependencies": {
     "playwright": ">=1.40.0"

@@ -2,6 +2,13 @@
 
 本项目的所有显著变更。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.6.0] - 2026-08-08
+
+### 新增
+
+- **M9 MCP 协议集成（借鉴 excalidraw/excalidraw-mcp，5069★）**：`mcp_server.mjs` 通过 MCP stdio 协议暴露 generate_diagram / validate_diagram / push_preview / list_templates 四个工具，供 agent 直接调用
+- e2e 测试从 23 项扩展到 24 项（MCP 工具注册）
+
 ## [0.5.0] - 2026-08-08
 
 ### 新增

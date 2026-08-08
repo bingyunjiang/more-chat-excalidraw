@@ -37,6 +37,7 @@ description: 通过自然对话生成、预览、打开和迭代编辑本地 Exc
 - `mermaid_to_excalidraw.js`：Mermaid → Excalidraw 转换（flowchart/sequenceDiagram 子集）。解析为 IR 后复用 ir_to_excalidraw.py 完成布局。
 - `merge_excalidraw.py`：增量编辑与迭代。`merge` 合并新旧场景（保留旧 id）；`patch --set id.field=value --move id:dx,dy` 微调；`restore` 从 `output/history/` 备份回退。
 - `knowledge_graph.py`：知识图谱架构生成（借鉴 excalidraw-architect-mcp）。从 JSON 或 `entity:/rel:` 文本提取实体/关系 → IR → 架构图，自动分层。
+- `mcp_server.mjs`：MCP 服务器（借鉴 excalidraw/excalidraw-mcp）。暴露 generate_diagram / validate_diagram / push_preview / list_templates 四个工具，供 MCP 客户端（stdio）调用。运行：`node scripts/mcp_server.mjs`。
 - `list_templates.js`：模板列表与预览。`--json` 输出元数据；`--preview <模板> [--out 目录]` 渲染 10 种模板的 SVG 预览图。
 - `validate_excalidraw.py`：校验 `.excalidraw` 文件结构与引用完整性，返回非零退出码表示有错误。
 - `preview_server.js`：实时预览服务器（轮询 API 模式）。启动后 `push_preview.js` 推送的图会实时出现在预览页，无需写本地 Excalidraw web root。
