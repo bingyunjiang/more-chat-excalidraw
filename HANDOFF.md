@@ -24,6 +24,7 @@
 | M7 JSON 生成 | ir_to_excalidraw.py + Graphviz 布局 + merge 增量编辑 + --visual 质量门 | ✅ |
 | M8 完整预览 | 内嵌 Excalidraw 编辑器(/editor) + 双向同步(/api/save) + 多画布 + PDF 导出 | ✅ |
 | M9 创新功能 | 动画(D.4) + Mermaid(C.6) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) + 图标库(C.7) | ✅ 全部完成 |
+| E.3 演示 | 13 个示例 + 动画 GIF（output/animation-demo.gif） | ✅ 完成 |
 | M10 发布 | v0.0.1 + CHANGELOG + 全套文档示例 + CI（GitHub Actions 两 job 全绿） | ✅ |
 
 ## 核心脚本速查

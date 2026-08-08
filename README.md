@@ -115,6 +115,7 @@ node scripts/preview_server.js output/arch.excalidraw --open
 - `http://localhost:6060/`：SVG 轮询实时预览（`push_preview.js` 推送，约 1.5s 刷新）
 - `http://localhost:6060/editor`：内嵌完整 Excalidraw 编辑器，编辑后"保存到服务器"写回本地
 - `http://localhost:6060/animate`：关键帧动画逐帧播放（自动注入 `customData.animate`）
+- `python3 scripts/render_animation_gif.py <file.excalidraw>`：导出动画 GIF（[示例](output/animation-demo.gif)）
 
 ### 5. 增量编辑与回退
 

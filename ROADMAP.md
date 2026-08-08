@@ -333,9 +333,9 @@
 - [x] **E.2 CI/CD**
   - GitHub Actions：validate + smoke + e2e（.github/workflows/ci.yml），两个 job 全绿
   - 推送至 bingyunjiang/more-chat-excalidraw（main 分支自动触发）
-- [ ] **E.3 用户文档与示例**
-  - 各类图表的完整示例文件（13 个 example-*.excalidraw）
-  - 使用视频或 GIF 动画（待补充）
+- [x] **E.3 用户文档与示例**
+  - 各类图表的完整示例文件（13 个 example-*.excalidraw + 带图标示例）
+  - 动画 GIF 导出（render_animation_gif.py，output/animation-demo.gif）
 
 ---
 

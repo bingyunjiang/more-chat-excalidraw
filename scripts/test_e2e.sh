@@ -346,6 +346,20 @@ else
   log_fail "ir_to_excalidraw.py --icons"
 fi
 
+# --- Test 13: Animation GIF export (E.3) ---
+echo "=== Test 13: Animation GIF export ==="
+if python3 "$PROJECT_DIR/scripts/render_animation_gif.py" \
+    "$PROJECT_DIR/output/example-flowchart-animated.excalidraw" \
+    --output /tmp/e2e-animation.gif >/dev/null 2>&1; then
+  if [ -s /tmp/e2e-animation.gif ] && head -c 6 /tmp/e2e-animation.gif | grep -q "GIF89a"; then
+    log_pass "animation GIF exported (valid GIF89a)"
+  else
+    log_fail "animation GIF file invalid"
+  fi
+else
+  log_fail "render_animation_gif.py (need pillow; cairosvg/rsvg-convert for frames)"
+fi
+
 # --- Summary ---
 echo ""
 echo "=== Summary ==="
