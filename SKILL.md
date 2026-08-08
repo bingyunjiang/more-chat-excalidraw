@@ -33,7 +33,7 @@ description: 通过自然对话生成、预览、打开和迭代编辑本地 Exc
 ### scripts/
 
 - `template_selector.py`：模板选择器。`--list` 列出 10 种模板；`--recommend "<意图>"` 根据关键词推荐最佳模板与主题；`--info <模板>` 查看详情；`--params <模板> --theme <主题>` 输出带参数的模板元数据。
-- `ir_to_excalidraw.py`：IR → Excalidraw JSON 转换器。`--example flowchart/architecture/mindmap` 生成内置示例；`--validate` 转换后自动校验（含视觉质量检查）。支持 10 种模板布局、4 套主题，并自动注入 `customData.animate` 动画元数据。
+- `ir_to_excalidraw.py`：IR → Excalidraw JSON 转换器。`--example flowchart/architecture/mindmap` 生成内置示例；`--validate` 转换后自动校验（含视觉质量检查）；`--layout dot|neato|twopi` 使用 Graphviz 自动布局（借鉴 drawmode）。支持 10 种模板布局、4 套主题，并自动注入 `customData.animate` 动画元数据。
 - `mermaid_to_excalidraw.js`：Mermaid → Excalidraw 转换（flowchart/sequenceDiagram 子集）。解析为 IR 后复用 ir_to_excalidraw.py 完成布局。
 - `merge_excalidraw.py`：增量编辑与迭代。`merge` 合并新旧场景（保留旧 id）；`patch --set id.field=value --move id:dx,dy` 微调；`restore` 从 `output/history/` 备份回退。
 - `knowledge_graph.py`：知识图谱架构生成（借鉴 excalidraw-architect-mcp）。从 JSON 或 `entity:/rel:` 文本提取实体/关系 → IR → 架构图，自动分层。

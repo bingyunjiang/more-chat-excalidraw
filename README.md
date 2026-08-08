@@ -26,6 +26,9 @@ python3 scripts/template_selector.py --recommend "画一个微服务架构图"
 # IR → Excalidraw（推荐流程）：文案整理为 IR 后自动布局生成
 python3 scripts/ir_to_excalidraw.py --example flowchart --output output/flow.excalidraw --validate
 
+# Graphviz 自动布局（可选，brew install graphviz）：层次/力导向/树形
+python3 scripts/ir_to_excalidraw.py --example architecture --layout dot --output output/arch.excalidraw
+
 # Mermaid → Excalidraw（支持 flowchart/sequenceDiagram 子集）
 node scripts/mermaid_to_excalidraw.js --string "graph TD; A-->B" --output output/mmd.excalidraw
 

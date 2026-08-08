@@ -2,6 +2,13 @@
 
 本项目的所有显著变更。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.5.0] - 2026-08-08
+
+### 新增
+
+- **M9 Graphviz 自动布局（借鉴 drawmode）**：`ir_to_excalidraw.py --layout dot|neato|twopi` 使用 Graphviz 层次/力导向/树形布局，自动换算坐标与节点尺寸，无 Graphviz 时回退内置布局
+- e2e 测试从 20 项扩展到 23 项（Graphviz 布局）
+
 ## [0.4.0] - 2026-08-08
 
 ### 新增

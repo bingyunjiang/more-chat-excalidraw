@@ -16,6 +16,8 @@ import sys
 import os
 import time
 import argparse
+import shutil
+import subprocess
 
 # ─── 语义色板（对应 references/color-palette.md）───────────────────────────
 SEMANTIC_FILL = {
@@ -275,8 +277,53 @@ def _layout_table(nodes, node_styles, metadata, start_x=20, start_y=80, col_w=18
     return positions
 
 
+def _layout_graphviz(ir_nodes, ir_edges, node_styles, engine="dot"):
+    """Graphviz 自动布局（借鉴 drawmode + excalidraw-architect-mcp）。
+
+    把 IR 节点/边转成 DOT 源码，运行 graphviz（dot/neato/twopi），解析
+    "pos" 属性得到节点坐标。返回 {node_id: (x, y)}，坐标为图中心坐标，
+    转换时需换算为元素左上角（减去宽高一半）。
+
+    需要系统安装 graphviz（brew install graphviz）。找不到时返回 None。
+    """
+    dot_bin = shutil.which(engine)
+    if not dot_bin:
+        return None
+
+    lines = [f"digraph G {{", "  graph [pad=0.5, nodesep=1.6, ranksep=1.8];",
+             "  node [shape=box, width=2.2, height=0.8, fixedsize=true];"]
+    for node in ir_nodes:
+        nid = node["id"]
+        label = node.get("label", nid).replace('"', '\\"')
+        lines.append(f'  "{nid}" [label="{label}"];')
+    for edge in ir_edges:
+        lines.append(f'  "{edge["from"]}" -> "{edge["to"]}";')
+    lines.append("}")
+    dot_src = "\n".join(lines)
+
+    try:
+        # -Tplain 输出节点坐标（node name x y w h label）
+        r = subprocess.run(
+            [dot_bin, "-Tplain"],
+            input=dot_src, capture_output=True, text=True, timeout=15,
+        )
+        if r.returncode != 0:
+            return None
+    except (subprocess.SubprocessError, OSError):
+        return None
+
+    positions = {}
+    for line in r.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 4 and parts[0] == "node":
+            nid = parts[1].strip('"')
+            x, y = float(parts[2]), float(parts[3])
+            positions[nid] = (x, y)
+    return positions
+
+
 # ─── 主转换 ────────────────────────────────────────────────────────────────
-def convert(ir, template_override=None):
+def convert(ir, template_override=None, layout_engine=None):
     """IR dict → .excalidraw dict"""
     template = template_override or ir.get("template", "flowchart")
     theme_key = ir.get("theme", "default")
@@ -304,19 +351,37 @@ def convert(ir, template_override=None):
         node_styles[nid] = style
 
     # 2. 布局
-    if template == "flowchart":
-        positions = _layout_vertical(ir_nodes, node_styles)
-    elif template in ("mindmap", "hierarchy"):
-        positions = _layout_tree(ir_nodes, node_styles)
-    elif template == "architecture":
-        positions = _layout_layered(ir_nodes, node_styles, ir_groups)
-    elif template == "swimlane":
-        positions = _layout_swimlane(ir_nodes, node_styles, ir_groups)
-    elif template in ("sequence", "timeline"):
-        positions = _layout_horizontal(ir_nodes, node_styles)
-    elif template == "comparison":
-        positions = _layout_table(ir_nodes, node_styles, metadata)
+    if layout_engine in ("dot", "neato", "twopi"):
+        positions = _layout_graphviz(ir_nodes, ir_edges, node_styles, layout_engine)
+        if positions is None:
+            print(
+                f"[WARN] Graphviz ({layout_engine}) 不可用，回退到内置布局。"
+                "安装: brew install graphviz",
+                file=sys.stderr,
+            )
+            positions = None
+        else:
+            # Graphviz 返回英寸单位节点中心坐标；换算为像素（×72）后
+            # 再转为 Excalidraw 左上角坐标
+            for nid, (cx, cy) in positions.items():
+                st = node_styles.get(nid, {"w": 160, "h": 60})
+                positions[nid] = (cx * 72 - st["w"] / 2, cy * 72 - st["h"] / 2)
     else:
+        positions = None
+
+    if positions is None and template == "flowchart":
+        positions = _layout_vertical(ir_nodes, node_styles)
+    elif positions is None and template in ("mindmap", "hierarchy"):
+        positions = _layout_tree(ir_nodes, node_styles)
+    elif positions is None and template == "architecture":
+        positions = _layout_layered(ir_nodes, node_styles, ir_groups)
+    elif positions is None and template == "swimlane":
+        positions = _layout_swimlane(ir_nodes, node_styles, ir_groups)
+    elif positions is None and template in ("sequence", "timeline"):
+        positions = _layout_horizontal(ir_nodes, node_styles)
+    elif positions is None and template == "comparison":
+        positions = _layout_table(ir_nodes, node_styles, metadata)
+    elif positions is None:
         positions = _layout_vertical(ir_nodes, node_styles)
 
     # 手动位置覆盖
@@ -616,6 +681,7 @@ def main():
     ap.add_argument("--example", help="使用内置示例：flowchart/architecture/mindmap")
     ap.add_argument("--template-list", action="store_true", help="列出支持的模板")
     ap.add_argument("--theme", help="覆盖主题：default/sketch/blueprint/minimal")
+    ap.add_argument("--layout", help="布局引擎：dot/neato/twopi（Graphviz，需 brew install graphviz）")
     args = ap.parse_args()
 
     if args.template_list:
@@ -639,7 +705,7 @@ def main():
         ir = dict(ir)
         ir["theme"] = args.theme
 
-    result = convert(ir)
+    result = convert(ir, layout_engine=args.layout)
 
     out_path = args.output
     if not out_path:
@@ -655,7 +721,7 @@ def main():
     for el in result["elements"]:
         by_type[el["type"]] = by_type.get(el["type"], 0) + 1
     print(f"  类型统计: {by_type}")
-    print(f"  主题: {ir.get('theme', 'default')}")
+    print(f"  主题: {ir.get('theme', 'default')}  布局: {args.layout or '内置'}")
 
     if args.validate:
         import subprocess

@@ -273,8 +273,24 @@ else
   log_fail "knowledge_graph.py"
 fi
 
-# --- Test 9: Incremental merge (C.5) ---
-echo "=== Test 9: Incremental merge ==="
+# --- Test 9: Graphviz layout (C.2) ---
+echo "=== Test 9: Graphviz layout ==="
+if command -v dot >/dev/null 2>&1; then
+  if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example architecture --layout dot --output /tmp/e2e-graphviz.excalidraw >/dev/null 2>&1; then
+    if python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" /tmp/e2e-graphviz.excalidraw >/dev/null 2>&1; then
+      log_pass "graphviz dot layout generates valid excalidraw"
+    else
+      log_fail "graphviz output failed validation"
+    fi
+  else
+    log_fail "ir_to_excalidraw --layout dot"
+  fi
+else
+  log_warn "graphviz not installed; skipping layout test (brew install graphviz)"
+fi
+
+# --- Test 10: Incremental merge (C.5) ---
+echo "=== Test 10: Incremental merge ==="
 if python3 "$PROJECT_DIR/scripts/merge_excalidraw.py" patch /tmp/e2e-kg.excalidraw --set 'n2.backgroundColor=#ffc9c9' --history-dir /tmp/e2e-merge-history >/dev/null 2>&1; then
   if grep -q "#ffc9c9" /tmp/e2e-kg.excalidraw; then
     log_pass "merge patch updates element color"
