@@ -10,7 +10,7 @@
 把自然对话变成可编辑的 Excalidraw 画布  
 Turn natural conversation into editable Excalidraw canvases
 
-[![Version](https://img.shields.io/badge/version-v0.7.0-2f6feb)](#版本历史)
+[![Version](https://img.shields.io/badge/version-v0.0.1-2f6feb)](#版本历史)
 [![License](https://img.shields.io/badge/license-MIT-1f883d)](./LICENSE)
 [![Type](https://img.shields.io/badge/type-AI%20Agent%20Skill-8250df)](#项目表头)
 [![Language](https://img.shields.io/badge/language-ZH%20primary%20%7C%20EN-f59e0b)](#项目表头)
@@ -41,7 +41,7 @@ Turn natural conversation into editable Excalidraw canvases
 | 字段 | 内容 |
 | --- | --- |
 | 名称 | `more-chat-excalidraw` |
-| 版本 | `v0.7.0` |
+| 版本 | `v0.0.1` |
 | 类型 | AI Agent Skill / 图表生成技能 |
 | 场景 | 流程图 / 架构图 / 时序图 / 思维导图 / ER 图 / 泳道图 / 层级图 / 关系图 / 对比图 / 时间线图 / 知识图谱 |
 | 本地运行 | macOS / Windows / Linux，Node.js 18+，Python 3 |
@@ -187,46 +187,6 @@ node scripts/open_in_excalidraw.js output/flow.excalidraw
 bash scripts/test_e2e.sh
 ```
 
-## 项目结构
-
-```
-├── SKILL.md                          # Skill 定义（工作流、质量规则）
-├── ROADMAP.md                        # 开发大纲与里程碑
-├── CHANGELOG.md                      # 变更记录
-├── package.json                      # npm 脚本与依赖声明
-├── agents/
-│   └── openai.yaml                   # Codex 接口定义
-├── references/
-│   ├── excalidraw-schema.md          # v2 JSON 结构速查
-│   ├── ir-format.md                  # IR 中间格式（文案引擎 ↔ JSON 生成器接口）
-│   ├── diagram-templates.md          # 10 种图表模板（含完整 JSON 示例）
-│   ├── color-palette.md              # 语义色板与 4 套主题系统
-│   ├── element-templates.md          # 元素级构建块模板
-│   ├── tech-node-templates.md        # 50+ 技术组件预定义样式
-│   ├── visual-patterns.md            # 9 种视觉模式模板
-│   └── animation-template.md         # 动画关键帧模板
-├── scripts/
-│   ├── template_selector.py          # 模板选择器（意图推荐 + 参数调整）
-│   ├── ir_to_excalidraw.py           # IR → Excalidraw 转换器（布局+配色+动画）
-│   ├── mermaid_to_excalidraw.js      # Mermaid → Excalidraw（flowchart/sequence 子集）
-│   ├── knowledge_graph.py            # 知识图谱 → 架构图（实体/关系自动分层）
-│   ├── merge_excalidraw.py           # 增量编辑：merge/patch/restore
-│   ├── list_templates.js             # 模板列表与 SVG 预览
-│   ├── validate_excalidraw.py        # 校验（结构 + 引用 + 视觉质量）
-│   ├── preview_server.js             # 实时预览服务器（SVG / 编辑器 / 动画）
-│   ├── push_preview.js               # 推送 .excalidraw 到预览服务器
-│   ├── render_preview.js             # 渲染 PNG/SVG/PDF（Playwright + fallback）
-│   ├── open_in_excalidraw.js         # 推送到本地 Excalidraw 并打开
-│   ├── mcp_server.mjs                # MCP 服务器（4 个工具，stdio）
-│   ├── lib/svg_render.js             # 共享轻量 SVG 渲染器
-│   ├── render-bundle/                # 自包含渲染 bundle（源码 + 构建产物）
-│   ├── web/                          # 内嵌编辑器源码（@excalidraw/excalidraw + React）
-│   └── test_e2e.sh                   # 端到端测试（24 项）
-└── output/
-    ├── fixture-flowchart.excalidraw  # 测试用流程图
-    └── example-*.excalidraw          # 13 个示例（IR/Mermaid/知识图谱/Graphviz/动画/主题）
-```
-
 ## 沙箱兼容性
 
 - **preview_server.js**：需要绑定端口，沙箱内运行需 escalation；启动后一切写入都在内存和预览页，不碰本地 Excalidraw web root
@@ -245,13 +205,7 @@ bash scripts/test_e2e.sh
 
 | 版本 | 日期 | 要点 |
 | --- | --- | --- |
-| v0.7.0 | 2026-08-08 | 完全自包含化（render bundle 内联） |
-| v0.6.0 | 2026-08-08 | MCP 协议集成（4 个工具） |
-| v0.5.0 | 2026-08-08 | Graphviz 自动布局（dot/neato/twopi） |
-| v0.4.0 | 2026-08-08 | 内嵌编辑器 + 双向同步 + 多画布 + 动画 + Mermaid + PDF |
-| v0.3.0 | 2026-08-07 | 模板系统（10 类型 + 色板 + 主题）+ IR 引擎 |
-| v0.2.0 | 2026-08-07 | 模板选择器与模板列表 |
-| v0.1.0 | 2026-08-07 | 初始版本：核心闭环 + 实时预览 + 校验器 |
+| v0.0.1 | 2026-08-08 | 初始版本：自然对话生成 Excalidraw 画布（模板系统 + IR 引擎 + 实时预览 + 内嵌编辑器 + 动画 + Mermaid + 知识图谱 + Graphviz 布局 + 增量编辑 + MCP 协议） |
 
 详细变更见 [CHANGELOG.md](CHANGELOG.md)。
 

@@ -321,14 +321,14 @@
 | M7：JSON 生成 | IR→Excalidraw + 自动布局 + 自纠错 | C | ✅ 完成（ir_to_excalidraw.py + Graphviz + merge + --visual 质量门） |
 | M8：完整预览 | 内嵌编辑器 + 双向同步 + 多画布 + PDF 导出 | D（完整版） | ✅ 完成 |
 | M9：创新功能 | 动画(D.4) + Mermaid(C.6) + 自纠错(C.4) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) 已完成；图标(C.7) 待后续 | A/B/C/D 创新 | ✅ 基本完成（C.7 图标库需外部资源，留作可选扩展） |
-| M10：可发布 | 版本号 + CHANGELOG + 文档 + 示例 | — | ✅ 完成（v0.6.0 + CHANGELOG + 全套文档与示例；CI 需 git remote） |
+| M10：可发布 | 版本号 + CHANGELOG + 文档 + 示例 | — | ✅ 完成（v0.0.1 初始版本 + CHANGELOG + 全套文档与示例 + CI） |
 
 ## 后续阶段（P3）
 
 ### Phase E：发布与维护（P3，M10）
 
 - [ ] **E.1 版本号与 CHANGELOG**
-  - 语义化版本号（当前 v0.2.0）
+  - 语义化版本号（当前 v0.0.1）
   - CHANGELOG.md 追踪每次变更
 - [ ] **E.2 CI/CD**
   - GitHub Actions：validate + render smoke test
