@@ -1,71 +1,94 @@
 # more-chat-excalidraw 交接文档
 
-> 更新时间：2026-08-07（v3）
+> 更新时间：2026-08-08（v0.6.0）
 
 ## 当前状态
 
-**M1-M4 完成（基础设施 → 实时预览），M5 模板系统进行中（参考文件已全部落盘，交互脚本已就绪）。**
+**M1-M9 全部完成，M10 完成（版本号 + CHANGELOG + 文档），e2e 24/24 通过。**
 
-开发路线已重构为四大核心功能支柱（Pillar A 交互沟通 / B 预设模板 / C JSON 生成 / D 本地预览），详见 [ROADMAP.md](ROADMAP.md)。
+开发路线以四大核心功能支柱组织（Pillar A 交互沟通 / B 预设模板 / C JSON 生成 / D 本地预览），详见 [ROADMAP.md](ROADMAP.md)。
 
-## 已完成
+## 完成情况
 
-- [x] Phase 1：基础设施与权限修复
-  - git 仓库初始化、render/open 沙箱 fallback、package.json、output/ 目录
-- [x] Phase 2：核心闭环跑通
-  - 端到端测试 5/5 → 10/10 通过，fixture-flowchart.excalidraw
-- [x] Phase 3：质量与文档
-  - README.md、HANDOFF.md、validate_excalidraw.py 增强（--json、类型校验、绑定交叉检查）
-- [x] Phase 4：实时预览服务器（参考 al1y/mcp-excalidraw）
-  - preview_server.js 轮询 API + push_preview.js + lib/svg_render.js，10/10 测试通过
-- [x] **M5 模板系统（本次新增）**
-  - `references/diagram-templates.md`：扩展至 10 种图类型（+层级/关系/对比/时间线）
-  - `references/color-palette.md`：8 种语义填充色 + 3 种分层背景 + 4 套主题（default/sketch/blueprint/minimal）
-  - `references/element-templates.md`：9 类元素构建块（含必填字段、尺寸规范、绑定规则）
-  - `references/tech-node-templates.md`：50+ 技术组件样式（数据库/队列/存储/网关/计算/缓存等 9 类）
-  - `references/visual-patterns.md`：9 种视觉模式（扇出/汇聚/时间线/分组/请求-响应/流水线/星型/矩阵/循环）
-  - `references/animation-template.md`：customData.animate 关键帧模板 + 7 级动画顺序规则
-  - `scripts/template_selector.py`：模板选择器（--list / --recommend / --info / --params）
-  - `scripts/list_templates.js`：模板列表与预览（--json / --preview）
-  - SKILL.md / README.md / package.json（v0.2.0）同步更新
+| 里程碑 | 交付物 | 状态 |
+|--------|--------|------|
+| M1 基础设施 | git + package.json + 沙箱权限修复 | ✅ |
+| M2 闭环跑通 | e2e 测试 + fixture | ✅ |
+| M3 可交付 | README + HANDOFF + 增强校验 | ✅ |
+| M4 实时预览 | preview_server.js 轮询 API（借鉴 al1y） | ✅ |
+| M5 模板系统 | 8 个参考文件 + template_selector + list_templates(SVG 预览) | ✅ |
+| M6 文案引擎 | template_selector --recommend + ir-format.md（IR 中间格式） | ✅ |
+| M7 JSON 生成 | ir_to_excalidraw.py + Graphviz 布局 + merge 增量编辑 + --visual 质量门 | ✅ |
+| M8 完整预览 | 内嵌 Excalidraw 编辑器(/editor) + 双向同步(/api/save) + 多画布 + PDF 导出 | ✅ |
+| M9 创新功能 | 动画(D.4) + Mermaid(C.6) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) | ✅（C.7 图标库可选扩展） |
+| M10 发布 | v0.6.0 + CHANGELOG + 全套文档示例（CI 需 git remote） | ✅ |
 
-## 进行中
+## 核心脚本速查
 
-- [ ] M5 剩余：模板预览 SVG 渲染（list_templates.js --preview 当前仅输出元数据）
-- [ ] M6 文案引擎（Pillar A）：意图分类器 + 文案生成 + IR 中间格式
-- [ ] M7 JSON 生成（Pillar C）：ir_to_excalidraw.py + 自动布局 + 自纠错
-- [ ] M8 完整预览（Pillar D）：内嵌 Excalidraw 编辑器 + 双向同步 + 多画布
-- [ ] M9 创新功能：动画 + 图标 + 知识图谱 + MCP
-- [ ] M10 发布：版本号 + CI + 文档
+```bash
+# 模板选择（意图推荐）
+python3 scripts/template_selector.py --recommend "画一个微服务架构图"
+
+# IR → Excalidraw（推荐生成路径）
+python3 scripts/ir_to_excalidraw.py --example architecture --layout dot --output out.excalidraw --validate
+
+# Mermaid → Excalidraw（flowchart/sequence 子集）
+node scripts/mermaid_to_excalidraw.js --string "graph TD; A-->B" --output out.excalidraw
+
+# 知识图谱 → 架构图
+python3 scripts/knowledge_graph.py --text arch.txt --output out.excalidraw
+
+# 增量编辑（合并/微调/回退）
+python3 scripts/merge_excalidraw.py patch out.excalidraw --set 'n3.backgroundColor=#ffc9c9' --move 'n5:20,0'
+
+# 实时预览 / 内嵌编辑器 / 动画
+node scripts/preview_server.js out.excalidraw --open    # SVG 轮询预览
+# 浏览器打开 http://localhost:6060/editor   完整 Excalidraw 编辑器（可保存回写）
+# 浏览器打开 http://localhost:6060/animate  关键帧动画逐帧播放
+
+# PDF 导出
+node scripts/render_preview.js out.excalidraw /tmp/out --format pdf
+
+# MCP 服务器（stdio，供 agent 调用）
+node scripts/mcp_server.mjs   # 工具: generate_diagram / validate_diagram / push_preview / list_templates
+```
 
 ## 依赖快照
 
-| 依赖 | 版本/路径 | 说明 |
+| 依赖 | 位置 | 说明 |
 |---|---|---|
-| Node.js | 系统全局 | 运行 render/open/list_templates 脚本 |
-| Python 3 | 系统全局 | 运行 validate/template_selector 脚本 |
-| Playwright | 全局安装 `~/.npm-global/` | 可选，用于高质量渲染 |
-| Chromium | `~/Library/Caches/ms-playwright/chromium-1228/` | Playwright 浏览器 |
-| Render bundle | `~/WorkSpace/render-test/` | Excalidraw 渲染包（可用 EXCALIDRAW_RENDER_BUNDLE 覆盖） |
-| 本地 Excalidraw | `http://localhost:5001/` | launchd 自启的 http-server |
-| @excalidraw/mermaid-to-excalidraw | `~/.local/share/excalidraw/node_modules/` | M7 Mermaid 转换复用 |
+| Node.js ≥ 18 | 系统 | 运行 JS 脚本 |
+| Python 3 | 系统 | 运行 Python 脚本 |
+| Playwright + Chromium | 全局 | render_preview PNG/PDF（可选，SVG fallback） |
+| Graphviz | brew（dot/neato/twopi） | ir_to_excalidraw.py --layout 自动布局 |
+| @excalidraw/excalidraw 0.18.1 + React 19 | scripts/web/node_modules | 内嵌编辑器 bundle 源码（npm run build 重建） |
+| @modelcontextprotocol/sdk + zod | scripts/web/node_modules | MCP 服务器 |
+| 本地 Excalidraw | localhost:5001 | open_in_excalidraw.js 打开画布 |
+| render bundle | ~/WorkSpace/render-test/ | render_preview Playwright 路径（EXCALIDRAW_RENDER_BUNDLE 覆盖） |
 
-## 已知问题
+## 已知问题与后续
 
-1. **沙箱内无法渲染 PNG**：Chromium EPERM，只能输出 SVG
-2. **沙箱内无法推送画布**：`~/.local/share/` 写入受限，需 escalation
-3. **沙箱内无法启动预览服务器**：端口绑定 EPERM，需 escalation
-4. **Excalidraw 服务可能未运行**：`--check-only` 可检测，`--start` 可尝试启动
-5. **list_templates.js --preview 仅输出元数据**：尚未渲染 SVG 预览（M5 收尾项）
-6. **template_selector.py 关键词匹配是启发式**：中文意图推荐可能不准，M6 可接入 LLM 分类
+1. **沙箱限制**：端口绑定/Chromium/子进程需 escalation；`scripts/web/editor-bundle.js` 是构建产物（gitignore），全新 checkout 需 `cd scripts/web && npm run build`
+2. **C.7 云架构图标库**：需外部图标资源（AWS/GCP/Azure SVG），留作可选扩展
+3. **CI**：无 git remote，GitHub Actions 待推送远端后启用
+4. **Mermaid 子集**：当前支持 flowchart/sequenceDiagram 常用语法；完整 mermaid（gantt/class/er）未覆盖
+5. **文案生成（A.2）**：IR 生成依赖 LLM 在对话中完成，未做独立文案生成器（符合 skill 定位）
 
 ## Git 历史
 
 ```
-（M5 提交待创建）
-9edf39d feat: Phase 4.0 - real-time preview server (al1y/mcp-excalidraw pattern)
+1eb739f chore: remove deprecated mcp_server.js
+d5be421 feat: M9 MCP protocol integration (D.6)
+105100b feat: M9 Graphviz auto-layout (C.2)
+e8ea1a3 feat: M10 prep + M9 knowledge graph (C.8)
+7b06739 feat: M8 completion + M9 animation/mermaid/quality-gate
+c7d921f feat: M7 completion + M8 embedded editor preview server
+adb9da1 feat: M5 template system
+75724c6 chore: remove __pycache__
+75be64f feat: M5 completion + M6/M7 core engines
+9edf39d feat: Phase 4.0 - real-time preview server
 61f14ea feat: Phase 3 - README, HANDOFF, enhanced validate
-4e9d214 feat: Phase 2 - e2e test suite, fixture flowchart
-8202947 feat: Phase 1 - sandbox fallback, service detection, package.json
-cd4cdbb feat: initial commit - SKILL.md, scripts, references, agents
+4e9d214 feat: Phase 2 - e2e test suite
+8202947 feat: Phase 1 - sandbox fallback
+cd4cdbb feat: initial commit
 ```

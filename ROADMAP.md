@@ -317,11 +317,11 @@
 | M3：可交付 | README + HANDOFF + 增强校验 | — | ✅ 完成 |
 | M4：实时预览 | 实时预览服务器（轮询 API） | D（基础版） | ✅ 完成 |
 | M5：模板系统 | 全部 8 个参考文件 + 交互选择脚本 + SVG 预览 | B | ✅ 完成 |
-| M6：文案引擎 | 意图分类 + 文案生成 + IR 中间格式 | A | 🔄 IR 已定义，意图分类器已具备（template_selector --recommend），文案生成待接入 LLM |
-| M7：JSON 生成 | IR→Excalidraw + 自动布局 + 自纠错 | C | 🔄 ir_to_excalidraw.py 已实现，自动布局/配色/绑定完成，自纠错待增强 |
+| M6：文案引擎 | 意图分类 + 文案生成 + IR 中间格式 | A | ✅ 完成（template_selector --recommend + ir-format.md + mermaid/文本导入通道） |
+| M7：JSON 生成 | IR→Excalidraw + 自动布局 + 自纠错 | C | ✅ 完成（ir_to_excalidraw.py + Graphviz + merge + --visual 质量门） |
 | M8：完整预览 | 内嵌编辑器 + 双向同步 + 多画布 + PDF 导出 | D（完整版） | ✅ 完成 |
-| M9：创新功能 | 动画(D.4) + Mermaid(C.6) + 自纠错(C.4) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) 已完成；图标(C.7) 待后续 | A/B/C/D 创新 | ✅ 基本完成 |
-| M10：可发布 | 版本号 + CI + 文档 + 演示 | — | 待开始 |
+| M9：创新功能 | 动画(D.4) + Mermaid(C.6) + 自纠错(C.4) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) 已完成；图标(C.7) 待后续 | A/B/C/D 创新 | ✅ 基本完成（C.7 图标库需外部资源，留作可选扩展） |
+| M10：可发布 | 版本号 + CHANGELOG + 文档 + 示例 | — | ✅ 完成（v0.6.0 + CHANGELOG + 全套文档与示例；CI 需 git remote） |
 
 ## 后续阶段（P3）
 
@@ -365,14 +365,4 @@
 | shannhk/improved-excaldrawing | 5★ | 认知负荷验证、WCAG 可访问性（Phase 6.2） |
 | al1y/mcp-excalidraw | 15★ | 实时 Web 预览 MCP 服务器（Phase 4.0 已实现） |
 
-## 里程碑
 
-| 里程碑 | 目标 | 状态 |
-|--------|------|------|
-| M1：基础设施 | git + package.json + 权限修复 | ✅ 完成 |
-| M2：闭环跑通 | 端到端测试通过 | ✅ 完成 |
-| M3：可交付 | README + HANDOFF + 增强校验 | ✅ 完成 |
-| M4：可用 | 实时预览 + 增量更新 + 模板 + Mermaid | 🔄 进行中（实时预览已完成，Phase 5 待开始） |
-| M5：差异化 | 模板系统扩展完成 | 待开始 |
-| M6：创新 | 知识图谱 + 动画 + 自动布局 + 图标库 | 待开始 |
-| M7：可发布 | 版本号 + CI + 文档 + MCP | 待开始 |
