@@ -108,14 +108,14 @@
 
 **参考项目**：coleam00/excalidraw-diagram-skill（4339★）的对话式图表生成、axtonliu/axton-obsidian-visual-skills（3278★）的 8 种分类体系
 
-- [ ] **A.1 意图分类器（对话路由）**
+- [x] **A.1 意图分类器（对话路由）**
   - 在 SKILL.md 中增强 prompt 模板，首次交互时自动识别用户意图：
     - 图类型：流程图/架构图/时序图/思维导图/泳道图/ER图/层级图/关系图/对比图/时间线图
     - 场景：技术架构/业务流程/项目规划/知识梳理/方案对比/系统设计
     - 复杂度：简单（3-5 节点）/中等（6-12 节点）/复杂（>12 节点）
   - 输出格式：`{ "type": "flowchart", "scene": "tech-arch", "complexity": "medium", "title": "..." }`
 
-- [ ] **A.2 文案生成引擎**
+- [x] **A.2 文案生成引擎**
   - 根据意图分类结果，自动生成图表所需的文案大纲：
     - 流程图：步骤列表 + 决策点 + 分支条件
     - 架构图：层次划分 + 每层组件 + 组件间调用关系
@@ -125,11 +125,11 @@
     - 时间线图：时间节点 + 事件描述
   - 用户可交互修改文案（增删改节点），确认后进入 Pillar C
 
-- [ ] **A.3 文案 → 结构化中间表示**
+- [x] **A.3 文案 → 结构化中间表示**
   - 定义 JSON 中间格式（Intermediate Representation，IR），独立于 Excalidraw 格式
   - IR 为独立格式，可序列化、版本化、作为 LLM 输出与模板引擎的桥梁
 
-- [ ] **A.4 创新方向：文案增强**
+- [x] **A.4 创新方向：文案增强**
   - 支持多轮迭代优化文案（参考 coleam00 的迭代优化模式）
   - 从已有文档/Markdown 自动提取结构生成图表文案
   - 支持从 Mermaid 源码导入（参考 al1y + axtonliu）
@@ -142,7 +142,7 @@
 
 **参考项目**：coleam00/excalidraw-diagram-skill（4339★）的元素模板、axtonliu（3278★）的 8 种分类体系、drawmode（16★）的主题系统
 
-- [ ] **B.1 图类型模板（10 种，已定义 6 种 + 新增 4 种）**
+- [x] **B.1 图类型模板（10 种，已定义 6 种 + 新增 4 种）**
   - 已存在的 6 种：流程图、架构图、时序图、思维导图、泳道图、ER 图
   - 新增 4 种（已经纳入 diagram-templates.md）：
     - 层级图 Hierarchy（组织结构/系统拆解，自上而下树形）
@@ -153,19 +153,19 @@
 
 ### 以下为新增的参考文件（v3 新增）
 
-- [ ] **B.2 元素级构建块模板**
+- [x] **B.2 元素级构建块模板**
   - 文件：`references/element-templates.md`
   - 独立可复用的模板：rectangle / ellipse / diamond / arrow / text（独立）/ text（容器内绑定）/ line / marker dot / frame
   - 每种模板标注必填字段、可选字段、默认值
   - 生成时按需组合，而非每次都写完整 JSON
   - 参考 coleam00 的模板化生成思路
 
-- [ ] **B.3 语义色板**
+- [x] **B.3 语义色板**
   - 文件：`references/color-palette.md`
   - 按语义组织的颜色体系
   - 对比度规则：白底不低于 `#757575`，浅色填充用深色变体文字
 
-- [ ] **B.4 主题系统（参考 drawmode）**
+- [x] **B.4 主题系统（参考 drawmode）**
   - 提供 4 套可一键切换的矢量主题：
     - default：深灰描边 `#1e1e1e`，白色填充，标注连线
     - sketch：roughness=2，手绘感更强，更粗描边
@@ -173,22 +173,22 @@
     - minimal：纯黑白，roughness=0，strokeWidth=1
   - 主题参数化：theme 参数影响所有元素的颜色/roughness/strokeWidth
 
-- [ ] **B.5 架构感知节点模板（参考 excalidraw-architect-mcp，139★）**
+- [x] **B.5 架构感知节点模板（参考 excalidraw-architect-mcp，139★）**
   - 文件：`references/tech-node-templates.md`
   - 50+ 常见技术组件预定义样式（形状+颜色+图标占位）
   - 架构图生成时自动根据技术名称匹配对应样式
 
-- [ ] **B.6 视觉模式模板（参考 coleam00）**
+- [x] **B.6 视觉模式模板（参考 coleam00）**
   - 文件：`references/visual-patterns.md`
   - 把常见关系模式抽象为可复用模板：扇出、汇聚、时间线、分组、请求-响应、流水线
   - 每种模式提供 DSL 表示和对应的 Excalidraw JSON 骨架
 
-- [ ] **B.7 动画关键帧模板（参考 excalimate，50★ + axtonliu）**
+- [x] **B.7 动画关键帧模板（参考 excalimate，50★ + axtonliu）**
   - 文件：`references/animation-template.md`
   - 支持 `customData.animate` 字段，使生成的图可拖入 excalidraw-animate 生成动画
   - 动画顺序规则：标题(1) → 框架(2) → 主要节点(3) → 连线(4) → 细节文字(5)
 
-- [ ] **B.8 模板选择交互脚本**
+- [x] **B.8 模板选择交互脚本**
   - 文件：`scripts/template_selector.py`
   - 列出所有可用模板（按类型/场景/复杂度分类）
   - 根据用户意图自动推荐最佳模板
@@ -196,7 +196,7 @@
   - 模板参数调整（颜色/主题/布局方向）
   - 输出：选定的模板元数据 + 填充参数，供 Pillar C 使用
 
-- [ ] **B.9 模板列表与预览脚本**
+- [x] **B.9 模板列表与预览脚本**
   - 文件：`scripts/list_templates.js`
   - 命令行列出所有模板，输出 JSON 格式
   - 支持 `--preview <template-name>` 输出该模板的 SVG 预览
@@ -209,36 +209,36 @@
 
 **参考项目**：coleam00（4339★）的完整 JSON 生成、drawmode（16★）的 Graphviz 自动布局、excalidraw-architect-mcp（139★）的知识图谱生成
 
-- [ ] **C.1 IR → Excalidraw JSON 转换器**
+- [x] **C.1 IR → Excalidraw JSON 转换器**
   - 文件：`scripts/ir_to_excalidraw.py`
   - 输入：IR JSON（Pillar A 输出）+ 模板元数据（Pillar B 输出）
   - 处理流程：模板布局 → 元素生成 → 箭头绑定 → 应用色板 → 输出 JSON
   - 输出：完整的 `.excalidraw` JSON 文件
 
-- [ ] **C.2 自动布局引擎（参考 drawmode + excalidraw-architect-mcp）**
+- [x] **C.2 自动布局引擎（参考 drawmode + excalidraw-architect-mcp）**
   - 集成 Graphviz 作为可选布局引擎
   - 支持布局算法：层次布局（dot）、力导向布局（neato）、树形布局（twopi）
   - 布局后自动调整元素尺寸适配文字内容
   - 无 Graphviz 时使用内置布局计算器
 
-- [ ] **C.3 模板驱动的元素组合器**
+- [x] **C.3 模板驱动的元素组合器**
   - 从 element-templates.md 读取元素模板定义
   - 根据节点类型选择对应元素模板
   - 自动生成文字绑定 + 箭头绑定
   - 技术组件自动匹配样式（tech-node-templates.md）
 
-- [ ] **C.4 自纠错与质量门（参考 robonuggets，74★ + shannhk，5★）**
+- [x] **C.4 自纠错与质量门（参考 robonuggets，74★ + shannhk，5★）**
   - 增强现有 validate_excalidraw.py
   - 视觉质量检查：文字溢出、元素重叠、连线悬空
   - 布局合理性检查：间距、层级清晰度
   - 自纠错：自动调整布局参数重新生成
 
-- [ ] **C.5 增量编辑与迭代（参考 coleam00）**
+- [x] **C.5 增量编辑与迭代（参考 coleam00）**
   - 文件：`scripts/merge_excalidraw.py`
   - 合并新旧元素，保留旧 id，新增元素用新 id
   - 支持微调 + 重排 + 回退
 
-- [ ] **C.6 Mermaid ↔ Excalidraw 互转**
+- [x] **C.6 Mermaid ↔ Excalidraw 互转**
   - 利用本地 @excalidraw/mermaid-to-excalidraw 包
   - Mermaid 源码 → IR → Excalidraw 元素
   - 作为 Pillar A 的输入通道之一
@@ -247,7 +247,7 @@
   - 自包含 67 个技术图标（icon_library.py，SVG data URL，无需外部资源）
   - 架构图生成时自动根据技术名称匹配对应图标（ir_to_excalidraw.py --icons）
 
-- [ ] **C.8 知识图谱架构生成（参考 excalidraw-architect-mcp，139★）**
+- [x] **C.8 知识图谱架构生成（参考 excalidraw-architect-mcp，139★）**
   - 从架构描述提取实体/关系 → 知识图谱 → 自动布局
   - 支持自然语言增量修改
 
@@ -259,31 +259,31 @@
 
 **参考项目**：excalidraw/excalidraw-mcp（5069★）的 MCP 协议集成、al1y/mcp-excalidraw（15★）的实时 Web 预览、yctimlin/mcp_excalidraw（2258★）的 MCP 服务器模式、drawmode（16★）的 SDK 引用模式
 
-- [ ] **D.1 升级预览服务器为完整 Excalidraw 编辑器**
+- [x] **D.1 升级预览服务器为完整 Excalidraw 编辑器**
   - 当前：preview_server.js 仅提供 SVG 渲染（轮询 API 模式）
   - 升级目标：预览页内嵌 Excalidraw React 组件，用户可在浏览器中直接编辑
   - 实现方式：CDN 引入 Excalidraw standalone bundle 或本地 node_modules 包
   - 预览页功能：全功能编辑器 + 实时推送 + 导出
 
-- [ ] **D.2 实时双向同步**
+- [x] **D.2 实时双向同步**
   - 当前：单向推送（push → preview）
   - 新增：预览页编辑后，自动同步回本地文件
   - 用户确认后，更新本地 .excalidraw 文件
 
-- [ ] **D.3 多画布管理**
+- [x] **D.3 多画布管理**
   - 预览服务器支持同时管理多个画布，独立 ID 和名称
   - 用户可切换/对比不同画布
 
-- [ ] **D.4 创新方向：关键帧动画预览（参考 excalimate，50★）**
+- [x] **D.4 创新方向：关键帧动画预览（参考 excalimate，50★）**
   - 在预览页中嵌入动画播放功能
   - 支持定义关键帧 → 自动生成序列展开动画
   - 导出为 GIF/WebM 视频
 
-- [ ] **D.5 多格式导出增强**
+- [x] **D.5 多格式导出增强**
   - 当前：PNG/SVG 预览
   - 新增：PDF 导出、HTML 嵌入代码生成、Markdown 嵌入
 
-- [ ] **D.6 MCP 协议集成（参考 excalidraw/excalidraw-mcp，5069★）**
+- [x] **D.6 MCP 协议集成（参考 excalidraw/excalidraw-mcp，5069★）**
   - 对接官方 MCP 协议，支持实时画布读写
   - 支持在已有画布上追加元素
   - 作为 Codex 与浏览器预览页之间的标准通信协议
