@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-**M1-M9 全部完成，M10 完成（版本号 + CHANGELOG + 文档），e2e 24/24 通过。**
+**版本保持 v0.0.1。核心闭环与本轮发布收口已完成；测试统一称为 e2e suite，结果以当前环境输出为准。**
 
 本 skill 完全自包含，不依赖其他 skill：render bundle 已内联到 scripts/render-bundle/，
 编辑器 bundle 源码在 scripts/web/，MCP SDK/zod 从本 skill 内加载。
@@ -23,9 +23,9 @@
 | M6 文案引擎 | template_selector --recommend + ir-format.md（IR 中间格式） | ✅ |
 | M7 JSON 生成 | ir_to_excalidraw.py + Graphviz 布局 + merge 增量编辑 + --visual 质量门 | ✅ |
 | M8 完整预览 | 内嵌 Excalidraw 编辑器(/editor) + 双向同步(/api/save) + 多画布 + PDF 导出 | ✅ |
-| M9 创新功能 | 动画(D.4) + Mermaid(C.6) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) + 图标库(C.7) | ✅ 全部完成 |
+| M9 创新功能 | 动画 + Mermaid + 知识图谱 + Graphviz + MCP + 图标库 | ✅ 核心能力完成，平台边界已记录 |
 | E.3 演示 | 13 个示例 + 动画 GIF（output/animation-demo.gif） | ✅ 完成 |
-| M10 发布 | v0.0.1 + CHANGELOG + 全套文档示例 + CI（GitHub Actions 两 job 全绿） | ✅ |
+| M10 发布 | v0.0.1 + CHANGELOG + 文档示例 + CI 配置 | ✅ 在线安装与跨平台实机仍待验证 |
 
 ## 核心脚本速查
 
@@ -73,9 +73,15 @@ node scripts/mcp_server.mjs   # 工具: generate_diagram / validate_diagram / pu
 | 本地 Excalidraw | localhost:5001 | open_in_excalidraw.js 打开画布 |
 | render bundle | scripts/render-bundle/（内置） | render_preview 自包含 bundle（EXCALIDRAW_RENDER_BUNDLE 可覆盖） |
 
+## 本轮已完成与仍待验证
+
+- 已完成：web 依赖声明与 build:all、CI 构建、MCP 实际调用、默认确定性、Library 两阶段布局、跨平台 opener 安全调用。
+- 已完成：Library 代表性 `--visual` 校验与本地缓存 SHA-256 清单。
+- 未在线验证：干净网络环境下的完整 `npm ci`（本机离线缓存缺 tarball）；未在真实 Windows/Linux 桌面实机验证浏览器/服务启动。
+
 ## 已知问题与后续
 
-1. **沙箱限制**：端口绑定/Chromium/子进程需 escalation；`scripts/web/editor-bundle.js` 是构建产物（gitignore），全新 checkout 需 `cd scripts/web && npm run build`
+1. **沙箱限制**：端口绑定/Chromium/子进程需 escalation；`scripts/web/editor-bundle.js` 是构建产物（gitignore），全新 checkout 需 `npm ci --prefix scripts/web && npm run build:all --prefix scripts/web`
 2. **C.7 云架构图标库**：需外部图标资源（AWS/GCP/Azure SVG），留作可选扩展
 3. **CI**：无 git remote，GitHub Actions 待推送远端后启用
 4. **Mermaid 子集**：当前支持 flowchart/sequenceDiagram 常用语法；完整 mermaid（gantt/class/er）未覆盖

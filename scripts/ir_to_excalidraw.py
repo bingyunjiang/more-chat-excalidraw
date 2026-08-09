@@ -15,6 +15,7 @@ import json
 import sys
 import os
 import time
+import hashlib
 import argparse
 import shutil
 import subprocess
@@ -98,9 +99,12 @@ def _base_el(el_id, etype, x, y, w, h, theme, extra=None):
         "fillStyle": "solid", "strokeWidth": theme["strokeWidth"],
         "strokeStyle": "solid", "roughness": theme["roughness"],
         "opacity": 100, "groupIds": [], "frameId": None,
-        "roundness": None, "seed": abs(hash(el_id)) % 100000,
+        # Python's hash is salted per process; derive stable values from the id.
+        "roundness": None, "seed": int(hashlib.sha256(el_id.encode("utf-8")).hexdigest()[:8], 16) % 100000,
         "version": 1, "versionNonce": 0, "isDeleted": False,
-        "boundElements": None, "updated": int(time.time() * 1000),
+        # Keep generated scenes byte-stable by default.  Set EXCALIDRAW_UPDATED
+        # explicitly when an external timestamp is required.
+        "boundElements": None, "updated": int(os.environ.get("EXCALIDRAW_UPDATED", "1")),
         "link": None, "locked": False,
     }
     if etype == "rectangle":
@@ -132,6 +136,26 @@ def estimate_text_width(text, font_size):
     for ch in str(text):
         w += 1.0 if ord(ch) > 0x2E80 else 0.6
     return w * font_size
+
+
+def _library_text_color(elements):
+    """Choose readable text from the dominant visible library fill."""
+    fills = []
+    for el in elements:
+        color = el.get("backgroundColor")
+        if el.get("type") not in ("rectangle", "ellipse", "diamond") or not isinstance(color, str) or not color.startswith("#") or color in ("#ffffff", "#fff"):
+            continue
+        try:
+            h = color.lstrip("#")
+            if len(h) == 3: h = "".join(c * 2 for c in h)
+            rgb = tuple(int(h[i:i+2], 16) / 255 for i in (0, 2, 4))
+            linear = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+            lum = 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+            area = float(el.get("width", 0) or 0) * float(el.get("height", 0) or 0)
+            fills.append((area, lum))
+        except ValueError:
+            continue
+    return "#ffffff" if fills and max(fills)[1] < 0.30 else "#374151"
 
 
 def _arrow_el(el_id, x, y, points, theme, from_id, to_id, style="solid", bidirectional=False):
@@ -323,7 +347,7 @@ def _layout_graphviz(ir_nodes, ir_edges, node_styles, engine="dot"):
 
 
 # ─── 主转换 ────────────────────────────────────────────────────────────────
-def convert(ir, template_override=None, layout_engine=None, icons=False):
+def convert(ir, template_override=None, layout_engine=None, icons=False, library=False):
     """IR dict → .excalidraw dict"""
     template = template_override or ir.get("template", "flowchart")
     theme_key = ir.get("theme", "default")
@@ -349,6 +373,30 @@ def convert(ir, template_override=None, layout_engine=None, icons=False):
         if isinstance(node.get("style"), str) and node["style"].startswith("#"):
             style["fill"] = node["style"]
         node_styles[nid] = style
+
+    # Library components have their own geometry. Resolve their bounding boxes
+    # before any layout engine runs so spacing, frames and arrow anchors use
+    # the actual rendered dimensions (not the placeholder node style).
+    lib_loader = None
+    lib_matches = {}
+    if library:
+        try:
+            sys.path.insert(0, os.path.dirname(__file__))
+            import library_loader as _ll
+            lib_loader = _ll
+            for node in ir_nodes:
+                match = lib_loader.lookup_component(node.get("type", "plain"), node.get("label", ""))
+                if not match:
+                    continue
+                raw_elements, scale = match
+                _, _, raw_w, raw_h = lib_loader._bounding_box(raw_elements)
+                if raw_w > 0 and raw_h > 0:
+                    node_styles[node["id"]]["w"] = raw_w * scale
+                    node_styles[node["id"]]["h"] = raw_h * scale
+                    lib_matches[node["id"]] = (raw_elements, scale)
+        except ImportError:
+            print("[WARN] library_loader.py 不可用，跳过库组件替换", file=sys.stderr)
+            library = False
 
     # 2. 布局
     if layout_engine in ("dot", "neato", "twopi"):
@@ -412,14 +460,42 @@ def convert(ir, template_override=None, layout_engine=None, icons=False):
             "strokeWidth": 1,
         })
         elements.append(frame)
-        # frame 标题
-        elements.append(_text_el(
-            f"ftxt-{gid}", fx + 8, fy + 4,
-            g.get("name", ""), theme, fontSize=16,
-            w=fw - 16, h=22, color=LAYER_FRAME_TEXT[gi % len(LAYER_FRAME_TEXT)],
-        ))
+        # Frame `name` is rendered by Excalidraw; avoid a duplicate title text.
 
     # 4. 生成节点元素
+    # 4.1 库组件加载器（如果启用 --library）
+    lib_components = {}  # nid → (normalized_elements, bbox)
+
+    # 4.2 查找每个节点的库组件匹配
+    if library and lib_loader:
+        for node in ir_nodes:
+            nid = node["id"]
+            if nid not in positions:
+                continue
+            result = lib_matches.get(nid)
+            if result:
+                raw_elements, scale = result
+                x, y = positions[nid]
+                st = node_styles[nid]
+                # 库组件居中到原节点位置
+                # 先算出缩放后的组件尺寸，然后偏移使其居中
+                _, _, raw_w, raw_h = lib_loader._bounding_box(raw_elements)
+                scaled_w = raw_w * scale
+                scaled_h = raw_h * scale
+                # 居中偏移：原节点中心 → 库组件左上角
+                center_x = x + st["w"] / 2
+                center_y = y + st["h"] / 2
+                offset_x = center_x - scaled_w / 2
+                offset_y = center_y - scaled_h / 2
+                normed, bbox = lib_loader.normalize_component(
+                    raw_elements, target_x=offset_x, target_y=offset_y, scale=scale
+                )
+                lib_components[nid] = (normed, bbox)
+                # 更新节点样式为库组件的实际尺寸（用于箭头绑定）
+                node_styles[nid]["w"] = scaled_w
+                node_styles[nid]["h"] = scaled_h
+
+    # 4.3 生成节点元素
     for node in ir_nodes:
         nid = node["id"]
         if nid not in positions:
@@ -433,26 +509,127 @@ def convert(ir, template_override=None, layout_engine=None, icons=False):
             if nid in g.get("nodes", []):
                 frame_id = f"frame-{g['id']}"
                 break
-        el = _base_el(nid, shape, x, y, w, h, theme, {
-            "backgroundColor": st["fill"],
-            "frameId": frame_id,
-            "boundElements": [{"id": f"txt-{nid}", "type": "text"}],
-        })
-        elements.append(el)
-        # 节点文字（容器内绑定）
-        label = node.get("label", "")
-        tw = max(40, w - 40)
-        tx = x + (w - tw) / 2
-        ty = y + (h - (node.get("type") in ("start", "end", "topic", "marker", "milestone") and 24 or 26)) / 2
-        if shape == "diamond":
-            ty = y + (h - 24) / 2
-        text_color = theme["textColor"]
-        if shape == "ellipse" and st["fill"] in (SEMANTIC_FILL["input"], SEMANTIC_FILL["storage"]):
-            text_color = "#1e3a5f" if theme_key == "default" else theme["textColor"]
-        elements.append(_text_el(
-            f"txt-{nid}", tx, ty, label, theme, fontSize=18 if shape != "diamond" else 16,
-            w=tw, h=24, color=text_color, container_id=nid,
-        ))
+
+        if nid in lib_components:
+            # 使用库组件替换简单形状
+            lib_els, lib_bbox = lib_components[nid]
+            label = node.get("label", "")
+            # 用库组件的元素替换节点
+            # 为库组件中的主要形状元素设置 boundElements（用于箭头绑定）
+            # 策略：优先选择面积最大的矩形作为锚定元素；
+            # 如果没有合适矩形（如 Database 只有 line+ellipse），则添加一个
+            # 透明矩形覆盖整个组件，作为箭头绑定目标
+            anchor_el = None
+            anchor_area = 0
+            for lel in lib_els:
+                if lel.get("type") in ("rectangle", "ellipse", "diamond"):
+                    area = (lel.get("width", 0) or 0) * (lel.get("height", 0) or 0)
+                    # 优先选矩形（矩形更适合作为箭头绑定目标）
+                    if lel.get("type") == "rectangle" and area > anchor_area:
+                        anchor_area = area
+                        anchor_el = lel
+                    elif anchor_el is None and area > anchor_area:
+                        anchor_area = area
+                        anchor_el = lel
+            # 如果锚定元素太小（面积 < 组件面积 50%），添加透明覆盖矩形
+            if anchor_el is None or anchor_area < lib_bbox["width"] * lib_bbox["height"] * 0.3:
+                # 创建一个透明矩形覆盖整个组件，作为箭头绑定目标
+                anchor_el = _base_el(nid, "rectangle", lib_bbox["x"], lib_bbox["y"],
+                                     lib_bbox["width"], lib_bbox["height"], theme, {
+                    "backgroundColor": "transparent",
+                    "fillStyle": "solid",
+                    "strokeColor": "transparent",
+                    "strokeWidth": 0,
+                    "opacity": 0,
+                    "frameId": frame_id,
+                    "boundElements": [],
+                })
+                # 将透明矩形插入到组件元素列表前面（最底层）
+                lib_els.insert(0, anchor_el)
+            else:
+                # 重命名锚定元素 ID 为节点 ID，以便箭头绑定
+                old_anchor_id = anchor_el["id"]
+                anchor_el["id"] = nid
+                # 更新库组件中其他元素对旧 ID 的引用
+                for lel in lib_els:
+                    if lel.get("boundElements") and isinstance(lel["boundElements"], list):
+                        for be in lel["boundElements"]:
+                            if be.get("id") == old_anchor_id:
+                                be["id"] = nid
+                # 设置锚定元素的 boundElements
+                anchor_el["boundElements"] = []
+                # 设置 frameId
+                anchor_el["frameId"] = frame_id
+            # Keep one centered title and at most one type subtitle; clear all
+            # other library placeholder/description text.
+            text_els = [lel for lel in lib_els if lel.get("type") == "text"]
+            label_seen = False
+            for index, lel in enumerate(text_els):
+                value = label if index == 0 else (f"[{node.get('type', 'component')}]" if index == 1 else "")
+                lel["text"] = value
+                lel["originalText"] = value
+                if not value:
+                    continue
+                available_w = max(24, lib_bbox["width"] - 12)
+                font = min(float(lel.get("fontSize") or 16), 18.0)
+                while font > 8 and estimate_text_width(value, font) > available_w:
+                    font -= 1
+                lel["fontSize"] = font
+                lel["width"] = available_w
+                lel["height"] = max(18, font * 1.35)
+                lel["x"] = lib_bbox["x"] + (lib_bbox["width"] - available_w) / 2
+                title_ratio = 0.52 if node.get("type") == "database" else 0.38
+                lel["y"] = lib_bbox["y"] + (lib_bbox["height"] * (title_ratio if index == 0 else 0.68)) - lel["height"] / 2
+                lel["strokeColor"] = "#374151" if node.get("type") == "database" else _library_text_color(lib_els)
+                lel["customData"] = {**(lel.get("customData") or {}), "libraryNodeId": nid, "libraryTitle": index == 0}
+                if index == 0:
+                    label_seen = True
+            # Some libraries (notably cylinder/database symbols) contain no
+            # usable text placeholder. Add one deterministic bound overlay so
+            # every replaced IR node exposes its label exactly once.
+            if not label_seen and label:
+                available_w = max(24, lib_bbox["width"] - 12)
+                font = 16.0
+                while font > 8 and estimate_text_width(label, font) > available_w:
+                    font -= 1
+                overlay = _text_el(
+                    f"libtxt-{nid}", lib_bbox["x"] + (lib_bbox["width"] - available_w) / 2,
+                    lib_bbox["y"] + (lib_bbox["height"] - font * 1.35) / 2,
+                    label, theme, fontSize=font, w=available_w, h=max(18, font * 1.35),
+                    color=theme["textColor"], container_id=nid,
+                )
+                overlay["groupIds"] = list(anchor_el.get("groupIds") or [])
+                overlay["frameId"] = frame_id
+                overlay["customData"] = {"libraryNodeId": nid, "libraryTitle": True}
+                lib_els.append(overlay)
+                anchor_el.setdefault("boundElements", []).append({"id": overlay["id"], "type": "text"})
+            # 添加所有库组件元素
+            for lel in lib_els:
+                if lel.get("frameId") is None and lel["id"] != nid:
+                    lel["frameId"] = frame_id
+                elements.append(lel)
+        else:
+            # 传统简单形状生成
+            el = _base_el(nid, shape, x, y, w, h, theme, {
+                "backgroundColor": st["fill"],
+                "frameId": frame_id,
+                "boundElements": [{"id": f"txt-{nid}", "type": "text"}],
+            })
+            elements.append(el)
+            # 节点文字（容器内绑定）
+            label = node.get("label", "")
+            tw = max(40, w - 40)
+            tx = x + (w - tw) / 2
+            ty = y + (h - (node.get("type") in ("start", "end", "topic", "marker", "milestone") and 24 or 26)) / 2
+            if shape == "diamond":
+                ty = y + (h - 24) / 2
+            text_color = theme["textColor"]
+            if shape == "ellipse" and st["fill"] in (SEMANTIC_FILL["input"], SEMANTIC_FILL["storage"]):
+                text_color = "#1e3a5f" if theme_key == "default" else theme["textColor"]
+            elements.append(_text_el(
+                f"txt-{nid}", tx, ty, label, theme, fontSize=18 if shape != "diamond" else 16,
+                w=tw, h=24, color=text_color, container_id=nid,
+            ))
 
     # 4.3 对比图：从 metadata.comparison 生成表格元素
     if template == "comparison":
@@ -529,12 +706,17 @@ def convert(ir, template_override=None, layout_engine=None, icons=False):
         tx2, ty2 = positions[to]
         st_from = node_styles[frm]
         st_to = node_styles[to]
-        # 简单正交：从 from 下边缘到 to 上边缘（垂直流），或水平
+        # Layered diagrams use orthogonal routes through the whitespace between
+        # rows; a deterministic lane offset separates fan-out edges.
         ax = fx + st_from["w"] / 2
         ay = fy + st_from["h"]
         dx = tx2 + st_to["w"] / 2 - ax
         dy = ty2 - ay
         pts = [[0, 0], [dx, dy]]
+        if template in ("architecture", "swimlane") and abs(dy) > 20:
+            lane = ((sum(ord(c) for c in str(eid)) % 5) - 2) * 12
+            mid_y = (ay + ty2) / 2 + lane
+            pts = [[0, 0], [0, mid_y - ay], [tx2 + st_to["w"] / 2 - ax, mid_y - ay], [dx, dy]]
         if direction == "horizontal" or (abs(dy) < 30 and dx != 0):
             ax = fx + st_from["w"]
             ay = fy + st_from["h"] / 2
@@ -629,15 +811,15 @@ def convert(ir, template_override=None, layout_engine=None, icons=False):
     for el in elements:
         etype = el["type"]
         if etype == "text" and el.get("id") == "title-0":
-            el["customData"] = {"animate": {"order": 1, "duration": 400, "type": "fade-in"}}
+            el["customData"] = {**(el.get("customData") or {}), "animate": {"order": 1, "duration": 400, "type": "fade-in"}}
         elif etype == "frame":
-            el["customData"] = {"animate": {"order": 2, "duration": 400, "type": "fade-in"}}
+            el["customData"] = {**(el.get("customData") or {}), "animate": {"order": 2, "duration": 400, "type": "fade-in"}}
         elif etype in ("rectangle", "ellipse", "diamond"):
-            el["customData"] = {"animate": {"order": 3, "duration": 500, "type": "slide-up"}}
+            el["customData"] = {**(el.get("customData") or {}), "animate": {"order": 3, "duration": 500, "type": "slide-up"}}
         elif etype == "arrow":
-            el["customData"] = {"animate": {"order": 4, "duration": 300, "type": "draw"}}
+            el["customData"] = {**(el.get("customData") or {}), "animate": {"order": 4, "duration": 300, "type": "draw"}}
         elif etype == "text":
-            el["customData"] = {"animate": {"order": 5, "duration": 400, "type": "fade-in"}}
+            el["customData"] = {**(el.get("customData") or {}), "animate": {"order": 5, "duration": 400, "type": "fade-in"}}
 
     return result
 
@@ -723,6 +905,7 @@ def main():
     ap.add_argument("--theme", help="覆盖主题：default/sketch/blueprint/minimal")
     ap.add_argument("--layout", help="布局引擎：dot/neato/twopi（Graphviz，需 brew install graphviz）")
     ap.add_argument("--icons", action="store_true", help="注入云架构技术图标（自包含 SVG，icon_library.py）")
+    ap.add_argument("--library", action="store_true", help="使用 Excalidraw Libraries 组件替换简单形状（library_loader.py）")
     args = ap.parse_args()
 
     if args.template_list:
@@ -746,7 +929,7 @@ def main():
         ir = dict(ir)
         ir["theme"] = args.theme
 
-    result = convert(ir, layout_engine=args.layout, icons=args.icons)
+    result = convert(ir, layout_engine=args.layout, icons=args.icons, library=args.library)
 
     out_path = args.output
     if not out_path:
@@ -762,7 +945,7 @@ def main():
     for el in result["elements"]:
         by_type[el["type"]] = by_type.get(el["type"], 0) + 1
     print(f"  类型统计: {by_type}")
-    print(f"  主题: {ir.get('theme', 'default')}  布局: {args.layout or '内置'}  图标: {'是' if args.icons else '否'}")
+    print(f"  主题: {ir.get('theme', 'default')}  布局: {args.layout or '内置'}  图标: {'是' if args.icons else '否'}  库组件: {'是' if args.library else '否'}")
 
     if args.validate:
         import subprocess

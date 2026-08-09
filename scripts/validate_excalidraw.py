@@ -61,6 +61,10 @@ def _visual_checks(elements, warnings):
         etype = el.get("type")
         if etype not in ("rectangle", "ellipse", "diamond", "text"):
             continue
+        # Invisible anchor overlays are intentional for library components and
+        # should not be reported as visual overlaps with their artwork.
+        if el.get("opacity", 100) == 0:
+            continue
         # Skip zero-size markers (timeline dots etc.)
         w, h = el.get("width", 0), el.get("height", 0)
         if w < 10 or h < 10:
@@ -74,6 +78,8 @@ def _visual_checks(elements, warnings):
     for i in range(len(containers)):
         for j in range(i + 1, len(containers)):
             (ia, ea, ba), (ib, eb, bb) = containers[i], containers[j]
+            if set(ea.get("groupIds") or ()) & set(eb.get("groupIds") or ()):
+                continue
             area = _rects_overlap(ba, bb)
             if area <= 0:
                 continue
@@ -100,6 +106,8 @@ def _visual_checks(elements, warnings):
     for i in range(len(containers)):
         for j in range(i + 1, len(containers)):
             (ia, ea, ba), (ib, eb, bb) = containers[i], containers[j]
+            if set(ea.get("groupIds") or ()) & set(eb.get("groupIds") or ()):
+                continue
             ax1, ay1, ax2, ay2 = ba
             bx1, by1, bx2, by2 = bb
             gap_x = max(bx1 - ax2, ax1 - bx2, 0)
@@ -283,16 +291,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("file", help="Path to .excalidraw file")
     parser.add_argument("--strict", action="store_true", help="Treat warnings as errors")
+    parser.add_argument("--fail-on-warning", action="store_true", help="Fail when any warning is emitted (alias for strict)")
     parser.add_argument("--visual", action="store_true", help="Run layout quality heuristics (overlap/dangling/density)")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     args = parser.parse_args()
 
-    errors, warnings, stats = validate_file(args.file, args.strict, args.visual)
+    strict = args.strict or args.fail_on_warning
+    errors, warnings, stats = validate_file(args.file, strict, args.visual)
 
     if args.json:
         result = {
             "file": args.file,
-            "ok": len(errors) == 0 and not (args.strict and warnings),
+            "ok": len(errors) == 0 and not (strict and warnings),
             "errors": errors,
             "warnings": warnings,
             "stats": stats,
@@ -306,7 +316,7 @@ def main():
         if not errors and not warnings:
             print(f"[OK] {args.file}: {stats['total_elements']} elements")
 
-    if errors or (args.strict and warnings):
+    if errors or (strict and warnings):
         return 1
     return 0
 

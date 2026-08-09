@@ -160,10 +160,10 @@ if [ "$SERVER_UP" = "1" ]; then
   # 6f: GET /editor-bundle.js serves the bundled Excalidraw editor
   BUNDLE_TMP="/tmp/e2e-editor-bundle.js"
   curl -s "http://localhost:${PREVIEW_PORT}/editor-bundle.js" -o "$BUNDLE_TMP"
-  if grep -q "ExcalidrawEditorBundle" "$BUNDLE_TMP"; then
+  if grep -q "ExcalidrawEditorBundle" "$BUNDLE_TMP" && [ -s "$PROJECT_DIR/scripts/web/editor-bundle.js" ]; then
     log_pass "editor bundle served"
   else
-    log_warn "editor bundle not served (build with: cd scripts/web && npm run build)"
+    log_fail "editor bundle missing or invalid (run: npm run build:all --prefix scripts/web)"
   fi
 
   # 6g: GET /excalidraw-css serves the Excalidraw stylesheet
@@ -308,25 +308,77 @@ fi
 
 # --- Test 11: MCP server (D.6) ---
 echo "=== Test 11: MCP server ==="
-if [ -f "$PROJECT_DIR/scripts/web/node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js" ]; then
+if [ -f "$PROJECT_DIR/scripts/web/node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.js" ] && [ -d "$PROJECT_DIR/scripts/web/node_modules/zod" ]; then
   cat > /tmp/e2e-mcp-req.jsonl << 'MCPEOF'
 {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"e2e","version":"1"}}}
 {"jsonrpc":"2.0","method":"notifications/initialized"}
 {"jsonrpc":"2.0","id":2,"method":"tools/list"}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"generate_diagram","arguments":{"ir":{"version":1,"title":"mcp-e2e","template":"flowchart","nodes":[{"id":"a","label":"A","type":"start"},{"id":"b","label":"B","type":"end"}],"edges":[{"id":"e","from":"a","to":"b"}]},"output":"/tmp/e2e-mcp-generated.excalidraw"}}}
 MCPEOF
   node "$PROJECT_DIR/scripts/mcp_server.mjs" < /tmp/e2e-mcp-req.jsonl > /tmp/e2e-mcp-out.log 2>/dev/null &
   MCP_PID=$!
   sleep 4
   kill "$MCP_PID" 2>/dev/null
   MCP_OUT=$(cat /tmp/e2e-mcp-out.log)
-  if echo "$MCP_OUT" | grep -q '"generate_diagram"' && echo "$MCP_OUT" | grep -q '"list_templates"'; then
-    log_pass "MCP server registers tools over stdio"
+  if echo "$MCP_OUT" | grep -q '"generate_diagram"' && echo "$MCP_OUT" | grep -q '"list_templates"' && [ -s /tmp/e2e-mcp-generated.excalidraw ]; then
+    log_pass "MCP server registers tools and executes generate_diagram"
   else
     log_fail "MCP server tool registration"
   fi
 else
-  log_warn "MCP SDK not installed; skipping MCP test (cd scripts/web && npm install @modelcontextprotocol/sdk)"
+  log_fail "MCP SDK/zod missing after npm ci"
 fi
+
+# --- Test 11b: deterministic generation + library path ---
+echo "=== Test 11b: Deterministic/library generation ==="
+python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example flowchart --output /tmp/e2e-det-a.excalidraw >/dev/null 2>&1 && \
+python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example flowchart --output /tmp/e2e-det-b.excalidraw >/dev/null 2>&1 && \
+cmp -s /tmp/e2e-det-a.excalidraw /tmp/e2e-det-b.excalidraw
+if [ "$?" -eq 0 ]; then log_pass "same IR produces byte-identical output"; else log_fail "generation is not deterministic"; fi
+if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example architecture --library --output /tmp/e2e-library.excalidraw >/dev/null 2>&1 && python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" /tmp/e2e-library.excalidraw --visual --fail-on-warning >/dev/null 2>&1; then
+  log_pass "--library generation and validation"
+else
+  log_fail "--library generation/validation"
+fi
+if python3 - "$PROJECT_DIR/examples/microservice-arch-ir.json" "$PROJECT_DIR/scripts/ir_to_excalidraw.py" <<'PY'
+import json, subprocess, sys, tempfile
+ir_path, script = sys.argv[1:]
+ir = json.load(open(ir_path, encoding="utf-8"))
+out = "/tmp/e2e-library-semantic.excalidraw"
+subprocess.run(["python3", script, ir_path, "--library", "--output", out], check=True, stdout=subprocess.DEVNULL)
+scene = json.load(open(out, encoding="utf-8"))
+texts = [e.get("text", "") for e in scene.get("elements", [])
+         if e.get("type") == "text" and not str(e.get("id", "")).startswith("elbl-")]
+bad = {n["label"]: sum(t == n["label"] for t in texts) for n in ir.get("nodes", []) if n.get("label")}
+bad = {k: v for k, v in bad.items() if v != 1}
+if bad:
+    print("semantic label count mismatch:", bad, file=sys.stderr)
+    raise SystemExit(1)
+by_node = {e.get("customData", {}).get("libraryNodeId"): e for e in scene.get("elements", [])
+           if e.get("type") == "text" and e.get("customData", {}).get("libraryTitle")}
+elements = scene.get("elements", [])
+for node in ir.get("nodes", []):
+    if node.get("type") != "database":
+        continue
+    title = by_node.get(node["id"])
+    if not title or title.get("strokeColor") in ("#fff", "#ffffff"):
+        raise SystemExit(f"database title not visible: {node['id']}")
+    groups = set(title.get("groupIds") or [])
+    members = [e for e in elements if groups.intersection(e.get("groupIds") or []) and e.get("type") != "text"]
+    if not members:
+        raise SystemExit(f"database component bbox missing: {node['id']}")
+    x, y = title["x"] + title["width"] / 2, title["y"] + title["height"] / 2
+    if not any(e["x"] <= x <= e["x"] + e["width"] and e["y"] <= y <= e["y"] + e["height"] for e in members):
+        raise SystemExit(f"database title outside component: {node['id']}")
+    if node.get("type") == "database" and title.get("strokeColor") == "#ffffff":
+        raise SystemExit(f"database title has low contrast: {node['id']}")
+for node in ir.get("nodes", []):
+    if node.get("type") == "actor":
+        title = by_node.get(node["id"])
+        if not title or title.get("strokeColor") != "#ffffff":
+            raise SystemExit("actor title must use white text on the dark Person component")
+PY
+then log_pass "--library semantic labels exactly once"; else log_fail "--library semantic label completeness"; fi
 
 # --- Test 12: Cloud architecture icon injection (C.7) ---
 echo "=== Test 12: Icon library ==="

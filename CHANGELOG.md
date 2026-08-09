@@ -4,6 +4,13 @@
 
 ## [0.0.1] - 2026-08-08
 
+### Changed (unreleased)
+
+- 默认生成改为字节级确定性；`EXCALIDRAW_UPDATED` 可显式控制更新时间。
+- web 依赖正式声明 MCP SDK/zod，CI/e2e 覆盖构建、MCP 实际工具调用与 Library 视觉校验。
+- Library 匹配与真实尺寸在布局前解析，组件 frame/箭头使用实际边界；Library 仍为可选实验能力。
+- opener 按 macOS/Linux/Windows 选择安全启动方式，并保留 macOS launchd 行为。
+
 ### 初始版本
 
 通过自然对话生成、预览、打开和迭代编辑本地 Excalidraw 画布。
@@ -21,5 +28,5 @@
 - **云架构图标库**：`icon_library.py` 自包含 67 个技术图标（SVG data URL），`ir_to_excalidraw.py --icons` 注入 image 元素 + files 资源（借鉴 excalidraw-icons-mcp）
 - **动画 GIF 导出**：`render_animation_gif.py` 读取关键帧顺序合成 GIF（output/animation-demo.gif，借鉴 excalimate）
 - **MCP 协议**：`mcp_server.mjs` 暴露 generate_diagram / validate_diagram / push_preview / list_templates 四个工具
-- **测试**：e2e 24 项（生成 → 校验 → 渲染 → 预览 → 编辑器 → 保存 → 多画布 → 动画 → Mermaid → 知识图谱 → Graphviz → 增量编辑 → MCP）
+- **测试**：e2e suite 覆盖生成、校验、渲染、预览、编辑器、保存、多画布、动画、Mermaid、知识图谱、Graphviz、增量编辑与 MCP
 - **CI**：GitHub Actions（validate + smoke + e2e）

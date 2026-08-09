@@ -9,3 +9,7 @@ __pycache__/
 scripts/web/node_modules/
 scripts/web/editor-bundle.js
 scripts/render-bundle/render-bundle.js
+.codegraph/
+references/excalidraw-libs/*.excalidrawlib
+.codegraph/
+references/excalidraw-libs/*.excalidrawlib

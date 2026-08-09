@@ -1,6 +1,6 @@
 # more-chat-excalidraw 开发计划
 
-> 最后更新：2026-08-08（v3.3，M9 大部分落地：动画/Mermaid/知识图谱/Graphviz）
+> 最后更新：2026-08-09（v0.0.1，发布收口）
 
 ## 项目目标（v3）
 
@@ -22,9 +22,9 @@
 | scripts/lib/svg_render.js | ✅ 完成 | 共享 SVG 渲染器 |
 | git 仓库 | ✅ 已初始化 | |
 | README.md | ✅ 完成 | |
-| HANDOFF.md | ✅ 完成（待更新 Phase 5+） | |
+| HANDOFF.md | ✅ 已更新 | 当前验证与未验证项 |
 | package.json | ✅ 完成 | Playwright 为 optional peerDep |
-| 测试 | ✅ 完成 | test_e2e.sh 10/10 通过 |
+| 测试 | ✅ e2e suite | CI 执行 npm ci/build、MCP 实调、确定性与 Library visual；本地端口/在线安装仍受环境影响 |
 | output/ 目录 | ✅ 已创建 | 含 fixture-flowchart.excalidraw |
 
 ## 环境依赖（已验证）
@@ -84,7 +84,7 @@
   - 新增 scripts/preview_server.js：内存存储 + 轮询 API
   - 新增 scripts/push_preview.js：推送 .excalidraw 到预览服务器
   - 共享 SVG 渲染器 scripts/lib/svg_render.js
-  - 端到端测试扩展至 10 项（10/10 通过）
+  - 端到端测试持续扩展，结果以当前 e2e suite 输出为准
 
 ---
 
@@ -320,8 +320,8 @@
 | M6：文案引擎 | 意图分类 + 文案生成 + IR 中间格式 | A | ✅ 完成（template_selector --recommend + ir-format.md + mermaid/文本导入通道） |
 | M7：JSON 生成 | IR→Excalidraw + 自动布局 + 自纠错 | C | ✅ 完成（ir_to_excalidraw.py + Graphviz + merge + --visual 质量门） |
 | M8：完整预览 | 内嵌编辑器 + 双向同步 + 多画布 + PDF 导出 | D（完整版） | ✅ 完成 |
-| M9：创新功能 | 动画(D.4) + Mermaid(C.6) + 自纠错(C.4) + 知识图谱(C.8) + Graphviz(C.2) + MCP(D.6) + 图标库(C.7) 全部完成 | A/B/C/D 创新 | ✅ 完成 |
-| M10：可发布 | 版本号 + CHANGELOG + 文档 + 示例 | — | ✅ 完成（v0.0.1 初始版本 + CHANGELOG + 全套文档与示例 + CI） |
+| M9：创新功能 | 动画 + Mermaid + 自纠错 + 知识图谱 + Graphviz + MCP + 图标库 | A/B/C/D 创新 | ✅ 核心能力完成，平台边界已记录 |
+| M10：可发布 | 版本号 + CHANGELOG + 文档 + 示例 | — | ✅ v0.0.1 发布收口（在线安装与跨平台实机仍待验证） |
 
 ## 后续阶段（P3）
 
@@ -331,7 +331,7 @@
   - 语义化版本号（当前 v0.0.1 初始版本）
   - CHANGELOG.md 追踪每次变更
 - [x] **E.2 CI/CD**
-  - GitHub Actions：validate + smoke + e2e（.github/workflows/ci.yml），两个 job 全绿
+  - GitHub Actions：validate + smoke + e2e（.github/workflows/ci.yml），CI 配置已纳入 npm ci/build；运行状态以远端实际结果为准
   - 推送至 bingyunjiang/more-chat-excalidraw（main 分支自动触发）
 - [x] **E.3 用户文档与示例**
   - 各类图表的完整示例文件（13 个 example-*.excalidraw + 带图标示例）
@@ -364,5 +364,3 @@
 | robonuggets/excalidraw-skill | 74★ | 自纠错与视觉验证（Phase 6.2） |
 | shannhk/improved-excaldrawing | 5★ | 认知负荷验证、WCAG 可访问性（Phase 6.2） |
 | al1y/mcp-excalidraw | 15★ | 实时 Web 预览 MCP 服务器（Phase 4.0 已实现） |
-
-

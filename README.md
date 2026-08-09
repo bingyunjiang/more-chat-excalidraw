@@ -14,7 +14,7 @@ Turn natural conversation into editable Excalidraw canvases
 [![License](https://img.shields.io/badge/license-MIT-1f883d)](./LICENSE)
 [![Type](https://img.shields.io/badge/type-AI%20Agent%20Skill-8250df)](#项目表头)
 [![Language](https://img.shields.io/badge/language-ZH%20primary%20%7C%20EN-f59e0b)](#项目表头)
-[![Tests](https://img.shields.io/badge/e2e-24%2F24-2f9e44)](scripts/test_e2e.sh)
+[![Tests](https://img.shields.io/badge/tests-e2e%20suite-2f9e44)](scripts/test_e2e.sh)
 
 **关键词 / Keywords：** Excalidraw · 流程图 · 架构图 · 时序图 · 思维导图 · 知识图谱 · Mermaid · Graphviz · 实时预览 · MCP · IR 中间格式 · 增量编辑 · 关键帧动画 · 本地优先 · auditable workflow
 
@@ -165,6 +165,18 @@ node scripts/mcp_server.mjs
 （@excalidraw/excalidraw 0.18.1 + React 19，`cd scripts/web && npm run build`），
 MCP SDK/zod 从本 skill 内 `scripts/web/node_modules` 加载。
 
+### 安装与构建
+
+```bash
+npm ci --prefix scripts/web
+npm run build:all --prefix scripts/web
+node scripts/check_web_lock.mjs
+```
+
+CI 会真实执行依赖安装、editor/render bundle 构建、MCP 工具调用与 e2e suite。Playwright、Graphviz、本地 Excalidraw 和端口服务均是可选环境能力；沙箱可能阻止端口、浏览器或 web root 写入，此时保留 SVG fallback 并明确报告环境受阻。生成默认字节级可复现；`EXCALIDRAW_UPDATED` 可显式控制更新时间。`--library` 为依赖本地缓存的可选实验路径，缺失时回退内置形状。
+
+需要把视觉警告当作质量门时使用 `python3 scripts/validate_excalidraw.py <file> --visual --fail-on-warning`；默认模式仍兼容仅报告 warning。
+
 ## 快速开始
 
 ```bash
@@ -202,7 +214,7 @@ bash scripts/test_e2e.sh
 
 - **结构校验**：元素 id 唯一、字段类型、引用完整性（boundElements / containerId / frameId / 箭头绑定交叉检查）
 - **视觉质量门**：`--visual` 检查元素重叠、悬空箭头、布局密度
-- **e2e 测试**：`bash scripts/test_e2e.sh` 覆盖生成 → 校验 → 渲染 → 预览 → 编辑器 → 保存 → 多画布 → 动画 → Mermaid → 知识图谱 → Graphviz → 增量编辑 → MCP，24/24 通过
+- **e2e 测试**：`bash scripts/test_e2e.sh` 覆盖生成、校验、渲染、预览、编辑器、保存、多画布、动画、Mermaid、知识图谱、Graphviz、增量编辑、MCP、确定性与 Library visual；具体结果以当前环境输出为准
 - **CI**：GitHub Actions（validate + smoke + e2e），见 `.github/workflows/ci.yml`
 
 ## 版本历史

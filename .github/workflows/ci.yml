@@ -26,6 +26,9 @@ jobs:
       - name: Install graphviz (auto-layout)
         run: sudo apt-get update && sudo apt-get install -y graphviz
 
+      - name: Install web dependencies and build bundles
+        run: npm ci --prefix scripts/web && npm run build:all --prefix scripts/web
+
       - name: Python syntax check
         run: |
           python3 -m py_compile scripts/validate_excalidraw.py scripts/template_selector.py scripts/ir_to_excalidraw.py scripts/merge_excalidraw.py scripts/knowledge_graph.py
@@ -78,6 +81,9 @@ jobs:
 
       - name: Install graphviz
         run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Install web dependencies and build bundles
+        run: npm ci --prefix scripts/web && npm run build:all --prefix scripts/web
 
       - name: Install GIF export dependencies (pillow + librsvg)
         run: |

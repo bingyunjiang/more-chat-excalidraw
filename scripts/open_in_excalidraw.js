@@ -23,7 +23,7 @@
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
-const { execFile, execSync } = require("child_process");
+const { execFile, execFileSync } = require("child_process");
 
 const DEFAULT_WEB_ROOT = path.join(
   os.homedir(),
@@ -61,7 +61,7 @@ function isReachable(url) {
 
 function checkServiceSync() {
   try {
-    const result = execSync(`curl -s -o /dev/null -w "%{http_code}" ${URL} 2>/dev/null`, {
+    const result = execFileSync("curl", ["-s", "-o", "/dev/null", "-w", "%{http_code}", "--", URL], {
       timeout: 3000,
       encoding: "utf-8",
     });
@@ -72,8 +72,12 @@ function checkServiceSync() {
 }
 
 function startService() {
+  if (process.platform !== "darwin") {
+    console.error(`[WARN] Automatic service start is only configured for macOS (platform: ${process.platform})`);
+    return false;
+  }
   try {
-    execSync("launchctl start com.excalidraw.editor", {
+    execFileSync("launchctl", ["start", "com.excalidraw.editor"], {
       timeout: 5000,
       encoding: "utf-8",
     });
@@ -117,7 +121,9 @@ function main() {
           process.exit(0);
         }
       }
-      console.error("[HINT] Run: launchctl start com.excalidraw.editor");
+      console.error(process.platform === "darwin"
+        ? "[HINT] Run: launchctl start com.excalidraw.editor"
+        : "[HINT] Start the local Excalidraw service, then retry.");
       process.exit(1);
     }
   }
@@ -145,7 +151,9 @@ function main() {
       startService();
     } else {
       console.error(`[WARN] Excalidraw is NOT reachable at ${URL}`);
-      console.error("[HINT] Add --start to auto-start the service, or run: launchctl start com.excalidraw.editor");
+      console.error(process.platform === "darwin"
+        ? "[HINT] Add --start to auto-start the service, or run: launchctl start com.excalidraw.editor"
+        : "[HINT] Start the local Excalidraw service, then retry.");
     }
   }
 
@@ -164,14 +172,13 @@ function main() {
   } catch (err) {
     if (err.code === "EPERM" || err.code === "EACCES") {
       console.error("[WARN] Cannot write to web root (sandbox/permission restriction).");
-      console.error("[INFO] Attempting via cp command...");
+      console.error("[INFO] Retrying with direct file operations...");
       try {
-        const cpCmd = `cp "${sceneFile}" "${sceneDest}"`;
-        execSync(cpCmd, { encoding: "utf-8" });
-        execSync(`cat > "${versionDest}" << 'VEOF'\n${JSON.stringify({ version: timestamp() }, null, 2)}\nVEOF`, { encoding: "utf-8" });
-        console.log(`[OK] scene.excalidraw updated via cp in ${webRoot}`);
+        fs.copyFileSync(sceneFile, sceneDest);
+        fs.writeFileSync(versionDest, JSON.stringify({ version: timestamp() }, null, 2));
+        console.log(`[OK] scene.excalidraw updated via direct copy in ${webRoot}`);
       } catch (cpErr) {
-        console.error(`[ERROR] Cannot write to web root via cp either: ${cpErr.message}`);
+        console.error(`[ERROR] Cannot write to web root via direct copy either: ${cpErr.message}`);
         console.error("[HINT] This script needs to write to the Excalidraw web root.");
         console.error("       Run with escalated privileges, or copy the file manually:");
         console.error(`       cp "${sceneFile}" "${sceneDest}"`);
@@ -185,7 +192,10 @@ function main() {
 
   console.log(`[OK] ${URL}`);
   if (!noBrowser) {
-    execFile("open", [URL], (err) => {
+    const browser = process.platform === "darwin" ? "open"
+      : process.platform === "win32" ? "cmd.exe" : "xdg-open";
+    const browserArgs = process.platform === "win32" ? ["/c", "start", "", URL] : [URL];
+    execFile(browser, browserArgs, (err) => {
       if (err) {
         console.error(`[WARN] Failed to open browser: ${err.message}`);
       } else {

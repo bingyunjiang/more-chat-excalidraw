@@ -6,12 +6,15 @@
   "scripts": {
     "build": "esbuild editor-entry.jsx --bundle --format=iife --global-name=ExcalidrawEditorBundle --outfile=editor-bundle.js --loader:.js=jsx --jsx=automatic --define:process.env.NODE_ENV='\"production\"' --log-level=warning",
     "build:dev": "esbuild editor-entry.jsx --bundle --format=iife --global-name=ExcalidrawEditorBundle --outfile=editor-bundle.js --loader:.js=jsx --jsx=automatic --define:process.env.NODE_ENV='\"development\"' --log-level=warning",
-    "build:render": "NODE_PATH=./node_modules esbuild ../render-bundle/render-entry.js --bundle --format=iife --outfile=../render-bundle/render-bundle.js --loader:.js=jsx --jsx=automatic --define:process.env.NODE_ENV='\"production\"' --log-level=warning"
+    "build:render": "NODE_PATH=./node_modules esbuild ../render-bundle/render-entry.js --bundle --format=iife --outfile=../render-bundle/render-bundle.js --loader:.js=jsx --jsx=automatic --define:process.env.NODE_ENV='\"production\"' --log-level=warning",
+    "build:all": "npm run build && npm run build:render"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@excalidraw/excalidraw": "0.18.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "esbuild": "^0.21.0"

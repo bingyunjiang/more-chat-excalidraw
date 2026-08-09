@@ -34,6 +34,18 @@ Graphviz（自动布局）、本地 Excalidraw 应用（打开画布）。
 
 ## Resources
 
+## 安装、复现与平台边界
+
+```bash
+npm ci --prefix scripts/web
+npm run build:all --prefix scripts/web
+node scripts/check_web_lock.mjs
+```
+
+相同 IR 默认生成字节级稳定场景；只有显式设置 `EXCALIDRAW_UPDATED` 才控制更新时间。`--library` 是可选实验能力，依赖 `references/excalidraw-libs/` 本地缓存；缓存缺失时回退到内置形状。`open_in_excalidraw.js` 仅在 macOS 自动使用 launchd 启动服务，浏览器打开按 macOS/Linux/Windows 分别使用 `open`/`xdg-open`/`cmd.exe start`。
+
+严格视觉验收可加 `--visual --fail-on-warning`；默认校验仍只报告 warning，不破坏兼容性。
+
 ### scripts/
 
 - `template_selector.py`：模板选择器。`--list` 列出 10 种模板；`--recommend "<意图>"` 根据关键词推荐最佳模板与主题；`--info <模板>` 查看详情；`--params <模板> --theme <主题>` 输出带参数的模板元数据。
