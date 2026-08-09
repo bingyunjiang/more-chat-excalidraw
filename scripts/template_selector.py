@@ -33,8 +33,8 @@ TEMPLATES = {
     },
     "architecture": {
         "name": "架构图 Architecture",
-        "aliases": ["架构", "系统", "组件", "部署"],
-        "scenes": ["tech-arch", "system-design", "deployment", "infrastructure"],
+        "aliases": ["架构", "系统", "组件", "部署", "电池热管理", "多物理场", "热流固耦合", "联合仿真", "数字孪生", "仿真架构"],
+        "scenes": ["tech-arch", "system-design", "deployment", "infrastructure", "battery-thermal-management", "multiphysics-simulation"],
         "complexity": "medium",
         "description": "分层：用户层 → 应用层 → 服务层 → 数据层，层间大箭头",
         "core_structure": "分层架构 + 每层组件 + 层间调用",
@@ -117,7 +117,7 @@ TEMPLATES = {
     },
     "relationship": {
         "name": "关系图 Relationship",
-        "aliases": ["关系", "依赖", "影响", "网络"],
+        "aliases": ["关系", "依赖", "影响", "网络", "热失控", "机理", "因果", "触发源", "防护策略", "手绘分析板", "concept map"],
         "scenes": ["dependency", "network", "influence", "mapping"],
         "complexity": "medium",
         "description": "节点 + 连线 + 关系标注，无严格方向",

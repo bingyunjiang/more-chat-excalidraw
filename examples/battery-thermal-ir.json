@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "title": "电池包热管理多物理场仿真架构",
+  "template": "architecture",
+  "theme": "minimal",
+  "nodes": [
+    {"id":"bt01","label":"整车驾驶工况","type":"input","style":"#dbeafe","position":{"x":100,"y":180}},
+    {"id":"bt02","label":"电芯发热功率","type":"input","style":"#dbeafe","position":{"x":100,"y":330}},
+    {"id":"bt03","label":"冷却液与环境边界","type":"input","style":"#dbeafe","position":{"x":100,"y":480}},
+    {"id":"bt04","label":"电化学-热耦合模型","type":"process","style":"#ede9fe","position":{"x":440,"y":180}},
+    {"id":"bt05","label":"电池包传热模型","type":"process","style":"#ede9fe","position":{"x":440,"y":330}},
+    {"id":"bt06","label":"冷却流道 CFD","type":"process","style":"#ede9fe","position":{"x":440,"y":480}},
+    {"id":"bt07","label":"台架温度与流量数据","type":"input","style":"#ffedd5","position":{"x":800,"y":180}},
+    {"id":"bt08","label":"模型可信度判定","type":"decision","style":"#fef3c7","position":{"x":800,"y":330}},
+    {"id":"bt09","label":"参数标定与误差归因","type":"process","style":"#ffedd5","position":{"x":800,"y":480}},
+    {"id":"bt10","label":"最高温度与温差","type":"output","style":"#dcfce7","position":{"x":1160,"y":180}},
+    {"id":"bt11","label":"冷却策略与能耗","type":"output","style":"#dcfce7","position":{"x":1160,"y":330}},
+    {"id":"bt12","label":"热安全设计包络","type":"output","style":"#dcfce7","position":{"x":1160,"y":480}}
+  ],
+  "edges": [
+    {"id":"bte01","from":"bt01","to":"bt04"},
+    {"id":"bte02","from":"bt02","to":"bt05"},
+    {"id":"bte03","from":"bt03","to":"bt06"},
+    {"id":"bte04","from":"bt04","to":"bt05"},
+    {"id":"bte05","from":"bt06","to":"bt05"},
+    {"id":"bte06","from":"bt05","to":"bt08","label":"仿真响应"},
+    {"id":"bte07","from":"bt07","to":"bt08","label":"试验基准"},
+    {"id":"bte08","from":"bt08","to":"bt09","label":"偏差超限","style":"dashed"},
+    {"id":"bte09","from":"bt08","to":"bt10"},
+    {"id":"bte10","from":"bt08","to":"bt11"},
+    {"id":"bte11","from":"bt08","to":"bt12"}
+  ],
+  "groups": [
+    {"id":"bt-input","name":"01  工况与边界","nodes":["bt01","bt02","bt03"],"level":0,"backgroundColor":"#e7f5ff"},
+    {"id":"bt-model","name":"02  多物理场模型","nodes":["bt04","bt05","bt06"],"level":1,"backgroundColor":"#f3f0ff"},
+    {"id":"bt-validation","name":"03  试验校核","nodes":["bt07","bt08","bt09"],"level":2,"backgroundColor":"#fff4e6"},
+    {"id":"bt-decision","name":"04  设计决策","nodes":["bt10","bt11","bt12"],"level":3,"backgroundColor":"#ebfbee"}
+  ],
+  "metadata": {"scene":"battery-thermal-management","complexity":"medium"}
+}

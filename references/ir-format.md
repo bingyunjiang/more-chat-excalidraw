@@ -59,10 +59,18 @@
 | `id` | string | 是 | 节点唯一 ID（字母数字，如 n1/n2） |
 | `label` | string | 是 | 节点显示文字 |
 | `type` | string | 否 | 节点语义类型（见下） |
-| `style` | string | 否 | 覆盖模板样式（tech 名称：PostgreSQL/Kafka 等，或形状：rectangle/ellipse/diamond） |
+| `style` | string | 否 | 覆盖模板样式；可使用 tech 名称或 `#RRGGBB` 填充色 |
 | `children` | string[] | 否 | 子节点 ID（树形结构用） |
 | `position` | object | 否 | 手动位置 `{x, y}`，转换器优先使用 |
 | `note` | string | 否 | 备注（渲染为小号注释文字） |
+| `font` / `fontFamily` | string/number | 否 | `hand`/`sans`/`mono` 或 Excalidraw 字体编号 |
+| `fontSize` | number | 否 | 节点文字字号；多行文字会自动扩展节点高度 |
+| `textColor` | string | 否 | 节点文字颜色 |
+| `strokeColor` | string | 否 | 节点描边颜色 |
+| `strokeWidth` | number | 否 | 节点描边粗细 |
+| `strokeStyle` | string | 否 | `solid`/`dashed`/`dotted` |
+| `roughness` | number | 否 | 手绘粗糙度，`sketch` 常用 2 |
+| `opacity` | number | 否 | 0–100 不透明度 |
 
 ### 节点类型
 
@@ -78,11 +86,13 @@
 | `component` | 矩形 | 白 `#ffffff` | 组件（架构图） |
 | `service` | 矩形 | 浅紫 `#d0bfff` | 服务（架构图） |
 | `database` | 椭圆 | 浅青 `#c3fae8` | 数据库/存储 |
-| `topic` | 矩形 | 白 `#ffffff` | 中心主题（思维导图） |
+| `topic` | 椭圆 | 浅蓝 `#a5d8ff` | 中心主题（思维导图/概念板） |
 | `branch` | 矩形 | 浅紫 `#d0bfff` | 一级分支（思维导图） |
 | `leaf` | 矩形 | 浅粉 `#fcc2d7` | 叶节点 |
 | `input` | 矩形 | 浅蓝 `#a5d8ff` | 输入/数据源 |
 | `output` | 矩形 | 浅绿 `#b2f2bb` | 输出/结果 |
+| `note` | 圆角矩形 | 浅黄 `#fff3bf` | 手绘便签/双语卡片 |
+| `callout` | 圆角矩形 | 浅橙 `#ffd8a8` | 强调框/技术批注 |
 | `marker` | 椭圆 | 白 `#ffffff` | 时间线标记点 |
 | `milestone` | 椭圆 | 浅蓝 `#a5d8ff` | 里程碑 |
 | `plain` | 矩形 | 白 `#ffffff` | 通用节点 |
@@ -110,6 +120,13 @@
 | `style` | string | 否 | solid/dashed/dotted，默认 solid |
 | `bidirectional` | boolean | 否 | 双向箭头（请求-响应模式） |
 | `note` | string | 否 | 备注 |
+| `curve` | boolean | 否 | 使用手绘曲线箭头 |
+| `curveOffset` | number | 否 | 曲线控制点偏移，默认 36 |
+| `color` | string | 否 | 箭头语义颜色 |
+| `labelColor` | string | 否 | 箭头标签颜色，默认跟随箭头 |
+| `strokeWidth` | number | 否 | 箭头粗细 |
+| `startArrowhead` | string/null | 否 | 起点样式，如 arrow/dot/bar/triangle |
+| `endArrowhead` | string/null | 否 | 终点样式，默认 arrow |
 
 ## 5. 分组 group
 

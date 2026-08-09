@@ -91,6 +91,14 @@
 
 `fea-workflow-ir.json` 描述需求、几何、材料、网格、边界/接触、求解收敛、网格无关性、验证和报告归档流程。当前采用四阶段横向泳道，短阶段按主轴居中，失败回路走阶段外侧；可用 `python3 scripts/ir_to_excalidraw.py --example fea --output examples/fea-workflow.excalidraw --validate` 确定性重建。
 
+## 白底极简工程架构示例
+
+`battery-thermal-ir.json` 描述电池包热管理多物理场仿真架构，使用四列分区、低饱和配色和无衬线字体。运行 `python3 scripts/ir_to_excalidraw.py --example battery-thermal --output examples/battery-thermal.excalidraw --validate` 可确定性重建。
+
+## Excalidraw 手绘分析板
+
+`thermal-runaway-ir.json` 描述电芯热失控的触发源、失控机理和防护策略，使用双语多行便签、hand/mono 字体层级、彩色曲线箭头、虚线机理链和手绘分组框。运行 `python3 scripts/ir_to_excalidraw.py --example thermal-runaway --output examples/thermal-runaway.excalidraw --validate` 可确定性重建。
+
 ## 内置 Library
 
 核心映射默认使用 `assets/builtin-libraries/core.excalidrawlib`（self-authored、MIT、v0.0.1），无需下载；第三方 `.excalidrawlib` 仅可通过显式 `--library-dir` 覆盖，许可状态需自行核验。

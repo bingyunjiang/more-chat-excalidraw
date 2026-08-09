@@ -75,12 +75,14 @@ node scripts/mcp_server.mjs   # 工具: generate_diagram / validate_diagram / pu
 
 ## 本轮已完成与仍待验证
 
+- 新增 `thermal-runaway` 手绘双语分析板及四格式产物；中文、英文手绘注记、便签框、彩色曲线箭头和虚线机理链已目检。
+- 新增 `battery-thermal` 白底极简工程架构视觉基准及四格式产物；四列布局、无衬线字体和洁净裁切已目检。
 - 新增 `fea` 工程有限元流程示例及四格式产物；经 PNG 目检优化为四阶段横向泳道，严格视觉、洁净裁切与确定性已验证。
 - 核心 Library 已 self-authored MIT 内置；第三方缓存仅作可选覆盖且 needs_verification。
 
 - 已完成：web 依赖声明与 build:all、CI 构建、MCP 实际调用、默认确定性、Library 两阶段布局、跨平台 opener 安全调用。
 - 已完成：Library 代表性 `--visual` 校验与本地缓存 SHA-256 清单。
-- 已在当前 macOS 环境完成 `npm ci`、web bundle 构建与 39 项 e2e；尚未在真实 Windows/Linux 桌面实机验证浏览器/服务启动。
+- 已在当前 macOS 环境完成 `npm ci`、web bundle 构建与 44 项 e2e；尚未在真实 Windows/Linux 桌面实机验证浏览器/服务启动。
 
 ## 已知问题与后续
 

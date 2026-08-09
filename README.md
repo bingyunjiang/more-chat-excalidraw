@@ -10,7 +10,7 @@
 把自然对话变成可编辑的 Excalidraw 画布  
 Turn natural conversation into editable Excalidraw canvases
 
-[![Version](https://img.shields.io/badge/version-v0.0.1-2f6feb)](#版本历史)
+[![Version](https://img.shields.io/badge/version-v0.0.2-2f6feb)](#版本历史)
 [![License](https://img.shields.io/badge/license-MIT-1f883d)](./LICENSE)
 [![Type](https://img.shields.io/badge/type-AI%20Agent%20Skill-8250df)](#项目表头)
 [![Language](https://img.shields.io/badge/language-ZH%20primary%20%7C%20EN-f59e0b)](#项目表头)
@@ -41,7 +41,7 @@ Turn natural conversation into editable Excalidraw canvases
 | 字段 | 内容 |
 | --- | --- |
 | 名称 | `more-chat-excalidraw` |
-| 版本 | `v0.0.1` |
+| 版本 | `v0.0.2` |
 | 类型 | AI Agent Skill / 图表生成技能 |
 | 场景 | 流程图 / 架构图 / 时序图 / 思维导图 / ER 图 / 泳道图 / 层级图 / 关系图 / 对比图 / 时间线图 / 知识图谱 |
 | 本地运行 | macOS / Windows / Linux，Node.js 18+，Python 3 |
@@ -74,7 +74,25 @@ Turn natural conversation into editable Excalidraw canvases
 
 ## 你可以用它做什么
 
-### 1. 工程有限元流程示例
+### 1. Excalidraw 手绘分析板
+
+```bash
+python3 scripts/ir_to_excalidraw.py --example thermal-runaway --output examples/thermal-runaway.excalidraw --validate
+node scripts/render_preview.js examples/thermal-runaway.excalidraw --format both
+```
+
+该案例不是普通流程图，而是“电芯热失控：触发—机理—防护”研究画布：中文主叙事、英文手绘注记、便签/批注框、红绿蓝语义箭头、虚线机理链、曲线汇聚与发散箭头共同表达分析关系。
+
+### 2. 白底极简工程架构示例
+
+```bash
+python3 scripts/ir_to_excalidraw.py --example battery-thermal --output examples/battery-thermal.excalidraw --validate
+node scripts/render_preview.js examples/battery-thermal.excalidraw --format both
+```
+
+该案例展示电池包热管理多物理场仿真架构，采用工况与边界、多物理场模型、试验校核、设计决策四列布局；极简主题使用无衬线字体、低饱和分区和克制连线。
+
+### 3. 工程有限元流程示例
 
 可直接对 Agent 说：
 
@@ -88,7 +106,7 @@ python3 scripts/ir_to_excalidraw.py --example fea --output examples/fea-workflow
 
 该示例采用四阶段横向工程泳道，覆盖工况、几何、材料本构、单元/网格、边界与接触、求解收敛、网格无关性、验证及报告归档，并将失败回路布置在主流程之外。
 
-### 2. 一句话生成图表
+### 4. 一句话生成图表
 
 对 Agent 说"画一个微服务架构图"，自动推荐模板、生成 IR、完成布局配色并输出 `.excalidraw`：
 
@@ -236,6 +254,7 @@ bash scripts/test_e2e.sh
 
 | 版本 | 日期 | 要点 |
 | --- | --- | --- |
+| v0.0.2 | 2026-08-09 | 新增可选视觉提炼契约、事实到元素来源映射、视觉家族限制和 strict 视觉回归；未声明契约的旧 IR 保持兼容。 |
 | v0.0.1 | 2026-08-08 | 初始版本：自然对话生成 Excalidraw 画布（模板系统 + IR 引擎 + 实时预览 + 内嵌编辑器 + 动画 + Mermaid + 知识图谱 + Graphviz 布局 + 增量编辑 + MCP 协议） |
 
 详细变更见 [CHANGELOG.md](CHANGELOG.md)。

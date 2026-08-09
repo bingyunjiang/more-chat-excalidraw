@@ -43,6 +43,8 @@ NODE_TYPE_STYLE = {
     "leaf":     {"shape": "rectangle", "fill": SEMANTIC_FILL["analysis"],   "w": 140, "h": 50},
     "input":    {"shape": "rectangle", "fill": SEMANTIC_FILL["input"],      "w": 160, "h": 60},
     "output":   {"shape": "rectangle", "fill": SEMANTIC_FILL["output"],     "w": 160, "h": 60},
+    "note":     {"shape": "rectangle", "fill": SEMANTIC_FILL["note"],       "w": 220, "h": 90},
+    "callout":  {"shape": "rectangle", "fill": SEMANTIC_FILL["warning"],    "w": 240, "h": 100},
     "marker":   {"shape": "ellipse",   "fill": "#ffffff",                   "w": 14,  "h": 14},
     "milestone":{"shape": "ellipse",   "fill": SEMANTIC_FILL["input"],      "w": 60,  "h": 60},
     "plain":    {"shape": "rectangle", "fill": "#ffffff",                   "w": 160, "h": 60},
@@ -66,27 +68,32 @@ THEMES = {
     "default": {
         "strokeColor": "#1e1e1e", "bg": "#ffffff", "lineColor": "#868e96",
         "roughness": 1, "strokeWidth": 2, "textColor": "#374151",
-        "titleColor": "#1e40af", "frameText": "#1971c2",
+        "titleColor": "#1e40af", "frameText": "#1971c2", "fontFamily": 1,
     },
     "sketch": {
         "strokeColor": "#2b2b2b", "bg": "#ffffff", "lineColor": "#868e96",
         "roughness": 2, "strokeWidth": 3, "textColor": "#374151",
-        "titleColor": "#1e40af", "frameText": "#1971c2",
+        "titleColor": "#1e40af", "frameText": "#1971c2", "fontFamily": 1,
     },
     "blueprint": {
         "strokeColor": "#e8f4ff", "bg": "#1e3a5f", "lineColor": "#64b5f6",
         "roughness": 0, "strokeWidth": 1, "textColor": "#e8f4ff",
-        "titleColor": "#e8f4ff", "frameText": "#e8f4ff",
+        "titleColor": "#e8f4ff", "frameText": "#e8f4ff", "fontFamily": 2,
     },
     "minimal": {
-        "strokeColor": "#000000", "bg": "#ffffff", "lineColor": "#666666",
-        "roughness": 0, "strokeWidth": 1, "textColor": "#000000",
-        "titleColor": "#000000", "frameText": "#000000",
+        "strokeColor": "#64748b", "bg": "#ffffff", "lineColor": "#64748b",
+        "roughness": 0, "strokeWidth": 1, "textColor": "#1f2937",
+        "titleColor": "#0f172a", "frameText": "#475569", "fontFamily": 2,
     },
 }
 
 LAYER_BG = ["#dbe4ff", "#e5dbff", "#d3f9d8", "#ffe8cc", "#fcc2d7"]
 LAYER_FRAME_TEXT = ["#1971c2", "#6741d9", "#2f9e44", "#e8590c", "#c2255c"]
+FONT_FAMILY_MAP = {
+    "hand": 1, "virgil": 1,
+    "sans": 2, "helvetica": 2,
+    "mono": 3, "cascadia": 3,
+}
 
 
 # ─── 基础元素构造 ─────────────────────────────────────────────────────────
@@ -124,7 +131,7 @@ def _text_el(el_id, x, y, text, theme, fontSize=18, w=None, h=None, color=None, 
     el = _base_el(el_id, "text", x, y, w, h, theme, {
         "strokeColor": color or theme["textColor"],
         "backgroundColor": "transparent",
-        "text": text, "fontSize": fontSize, "fontFamily": 1,
+        "text": text, "fontSize": fontSize, "fontFamily": theme.get("fontFamily", 1),
         "textAlign": "center", "verticalAlign": "middle",
         "containerId": container_id, "originalText": text, "lineHeight": 1.25,
     })
@@ -132,10 +139,13 @@ def _text_el(el_id, x, y, text, theme, fontSize=18, w=None, h=None, color=None, 
 
 
 def estimate_text_width(text, font_size):
-    w = 0
-    for ch in str(text):
-        w += 1.0 if ord(ch) > 0x2E80 else 0.6
-    return w * font_size
+    widths = []
+    for line in str(text).splitlines() or [""]:
+        width = 0
+        for ch in line:
+            width += 1.0 if ord(ch) > 0x2E80 else 0.6
+        widths.append(width * font_size)
+    return max(widths, default=0)
 
 
 def _library_text_color(elements):
@@ -171,22 +181,27 @@ def _text_color_for_fill(fill, fallback):
         return fallback
 
 
-def _arrow_el(el_id, x, y, points, theme, from_id, to_id, style="solid", bidirectional=False):
+def _arrow_el(
+    el_id, x, y, points, theme, from_id, to_id, style="solid",
+    bidirectional=False, curved=False, color=None, stroke_width=None,
+    start_arrowhead=None, end_arrowhead="arrow",
+):
     xs = [point[0] for point in points]
     ys = [point[1] for point in points]
     width = max(xs) - min(xs) if xs else 0
     height = max(ys) - min(ys) if ys else 0
     return _base_el(el_id, "arrow", x, y, width, height, theme, {
-        "strokeColor": theme["lineColor"],
+        "strokeColor": color or theme["lineColor"],
         "backgroundColor": "transparent", "strokeStyle": style,
         # Orthogonal routes must stay orthogonal after restoreElements(). A
         # rounded multi-point arrow can be reinterpreted as a large Bézier arc.
-        "roundness": {"type": 2} if len(points) == 2 else None,
+        "roundness": {"type": 2} if len(points) == 2 or curved else None,
+        "strokeWidth": stroke_width or theme["strokeWidth"],
         "points": points,
         "startBinding": {"elementId": from_id, "focus": 0.5, "gap": 8},
         "endBinding": {"elementId": to_id, "focus": 0.5, "gap": 8},
-        "startArrowhead": "arrow" if bidirectional else None,
-        "endArrowhead": "arrow",
+        "startArrowhead": start_arrowhead or ("arrow" if bidirectional else None),
+        "endArrowhead": end_arrowhead,
     })
 
 
@@ -383,6 +398,12 @@ def _visual_contract_annotations(ir):
     facts = contract.get("decisive_facts")
     if not isinstance(facts, list) or not 3 <= len(facts) <= 6:
         raise ValueError("visual_contract.decisive_facts must contain 3-6 facts")
+    known_targets = {
+        entry.get("id")
+        for key in ("nodes", "edges")
+        for entry in (ir.get(key) or [])
+        if isinstance(entry, dict) and isinstance(entry.get("id"), str) and entry.get("id")
+    }
     by_target, fact_ids = {}, set()
     for fact in facts:
         if not isinstance(fact, dict) or not isinstance(fact.get("id"), str) or not fact["id"]:
@@ -394,11 +415,14 @@ def _visual_contract_annotations(ir):
         if not isinstance(fact.get("statement"), str) or not fact["statement"].strip():
             raise ValueError(f"visual fact {fid!r} needs a statement")
         refs = [fact["refs"]] if isinstance(fact.get("refs"), str) else fact.get("refs")
-        if not isinstance(refs, list) or not refs or not all(isinstance(ref, str) and ref for ref in refs):
+        if not isinstance(refs, list) or not refs or len(set(refs)) != len(refs) or not all(isinstance(ref, str) and ref for ref in refs):
             raise ValueError(f"visual fact {fid!r} needs one or more refs")
         targets = [fact["targets"]] if isinstance(fact.get("targets"), str) else fact.get("targets", [])
-        if not isinstance(targets, list) or not all(isinstance(target, str) and target for target in targets):
-            raise ValueError(f"visual fact {fid!r} targets must be string IDs")
+        if not isinstance(targets, list) or not targets or len(set(targets)) != len(targets) or not all(isinstance(target, str) and target for target in targets):
+            raise ValueError(f"visual fact {fid!r} targets must be one or more unique string IDs")
+        unknown_targets = sorted(set(targets) - known_targets)
+        if unknown_targets:
+            raise ValueError(f"visual fact {fid!r} targets unknown IR IDs: {', '.join(unknown_targets)}")
         status = fact.get("status", "proposed")
         if status not in ("proposed", "confirmed"):
             raise ValueError(f"visual fact {fid!r} status must be proposed or confirmed")
@@ -411,8 +435,8 @@ def _visual_contract_annotations(ir):
     if not isinstance(families, dict) or not isinstance(families.get("primary"), str) or not families["primary"]:
         raise ValueError("visual_contract.visual_families.primary is required")
     supporting = [families["supporting"]] if isinstance(families.get("supporting"), str) else families.get("supporting", [])
-    if not isinstance(supporting, list) or len(set(supporting)) > 2 or not all(isinstance(v, str) and v for v in supporting):
-        raise ValueError("visual_contract.visual_families.supporting must contain at most two names")
+    if not isinstance(supporting, list) or len(supporting) > 2 or len(set(supporting)) != len(supporting) or families["primary"] in supporting or not all(isinstance(v, str) and v for v in supporting):
+        raise ValueError("visual_contract.visual_families.supporting must contain at most two distinct non-primary names")
     allowed = {families["primary"], *supporting}
     for fact in facts:
         if fact.get("family") and fact["family"] not in allowed:
@@ -484,9 +508,12 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
         # widths make engineering terms overflow ellipses/diamonds even when
         # the text element itself reports a valid container binding.
         if node.get("type") not in ("marker", "milestone"):
-            label_font = 16 if style.get("shape") == "diamond" else 18
+            label_font = float(node.get("fontSize") or (16 if style.get("shape") == "diamond" else 18))
             required_w = estimate_text_width(node.get("label", ""), label_font) + 40
             style["w"] = max(style["w"], min(280, required_w))
+            line_count = max(1, len(str(node.get("label", "")).splitlines()))
+            required_h = label_font * 1.25 * line_count + 28
+            style["h"] = max(style["h"], min(180, required_h))
         node_styles[nid] = style
 
     # Library components have their own geometry. Resolve their bounding boxes
@@ -730,26 +757,35 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
                 elements.append(lel)
         else:
             # 传统简单形状生成
-            el = _base_el(nid, shape, x, y, w, h, theme, {
+            node_extra = {
                 "backgroundColor": st["fill"],
                 "frameId": frame_id,
                 "boundElements": [{"id": f"txt-{nid}", "type": "text"}],
-            })
+            }
+            for field in ("strokeColor", "strokeWidth", "strokeStyle", "roughness", "opacity"):
+                if field in node:
+                    node_extra[field] = node[field]
+            el = _base_el(nid, shape, x, y, w, h, theme, node_extra)
             elements.append(el)
             # 节点文字（容器内绑定）
             label = node.get("label", "")
+            font_size = float(node.get("fontSize") or (16 if shape == "diamond" else 18))
+            line_count = max(1, len(str(label).splitlines()))
+            text_h = max(24, font_size * 1.25 * line_count)
             tw = max(40, w - 40)
             tx = x + (w - tw) / 2
-            ty = y + (h - (node.get("type") in ("start", "end", "topic", "marker", "milestone") and 24 or 26)) / 2
-            if shape == "diamond":
-                ty = y + (h - 24) / 2
-            text_color = _text_color_for_fill(st["fill"], theme["textColor"])
+            ty = y + (h - text_h) / 2
+            text_color = node.get("textColor") or _text_color_for_fill(st["fill"], theme["textColor"])
             if shape == "ellipse" and st["fill"] in (SEMANTIC_FILL["input"], SEMANTIC_FILL["storage"]):
                 text_color = "#1e3a5f" if theme_key == "default" else theme["textColor"]
-            elements.append(_text_el(
-                f"txt-{nid}", tx, ty, label, theme, fontSize=18 if shape != "diamond" else 16,
-                w=tw, h=24, color=text_color, container_id=nid,
-            ))
+            text_el = _text_el(
+                f"txt-{nid}", tx, ty, label, theme, fontSize=font_size,
+                w=tw, h=text_h, color=text_color, container_id=nid,
+            )
+            requested_font = node.get("fontFamily") or node.get("font")
+            if requested_font is not None:
+                text_el["fontFamily"] = FONT_FAMILY_MAP.get(str(requested_font).lower(), requested_font)
+            elements.append(text_el)
 
     # 4.3 对比图：从 metadata.comparison 生成表格元素
     if template == "comparison":
@@ -880,11 +916,19 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             dx = tx2 - ax
             dy = ty2 + st_to["h"] / 2 - ay
             pts = [[0, 0], [dx, dy]]
+        if edge.get("curve") and len(pts) == 2:
+            curve_offset = float(edge.get("curveOffset", 36))
+            direction_sign = -1 if sum(ord(c) for c in str(eid)) % 2 else 1
+            pts = [[0, 0], [dx / 2, dy / 2 + curve_offset * direction_sign], [dx, dy]]
         arrow_id = f"arrow-{eid}"
         el = _arrow_el(
             arrow_id, ax, ay, pts, theme,
             frm, to, style=edge.get("style", "solid"),
             bidirectional=edge.get("bidirectional", False),
+            curved=bool(edge.get("curve")), color=edge.get("color"),
+            stroke_width=edge.get("strokeWidth"),
+            start_arrowhead=edge.get("startArrowhead"),
+            end_arrowhead=edge.get("endArrowhead", "arrow"),
         )
         elements.append(el)
         # 箭头反向绑定：起点/终点节点的 boundElements 追加该箭头
@@ -912,7 +956,8 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             ly = ay + (p1[1] + p2[1]) / 2 - 14
             elements.append(_text_el(
                 f"elbl-{eid}", lx, ly, edge["label"], theme,
-                fontSize=13, w=label_w, h=20, color=theme["lineColor"],
+                fontSize=13, w=label_w, h=20,
+                color=edge.get("labelColor") or edge.get("color") or theme["lineColor"],
             ))
 
     # 6. 标题
@@ -1008,6 +1053,79 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
 
 # ─── 示例 IR ───────────────────────────────────────────────────────────────
 EXAMPLES = {
+    "thermal-runaway": {
+        "version": 1,
+        "title": "电芯热失控手绘分析板  ·  THERMAL RUNAWAY MAP",
+        "template": "relationship",
+        "theme": "sketch",
+        "nodes": [
+            {"id": "tr01", "label": "内部短路\nINTERNAL SHORT", "type": "note", "style": "#ffe3e3", "font": "hand", "strokeColor": "#e03131", "strokeWidth": 2, "position": {"x": 100, "y": 170}},
+            {"id": "tr02", "label": "过充电\nOVERCHARGE", "type": "note", "style": "#ffe3e3", "font": "hand", "strokeColor": "#e03131", "strokeWidth": 2, "position": {"x": 100, "y": 350}},
+            {"id": "tr03", "label": "外部加热\nEXTERNAL HEAT", "type": "note", "style": "#ffe3e3", "font": "hand", "strokeColor": "#e03131", "strokeWidth": 2, "position": {"x": 100, "y": 530}},
+            {"id": "tr04", "label": "SEI 膜分解\nSEI DECOMPOSITION", "type": "callout", "style": "#fff3bf", "font": "mono", "fontSize": 17, "strokeColor": "#f08c00", "strokeStyle": "dashed", "strokeWidth": 2, "position": {"x": 540, "y": 160}},
+            {"id": "tr05", "label": "电芯热失控\nTHERMAL RUNAWAY", "type": "topic", "style": "#ffc9c9", "font": "hand", "fontSize": 25, "strokeColor": "#c92a2a", "strokeWidth": 4, "position": {"x": 520, "y": 340}},
+            {"id": "tr06", "label": "放热链式反应\nEXOTHERMIC CHAIN", "type": "callout", "style": "#ffe8cc", "font": "mono", "fontSize": 17, "strokeColor": "#e8590c", "strokeStyle": "dashed", "strokeWidth": 2, "position": {"x": 540, "y": 540}},
+            {"id": "tr07", "label": "多源早期预警\nEARLY WARNING", "type": "note", "style": "#d3f9d8", "font": "hand", "strokeColor": "#2b8a3e", "strokeWidth": 2, "position": {"x": 1020, "y": 170}},
+            {"id": "tr08", "label": "热阻隔与定向排气\nTHERMAL BARRIER", "type": "note", "style": "#dbe4ff", "font": "hand", "strokeColor": "#1971c2", "strokeWidth": 2, "position": {"x": 1020, "y": 350}},
+            {"id": "tr09", "label": "液冷快速抑制\nLIQUID COOLING", "type": "note", "style": "#d3f9d8", "font": "hand", "strokeColor": "#2b8a3e", "strokeWidth": 2, "position": {"x": 1020, "y": 530}},
+        ],
+        "edges": [
+            {"id": "tre01", "from": "tr01", "to": "tr05", "curve": True, "curveOffset": 34, "color": "#e03131", "strokeWidth": 2},
+            {"id": "tre02", "from": "tr02", "to": "tr05", "curve": True, "curveOffset": 26, "color": "#e03131", "strokeWidth": 3, "label": "trigger"},
+            {"id": "tre03", "from": "tr03", "to": "tr05", "curve": True, "curveOffset": 34, "color": "#e03131", "strokeWidth": 2},
+            {"id": "tre04", "from": "tr04", "to": "tr05", "style": "dashed", "color": "#f08c00", "strokeWidth": 2, "label": "onset"},
+            {"id": "tre05", "from": "tr05", "to": "tr06", "style": "dashed", "color": "#e8590c", "strokeWidth": 2, "label": "propagation"},
+            {"id": "tre06", "from": "tr05", "to": "tr07", "curve": True, "curveOffset": 34, "color": "#2b8a3e", "strokeWidth": 2, "label": "detect"},
+            {"id": "tre07", "from": "tr05", "to": "tr08", "curve": True, "curveOffset": 24, "color": "#1971c2", "strokeWidth": 3, "label": "isolate"},
+            {"id": "tre08", "from": "tr05", "to": "tr09", "curve": True, "curveOffset": 34, "color": "#2b8a3e", "strokeWidth": 2, "label": "suppress"},
+        ],
+        "groups": [
+            {"id": "tr-trigger", "name": "TRIGGERS  ·  触发源", "nodes": ["tr01", "tr02", "tr03"], "level": 0, "backgroundColor": "#fff5f5"},
+            {"id": "tr-mechanism", "name": "MECHANISM  ·  失控机理", "nodes": ["tr04", "tr05", "tr06"], "level": 1, "backgroundColor": "#fff9db"},
+            {"id": "tr-mitigation", "name": "MITIGATION  ·  防护策略", "nodes": ["tr07", "tr08", "tr09"], "level": 2, "backgroundColor": "#ebfbee"},
+        ],
+        "metadata": {"scene": "thermal-runaway-concept-board", "complexity": "medium"},
+    },
+    "battery-thermal": {
+        "version": 1,
+        "title": "电池包热管理多物理场仿真架构",
+        "template": "architecture",
+        "theme": "minimal",
+        "nodes": [
+            {"id": "bt01", "label": "整车驾驶工况", "type": "input", "style": "#dbeafe", "position": {"x": 100, "y": 180}},
+            {"id": "bt02", "label": "电芯发热功率", "type": "input", "style": "#dbeafe", "position": {"x": 100, "y": 330}},
+            {"id": "bt03", "label": "冷却液与环境边界", "type": "input", "style": "#dbeafe", "position": {"x": 100, "y": 480}},
+            {"id": "bt04", "label": "电化学-热耦合模型", "type": "process", "style": "#ede9fe", "position": {"x": 440, "y": 180}},
+            {"id": "bt05", "label": "电池包传热模型", "type": "process", "style": "#ede9fe", "position": {"x": 440, "y": 330}},
+            {"id": "bt06", "label": "冷却流道 CFD", "type": "process", "style": "#ede9fe", "position": {"x": 440, "y": 480}},
+            {"id": "bt07", "label": "台架温度与流量数据", "type": "input", "style": "#ffedd5", "position": {"x": 800, "y": 180}},
+            {"id": "bt08", "label": "模型可信度判定", "type": "decision", "style": "#fef3c7", "position": {"x": 800, "y": 330}},
+            {"id": "bt09", "label": "参数标定与误差归因", "type": "process", "style": "#ffedd5", "position": {"x": 800, "y": 480}},
+            {"id": "bt10", "label": "最高温度与温差", "type": "output", "style": "#dcfce7", "position": {"x": 1160, "y": 180}},
+            {"id": "bt11", "label": "冷却策略与能耗", "type": "output", "style": "#dcfce7", "position": {"x": 1160, "y": 330}},
+            {"id": "bt12", "label": "热安全设计包络", "type": "output", "style": "#dcfce7", "position": {"x": 1160, "y": 480}},
+        ],
+        "edges": [
+            {"id": "bte01", "from": "bt01", "to": "bt04"},
+            {"id": "bte02", "from": "bt02", "to": "bt05"},
+            {"id": "bte03", "from": "bt03", "to": "bt06"},
+            {"id": "bte04", "from": "bt04", "to": "bt05"},
+            {"id": "bte05", "from": "bt06", "to": "bt05"},
+            {"id": "bte06", "from": "bt05", "to": "bt08", "label": "仿真响应"},
+            {"id": "bte07", "from": "bt07", "to": "bt08", "label": "试验基准"},
+            {"id": "bte08", "from": "bt08", "to": "bt09", "label": "偏差超限", "style": "dashed"},
+            {"id": "bte09", "from": "bt08", "to": "bt10"},
+            {"id": "bte10", "from": "bt08", "to": "bt11"},
+            {"id": "bte11", "from": "bt08", "to": "bt12"},
+        ],
+        "groups": [
+            {"id": "bt-input", "name": "01  工况与边界", "nodes": ["bt01", "bt02", "bt03"], "level": 0, "backgroundColor": "#e7f5ff"},
+            {"id": "bt-model", "name": "02  多物理场模型", "nodes": ["bt04", "bt05", "bt06"], "level": 1, "backgroundColor": "#f3f0ff"},
+            {"id": "bt-validation", "name": "03  试验校核", "nodes": ["bt07", "bt08", "bt09"], "level": 2, "backgroundColor": "#fff4e6"},
+            {"id": "bt-decision", "name": "04  设计决策", "nodes": ["bt10", "bt11", "bt12"], "level": 3, "backgroundColor": "#ebfbee"},
+        ],
+        "metadata": {"scene": "battery-thermal-management", "complexity": "medium"},
+    },
     "fea": {
         "version": 1,
         "title": "有限元结构仿真工作流",
@@ -1114,7 +1232,7 @@ def main():
     ap.add_argument("input", nargs="?", help="IR JSON 文件路径")
     ap.add_argument("--output", "-o", help="输出 .excalidraw 文件路径")
     ap.add_argument("--validate", action="store_true", help="转换后运行校验")
-    ap.add_argument("--example", help="使用内置示例：fea/flowchart/architecture/mindmap")
+    ap.add_argument("--example", help="使用内置示例：thermal-runaway/battery-thermal/fea/flowchart/architecture/mindmap")
     ap.add_argument("--template-list", action="store_true", help="列出支持的模板")
     ap.add_argument("--theme", help="覆盖主题：default/sketch/blueprint/minimal")
     ap.add_argument("--layout", help="布局引擎：dot/neato/twopi（Graphviz，需 brew install graphviz）")

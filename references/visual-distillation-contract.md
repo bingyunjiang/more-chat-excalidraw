@@ -24,14 +24,15 @@ canvas is allowed to communicate, not an Excalidraw styling dump.
 ```
 
 `decisive_facts` contains 3–6 objects. Each fact has a stable `id`, a
-`statement`, one or more provenance `refs`, and `targets` naming IR node or
-edge IDs. `semanticRole` and `family` are optional labels. `preserve`,
+`statement`, unique provenance `refs`, and one or more unique `targets` naming
+existing IR node or edge IDs. Dangling target IDs block conversion.
+`semanticRole` and `family` are optional labels. `preserve`,
 `allowed_abstraction`, and `forbidden_invention` state respectively what must
 survive, what simplification is permitted, and what the renderer must not add.
 
 `layout_signals` describes visual guidance such as direction, emphasis,
 grouping, and optionally `allowed_colors`. `visual_families.primary` is
-required; `supporting` has at most two distinct names. A fact may select one
+required; `supporting` has at most two distinct non-primary names. A fact may select one
 of these families, otherwise its target uses the primary family.
 
 Facts and boundary entries may carry `status`: exactly `proposed` or

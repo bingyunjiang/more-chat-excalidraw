@@ -361,15 +361,67 @@ scene = json.load(open(sys.argv[1], encoding="utf-8"))
 frames = [el for el in scene.get("elements", []) if el.get("type") == "frame"]
 if len(frames) != 4:
     raise SystemExit(f"expected 4 FEA stage frames, got {len(frames)}")
-xs = [el["x"] for el in scene["elements"]]
-ys = [el["y"] for el in scene["elements"]]
-x2 = [el["x"] + el.get("width", 0) for el in scene["elements"]]
-y2 = [el["y"] + el.get("height", 0) for el in scene["elements"]]
+xs = [el["x"] for el in frames]
+ys = [el["y"] for el in frames]
+x2 = [el["x"] + el.get("width", 0) for el in frames]
+y2 = [el["y"] + el.get("height", 0) for el in frames]
 width, height = max(x2) - min(xs), max(y2) - min(ys)
 if width / max(height, 1) < 1.8:
     raise SystemExit(f"FEA layout regressed to a tall diagram: {width}x{height}")
 PY
 then log_pass "FEA uses four-stage landscape engineering layout"; else log_fail "FEA engineering layout/aspect ratio"; fi
+python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example battery-thermal --output /tmp/e2e-battery-a.excalidraw >/dev/null 2>&1 && \
+python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example battery-thermal --output /tmp/e2e-battery-b.excalidraw >/dev/null 2>&1 && \
+cmp -s /tmp/e2e-battery-a.excalidraw /tmp/e2e-battery-b.excalidraw && \
+python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" /tmp/e2e-battery-a.excalidraw --visual --fail-on-warning >/dev/null 2>&1
+if [ "$?" -eq 0 ]; then log_pass "battery thermal architecture is deterministic and strict-visual clean"; else log_fail "battery thermal architecture regression"; fi
+if python3 - /tmp/e2e-battery-a.excalidraw <<'PY'
+import json, sys
+scene = json.load(open(sys.argv[1], encoding="utf-8"))
+frames = [el for el in scene.get("elements", []) if el.get("type") == "frame"]
+texts = [el for el in scene.get("elements", []) if el.get("type") == "text"]
+if len(frames) != 4:
+    raise SystemExit(f"expected 4 architecture columns, got {len(frames)}")
+if not texts or any(el.get("fontFamily") != 2 for el in texts):
+    raise SystemExit("minimal theme must use clean sans-serif text")
+xs = [el["x"] for el in frames]
+ys = [el["y"] for el in frames]
+x2 = [el["x"] + el.get("width", 0) for el in frames]
+y2 = [el["y"] + el.get("height", 0) for el in frames]
+width, height = max(x2) - min(xs), max(y2) - min(ys)
+if not 2.0 <= width / max(height, 1) <= 3.5:
+    raise SystemExit(f"unexpected architecture aspect ratio: {width}x{height}")
+PY
+then log_pass "battery architecture uses four-column minimal visual system"; else log_fail "battery architecture visual system"; fi
+python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example thermal-runaway --output /tmp/e2e-hand-a.excalidraw >/dev/null 2>&1 && \
+python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example thermal-runaway --output /tmp/e2e-hand-b.excalidraw >/dev/null 2>&1 && \
+cmp -s /tmp/e2e-hand-a.excalidraw /tmp/e2e-hand-b.excalidraw && \
+python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" /tmp/e2e-hand-a.excalidraw --visual --fail-on-warning >/dev/null 2>&1
+if [ "$?" -eq 0 ]; then log_pass "thermal-runaway hand-drawn board is deterministic and strict-visual clean"; else log_fail "thermal-runaway hand-drawn board regression"; fi
+if python3 - /tmp/e2e-hand-a.excalidraw <<'PY'
+import json, sys
+scene = json.load(open(sys.argv[1], encoding="utf-8"))
+elements = scene.get("elements", [])
+frames = [el for el in elements if el.get("type") == "frame"]
+texts = [el for el in elements if el.get("type") == "text"]
+arrows = [el for el in elements if el.get("type") == "arrow"]
+shapes = [el for el in elements if el.get("type") in ("rectangle", "ellipse", "diamond")]
+if len(frames) != 3 or len(arrows) != 8:
+    raise SystemExit("hand-drawn board structure incomplete")
+if not shapes or any(el.get("roughness", 0) < 2 for el in shapes):
+    raise SystemExit("sketch shapes lost hand-drawn roughness")
+if not {1, 3}.issubset({el.get("fontFamily") for el in texts}):
+    raise SystemExit("hand/mono bilingual font hierarchy missing")
+if not any("\n" in el.get("text", "") for el in texts):
+    raise SystemExit("bilingual multiline text boxes missing")
+if len({el.get("strokeColor") for el in arrows}) < 3:
+    raise SystemExit("semantic arrow colors missing")
+if not any(el.get("strokeStyle") == "dashed" for el in arrows):
+    raise SystemExit("dashed mechanism arrow missing")
+if not any(el.get("roundness") for el in arrows if len(el.get("points", [])) > 2):
+    raise SystemExit("curved hand-drawn arrow missing")
+PY
+then log_pass "hand-drawn board preserves bilingual boxes and expressive arrows"; else log_fail "hand-drawn visual contract"; fi
 if python3 "$PROJECT_DIR/scripts/validate_builtin_libraries.py" >/dev/null 2>&1; then
   log_pass "built-in library manifest and SHA-256"
 else
@@ -521,6 +573,31 @@ then
   log_pass "_visual_checks overlap/dangling coverage"
 else
   log_fail "_visual_checks overlap/dangling coverage"
+fi
+if python3 - <<'PY'
+import importlib.util
+import json
+
+spec = importlib.util.spec_from_file_location("converter", "scripts/ir_to_excalidraw.py")
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+base = json.load(open("examples/visual-contract-ir.json", encoding="utf-8"))
+
+dangling = json.loads(json.dumps(base))
+dangling["visual_contract"]["decisive_facts"][0]["targets"] = ["missing-node"]
+duplicate_family = json.loads(json.dumps(base))
+duplicate_family["visual_contract"]["visual_families"]["supporting"] = ["pipeline"]
+for invalid in (dangling, duplicate_family):
+    try:
+        mod._visual_contract_annotations(invalid)
+    except ValueError:
+        continue
+    raise SystemExit("invalid visual contract was accepted")
+PY
+then
+  log_pass "visual contract rejects dangling targets and duplicate families"
+else
+  log_fail "visual contract rejection coverage"
 fi
 
 # --- Summary ---

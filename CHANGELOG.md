@@ -2,9 +2,21 @@
 
 本项目的所有显著变更。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.0.2] - 2026-08-09
+
+### Added
+
+- 新增可选 `visual_contract`：每张画布声明 3–6 条决定性事实、来源引用、目标 IR 节点/边和受控视觉家族。
+- 生成元素写入 `semanticRole`、`visualFactIds`、`visualSources`、`visualFamily` 与提案状态；strict 视觉校验拒绝无来源图形、悬空目标和未声明家族。
+- 新增来源锁定 fixture、确定性转换和负向回归；未声明契约的旧 IR 不进入新质量门。
+
 ## [0.0.1] - 2026-08-08
 
 ### Changed (unreleased)
+
+- 新增 `thermal-runaway` 手绘双语研究分析板；IR 支持 `note/callout`、多行文字自动尺寸、hand/sans/mono 字体层级，以及曲线、颜色、粗细、虚线和箭头端点控制。
+
+- 新增电池包热管理多物理场仿真视觉基准案例（minimal 四列工程架构及 Excalidraw/PNG/SVG/PDF）；minimal/blueprint 改用无衬线字体，minimal 线条改为工程灰。
 
 - 新增稳定 FEA 工程有限元流程示例（IR、Excalidraw、SVG/PNG/PDF）及工程关键词模板推荐；视觉复核后改为四阶段横向泳道、阶段居中、外侧返回回路和标签自适应宽度。
 

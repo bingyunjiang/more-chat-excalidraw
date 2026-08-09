@@ -33,6 +33,8 @@ Graphviz（自动布局）、本地 Excalidraw 应用（打开画布）。
 - 同一逻辑分区的元素放入同一 `groupIds` 分组；顶层框架用 `frame` 元素承载标题区。
 - 交付前必须实际查看 PNG 或 SVG；不得仅凭 JSON 校验宣称视觉完成。检查画布比例、文字溢出、回路穿越节点、阶段对齐以及导出是否混入调试页眉/大面积空白。
 - 箭头 `width/height` 必须匹配 `points` 的真实几何范围；多段正交线不得使用会被恢复为大弧线的圆角配置。
+- 当用户要求突出 Excalidraw 风格时，优先使用关系图、概念图或研究分析板，而不是退化成普通流程图。组合 `note/callout/topic`、双语多行文字、分组框和语义箭头。
+- 节点可用 `font: hand|sans|mono` 建立字体层级；中文以清晰可读为先，英文注记可使用 hand/mono 强化手绘或技术感。边可用 `curve`、`curveOffset`、`color`、`strokeWidth`、`style: dashed`、`startArrowhead/endArrowhead` 表达因果、反馈和证据关系。
 
 ## Resources
 
@@ -51,7 +53,7 @@ node scripts/check_web_lock.mjs
 ### scripts/
 
 - `template_selector.py`：模板选择器。`--list` 列出 10 种模板；`--recommend "<意图>"` 根据关键词推荐最佳模板与主题；`--info <模板>` 查看详情；`--params <模板> --theme <主题>` 输出带参数的模板元数据。
-- `ir_to_excalidraw.py`：IR → Excalidraw JSON 转换器。`--example fea/flowchart/architecture/mindmap` 生成内置示例；`--validate` 转换后自动校验（含视觉质量检查）；`--layout dot|neato|twopi` 使用 Graphviz 自动布局（借鉴 drawmode）；`--icons` 注入云架构技术图标（自包含 SVG）。支持四阶段横向工程 FEA 泳道、标签驱动节点宽度、正交返回回路、10 种模板布局、4 套主题，并自动注入 `customData.animate` 动画元数据。
+- `ir_to_excalidraw.py`：IR → Excalidraw JSON 转换器。`--example thermal-runaway/battery-thermal/fea/flowchart/architecture/mindmap` 生成内置示例；`--validate` 转换后自动校验（含视觉质量检查）；`--layout dot|neato|twopi` 使用 Graphviz 自动布局（借鉴 drawmode）；`--icons` 注入云架构技术图标（自包含 SVG）。支持手绘双语分析板、便签与批注框、曲线/彩色/粗细/虚线箭头、白底极简四列工程架构、四阶段横向 FEA 泳道、10 种模板布局和 4 套主题。`minimal`/`blueprint` 使用无衬线字体，`default`/`sketch` 保留手绘字体。
 - `icon_library.py`：自包含云架构图标库（借鉴 excalidraw-icons-mcp）。67 个技术图标按类型配色（数据库/队列/网关/计算/存储/缓存/监测/CI/CD/基础设施），`--list` 列出、`--svg <技术>` 输出、`--json` 导出注册表。
 - `render_animation_gif.py`：关键帧动画 → GIF 导出（借鉴 excalimate）。读取 `customData.animate` 顺序，按帧渲染合成 GIF（依赖 pillow，SVG→PNG 用 cairosvg 或 rsvg-convert）。
 - `mermaid_to_excalidraw.js`：Mermaid → Excalidraw 转换（flowchart/sequenceDiagram 子集）。解析为 IR 后复用 ir_to_excalidraw.py 完成布局。
