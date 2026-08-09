@@ -89,7 +89,7 @@
 
 ## 新增 FEA 示例
 
-`fea-workflow-ir.json` 描述需求、几何、材料、网格、边界/接触、求解收敛、网格无关性、验证和报告归档流程；可用 `python3 scripts/ir_to_excalidraw.py --example fea --output examples/fea-workflow.excalidraw --validate` 确定性重建。
+`fea-workflow-ir.json` 描述需求、几何、材料、网格、边界/接触、求解收敛、网格无关性、验证和报告归档流程。当前采用四阶段横向泳道，短阶段按主轴居中，失败回路走阶段外侧；可用 `python3 scripts/ir_to_excalidraw.py --example fea --output examples/fea-workflow.excalidraw --validate` 确定性重建。
 
 ## 内置 Library
 

@@ -22,6 +22,7 @@
   "nodes": [],
   "edges": [],
   "groups": [],
+  "visual_contract": null,
   "metadata": {}
 }
 ```
@@ -37,6 +38,7 @@
 | `edges` | array | 否 | 边列表（见下） |
 | `groups` | array | 否 | 分组/frame 列表（见下） |
 | `metadata` | object | 否 | 来源、创建时间、LLM 提示词等附加信息 |
+| `visual_contract` | object | 否 | 可选视觉蒸馏契约，见 `visual-distillation-contract.md` |
 
 ## 3. 节点 node
 
@@ -204,6 +206,7 @@
 4. **分组**：frame 元素包裹对应节点，按 level 垂直排列
 5. **配色**：应用 theme 色板（color-palette.md），同图单色板
 6. **校验**：输出后运行 validate_excalidraw.py，error 必须清零
+7. **视觉追溯（可选）**：存在 `visual_contract` 时，把事实 ID、来源、语义角色和视觉家族写入相关元素 `customData`；缺失时不改变旧 IR 输出。
 
 ## 9. 扩展通道
 

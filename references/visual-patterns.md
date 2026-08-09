@@ -3,6 +3,15 @@
 > 把常见关系模式抽象为可复用模板，每种模式提供 DSL 描述和对应的 Excalidraw JSON 骨架。
 > 参考：coleam00/excalidraw-diagram-skill（4339★）
 
+## 0. 与 visual_contract 的配合
+
+当 IR 声明 `visual_contract` 时，先选一个 `visual_families.primary` 作为
+主模式，再选择不超过两个 supporting families。例如流水线可用
+`pipeline` 为 primary、`group` 为 supporting。把决定性事实的 `targets`
+指向节点或边 ID；转换器会将事实 ID、来源、语义角色和家族写入相关元素，
+严格视觉校验据此发现未解释的装饰形状或越界家族。没有契约的旧模式仍可
+直接使用本页骨架，不要求额外字段。
+
 ## 1. 扇出模式 Fan-out
 
 一个源节点 → 多个目标节点，用于发布/订阅/广播/分派。

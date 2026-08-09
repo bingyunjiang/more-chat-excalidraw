@@ -262,9 +262,13 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
     }
     try {
       const page = await browser.newPage({ viewport: { width: vw, height: vh } });
-      await page.setContent(svg, { waitUntil: "load" });
+      await page.setContent(
+        `<style>html,body{margin:0;padding:0;background:#fff}svg{display:block}</style>${svg}`,
+        { waitUntil: "load" },
+      );
       const pngPath = path.join(outdir, `${base}.png`);
-      await page.screenshot({ path: pngPath, fullPage: true });
+      const svgLocator = page.locator("svg").first();
+      await svgLocator.screenshot({ path: pngPath });
       console.log(`[OK] ${pngPath} (fallback PNG from SVG)`);
     } catch (err) {
       console.error(`[ERROR] PNG screenshot failed: ${err.message}`);
@@ -367,10 +371,18 @@ async function renderWithPlaywright(sceneFile, outdir, opts) {
     fs.mkdirSync(outdir, { recursive: true });
     const base = path.basename(sceneFile, path.extname(sceneFile));
 
+    const svgLocator = page.locator("#excalidraw-container svg").first();
+    const svgBox = await svgLocator.boundingBox();
+    if (!svgBox || svgBox.width <= 0 || svgBox.height <= 0) {
+      throw new Error("Rendered SVG has no measurable bounds");
+    }
+
     if (opts.format === "png" || opts.format === "both") {
       const png = path.join(outdir, `${base}.png`);
       await new Promise((resolve) => setTimeout(resolve, 300));
-      await page.screenshot({ path: png, fullPage: true });
+      // Capture the diagram itself, not the verification page chrome. This
+      // removes the debug header/note and avoids viewport-sized whitespace.
+      await svgLocator.screenshot({ path: png });
       console.log(`[OK] ${png}`);
     }
 
@@ -387,7 +399,40 @@ async function renderWithPlaywright(sceneFile, outdir, opts) {
 
     if (opts.format === "pdf" || opts.format === "both") {
       const pdfPath = path.join(outdir, `${base}.pdf`);
-      await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
+      const pdfWidth = Math.max(1, Math.ceil(svgBox.width));
+      const pdfHeight = Math.max(1, Math.ceil(svgBox.height));
+      await page.evaluate(({ width, height, title }) => {
+        document.title = title;
+        document.querySelector("#header")?.remove();
+        document.querySelector(".note")?.remove();
+        const container = document.querySelector("#excalidraw-container");
+        if (container) {
+          container.style.padding = "0";
+          container.style.margin = "0";
+          container.style.width = `${width}px`;
+          container.style.height = `${height}px`;
+          container.style.overflow = "hidden";
+        }
+        const svg = container?.querySelector("svg");
+        if (svg) {
+          svg.style.margin = "0";
+          svg.style.boxShadow = "none";
+        }
+        document.documentElement.style.margin = "0";
+        document.documentElement.style.padding = "0";
+        document.body.style.margin = "0";
+        document.body.style.padding = "0";
+        document.body.style.width = `${width}px`;
+        document.body.style.height = `${height}px`;
+        document.body.style.background = "#ffffff";
+      }, { width: pdfWidth, height: pdfHeight, title: base });
+      await page.pdf({
+        path: pdfPath,
+        width: `${pdfWidth}px`,
+        height: `${pdfHeight}px`,
+        printBackground: true,
+        margin: { top: "0", right: "0", bottom: "0", left: "0" },
+      });
       console.log(`[OK] ${pdfPath}`);
     }
 
@@ -413,7 +458,7 @@ async function main() {
 Render a .excalidraw file to PNG and/or SVG using the local render bundle.
 
 Options:
-  --format png|svg|both   Output format (default: png)
+  --format png|svg|pdf|both   Output format (default: png)
   --no-server             Skip HTTP server, use fallback SVG render
   --check-browser         Print the safe headless browser selected for rendering
 

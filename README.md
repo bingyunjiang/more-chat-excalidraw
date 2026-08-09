@@ -86,7 +86,7 @@ Turn natural conversation into editable Excalidraw canvases
 python3 scripts/ir_to_excalidraw.py --example fea --output examples/fea-workflow.excalidraw --validate
 ```
 
-该示例覆盖工况、几何、材料本构、单元/网格、边界与接触、求解收敛、网格无关性、验证及报告归档。
+该示例采用四阶段横向工程泳道，覆盖工况、几何、材料本构、单元/网格、边界与接触、求解收敛、网格无关性、验证及报告归档，并将失败回路布置在主流程之外。
 
 ### 2. 一句话生成图表
 
@@ -220,7 +220,7 @@ bash scripts/test_e2e.sh
 ## 沙箱兼容性
 
 - **preview_server.js**：需要绑定端口，沙箱内运行需 escalation；启动后一切写入都在内存和预览页，不碰本地 Excalidraw web root
-- **render_preview.js**：沙箱内无法启动 HTTP 服务器或 Chromium 时，自动 fallback 到 SVG 渲染
+- **render_preview.js**：PNG/PDF 默认裁切到画布边界，不输出验证页眉和视口空白；沙箱内无法启动 HTTP 服务器或 Chromium 时，自动 fallback 到 SVG 渲染
 - **浏览器安全**：PNG/PDF 渲染只自动选择 Playwright 的 `chrome-headless-shell`，不启动完整的 “Google Chrome for Testing” GUI 应用；可用 `node scripts/render_preview.js --check-browser` 查看选择结果
 - **open_in_excalidraw.js**：沙箱内无法写入 web root 时，给出明确提示和手动操作命令（exit code 3）
 - **ir_to_excalidraw.py / validate_excalidraw.py**：纯 Python 标准库，沙箱内可直接运行

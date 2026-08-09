@@ -51,7 +51,7 @@ def _rects_overlap(a, b):
     return ox * oy
 
 
-def _visual_checks(elements, warnings):
+def _visual_checks(elements, warnings, visual_contract=None):
     """Layout quality heuristics: overlaps, dangling arrows, density."""
     # Skip connector elements and tiny markers when computing overlaps
     shapes = []
@@ -120,6 +120,46 @@ def _visual_checks(elements, warnings):
                     f"visual: {ea.get('id')!r} and {eb.get('id')!r} are too close "
                     f"(gap {distance:.0f}px < 20px)"
                 )
+
+    if visual_contract is not None:
+        # A contract makes visible shapes accountable. Frames and text labels
+        # are structural; all other visible drawing elements need a mapping.
+        for el in elements:
+            if not isinstance(el, dict) or el.get("type") in ("frame", "text"):
+                continue
+            if el.get("opacity", 100) == 0 or el.get("type") not in (
+                "rectangle", "ellipse", "diamond", "arrow", "line", "image"
+            ):
+                continue
+            custom = el.get("customData") or {}
+            if not custom.get("semanticRole") or not custom.get("visualFactIds"):
+                warnings.append(
+                    f"visual-contract: element {el.get('id')!r} has no semanticRole/visualFactIds mapping"
+                )
+
+        families = visual_contract.get("visual_families", {})
+        declared = {families.get("primary")} | set(families.get("supporting") or [])
+        actual = {
+            (el.get("customData") or {}).get("visualFamily")
+            for el in elements if (el.get("customData") or {}).get("visualFamily")
+        }
+        for family in sorted(actual - declared):
+            warnings.append(f"visual-contract: undeclared visual family {family!r}")
+        if len(actual) > len(declared):
+            warnings.append(
+                f"visual-contract: {len(actual)} visual families used, maximum declared is {len(declared)}"
+            )
+
+        allowed_colors = ((visual_contract.get("layout_signals") or {}).get("allowed_colors") or [])
+        if allowed_colors:
+            allowed = {str(color).lower() for color in allowed_colors}
+            for el in elements:
+                for field in ("strokeColor", "backgroundColor"):
+                    color = el.get(field)
+                    if isinstance(color, str) and color.lower() not in allowed and color.lower() not in ("transparent", "none"):
+                        warnings.append(
+                            f"visual-contract: element {el.get('id')!r} uses undeclared {field} {color!r}"
+                        )
 
 
 def validate_file(filepath, strict=False, visual=False):
@@ -201,6 +241,19 @@ def validate_file(filepath, strict=False, visual=False):
             points = el.get("points")
             if not isinstance(points, list) or len(points) < 2:
                 errors.append(f"{label}: arrow must have at least 2 points")
+            elif all(
+                isinstance(point, list)
+                and len(point) == 2
+                and all(isinstance(value, (int, float)) for value in point)
+                for point in points
+            ):
+                span_x = max(point[0] for point in points) - min(point[0] for point in points)
+                span_y = max(point[1] for point in points) - min(point[1] for point in points)
+                if abs(el.get("width", 0) - span_x) > 0.01 or abs(el.get("height", 0) - span_y) > 0.01:
+                    warnings.append(
+                        f"{label}: arrow width/height must match point extents "
+                        f"({span_x:g} x {span_y:g})"
+                    )
 
         # Arrow binding consistency
         if el_type == "arrow":
@@ -282,7 +335,7 @@ def validate_file(filepath, strict=False, visual=False):
                 )
 
     if visual:
-        _visual_checks(elements, warnings)
+        _visual_checks(elements, warnings, data.get("visual_contract"))
 
     return errors, warnings, stats
 

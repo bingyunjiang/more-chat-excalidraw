@@ -6,9 +6,9 @@
 
 ### Changed (unreleased)
 
-- 新增稳定 FEA 工程有限元流程示例（IR、Excalidraw、SVG/PNG/PDF）及工程关键词模板推荐。
+- 新增稳定 FEA 工程有限元流程示例（IR、Excalidraw、SVG/PNG/PDF）及工程关键词模板推荐；视觉复核后改为四阶段横向泳道、阶段居中、外侧返回回路和标签自适应宽度。
 
-- 静态渲染动态选择 Playwright `chrome-headless-shell`，不再自动启动完整的 Google Chrome for Testing GUI 应用，避免 macOS agent 沙箱弹出崩溃对话框；fallback PNG 从 SVG viewBox 读取安全 viewport 尺寸。
+- 静态渲染动态选择 Playwright `chrome-headless-shell`，不再自动启动完整的 Google Chrome for Testing GUI 应用，避免 macOS agent 沙箱弹出崩溃对话框；PNG/PDF 仅导出画布边界，移除验证页眉与视口空白；fallback PNG 从 SVG viewBox 读取安全 viewport 尺寸。
 - 默认生成改为字节级确定性；`EXCALIDRAW_UPDATED` 可显式控制更新时间。
 - web 依赖正式声明 MCP SDK/zod，CI/e2e 覆盖构建、MCP 实际工具调用与 Library 视觉校验。
 - Library 匹配与真实尺寸在布局前解析，组件 frame/箭头使用实际边界；核心 Library 组件已 self-authored MIT 内置，无需下载；第三方缓存仅可显式覆盖。

@@ -73,6 +73,21 @@ else
   if node "$PROJECT_DIR/scripts/render_preview.js" "$MINIMAL" "$RENDER_OUT" --format both 2>&1; then
     if [ -f "$RENDER_OUT/test-minimal.png" ] && [ -f "$RENDER_OUT/test-minimal.svg" ]; then
       log_pass "render PNG + SVG with Playwright"
+      if python3 - "$RENDER_OUT/test-minimal.png" <<'PY'
+import struct, sys
+with open(sys.argv[1], "rb") as fh:
+    header = fh.read(24)
+if header[:8] != b"\x89PNG\r\n\x1a\n":
+    raise SystemExit("not a PNG")
+width, height = struct.unpack(">II", header[16:24])
+if width >= 1000 or height >= 1000:
+    raise SystemExit(f"export contains page chrome/whitespace: {width}x{height}")
+PY
+      then
+        log_pass "PNG export is cropped to diagram bounds"
+      else
+        log_fail "PNG export includes verification page chrome or whitespace"
+      fi
     else
       log_warn "render completed but missing output files"
     fi
@@ -335,6 +350,26 @@ python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example flowchart --output 
 python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example flowchart --output /tmp/e2e-det-b.excalidraw >/dev/null 2>&1 && \
 cmp -s /tmp/e2e-det-a.excalidraw /tmp/e2e-det-b.excalidraw
 if [ "$?" -eq 0 ]; then log_pass "same IR produces byte-identical output"; else log_fail "generation is not deterministic"; fi
+python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example fea --output /tmp/e2e-fea-a.excalidraw >/dev/null 2>&1 && \
+python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example fea --output /tmp/e2e-fea-b.excalidraw >/dev/null 2>&1 && \
+cmp -s /tmp/e2e-fea-a.excalidraw /tmp/e2e-fea-b.excalidraw && \
+python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" /tmp/e2e-fea-a.excalidraw --visual --fail-on-warning >/dev/null 2>&1
+if [ "$?" -eq 0 ]; then log_pass "FEA swimlane is deterministic and strict-visual clean"; else log_fail "FEA swimlane regression"; fi
+if python3 - /tmp/e2e-fea-a.excalidraw <<'PY'
+import json, sys
+scene = json.load(open(sys.argv[1], encoding="utf-8"))
+frames = [el for el in scene.get("elements", []) if el.get("type") == "frame"]
+if len(frames) != 4:
+    raise SystemExit(f"expected 4 FEA stage frames, got {len(frames)}")
+xs = [el["x"] for el in scene["elements"]]
+ys = [el["y"] for el in scene["elements"]]
+x2 = [el["x"] + el.get("width", 0) for el in scene["elements"]]
+y2 = [el["y"] + el.get("height", 0) for el in scene["elements"]]
+width, height = max(x2) - min(xs), max(y2) - min(ys)
+if width / max(height, 1) < 1.8:
+    raise SystemExit(f"FEA layout regressed to a tall diagram: {width}x{height}")
+PY
+then log_pass "FEA uses four-stage landscape engineering layout"; else log_fail "FEA engineering layout/aspect ratio"; fi
 if python3 "$PROJECT_DIR/scripts/validate_builtin_libraries.py" >/dev/null 2>&1; then
   log_pass "built-in library manifest and SHA-256"
 else
@@ -443,6 +478,49 @@ if python3 "$PROJECT_DIR/scripts/render_animation_gif.py" \
   fi
 else
   log_fail "render_animation_gif.py (need pillow; cairosvg/rsvg-convert for frames)"
+fi
+
+echo "=== Test 14: Visual contract ==="
+VISUAL_IR="$PROJECT_DIR/examples/visual-contract-ir.json"
+VISUAL_OUT="/tmp/e2e-visual-contract.excalidraw"
+if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" "$VISUAL_IR" --output "$VISUAL_OUT" >/dev/null 2>&1 \
+  && python3 - "$VISUAL_OUT" <<'PY'
+import json, sys
+scene = json.load(open(sys.argv[1], encoding="utf-8"))
+if "visual_contract" not in scene:
+    raise SystemExit("visual_contract missing from output")
+mapped = [e for e in scene["elements"] if e.get("customData", {}).get("visualFactIds")]
+if not mapped or not all(e.get("customData", {}).get("visualSources") for e in mapped):
+    raise SystemExit("visual fact/source mapping missing")
+PY
+then
+  log_pass "IR conversion preserves visual contract mappings"
+else
+  log_fail "IR visual contract conversion"
+fi
+if python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" "$VISUAL_OUT" --visual --fail-on-warning >/tmp/e2e-visual-contract.log 2>&1; then
+  log_pass "visual contract strict validation"
+else
+  log_fail "visual contract strict validation (see /tmp/e2e-visual-contract.log)"
+fi
+if python3 - <<'PY'
+import importlib.util
+spec = importlib.util.spec_from_file_location("validator", "scripts/validate_excalidraw.py")
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+warnings = []
+mod._visual_checks([
+    {"id": "a", "type": "rectangle", "x": 0, "y": 0, "width": 100, "height": 100},
+    {"id": "b", "type": "rectangle", "x": 10, "y": 10, "width": 100, "height": 100},
+    {"id": "dangling", "type": "arrow", "x": 0, "y": 0, "width": 10, "height": 0, "points": [[0, 0], [10, 0]]},
+], warnings, {"visual_families": {"primary": "pipeline"}})
+if not any("overlaps" in item for item in warnings) or not any("dangling" in item for item in warnings):
+    raise SystemExit("_visual_checks regression coverage failed")
+PY
+then
+  log_pass "_visual_checks overlap/dangling coverage"
+else
+  log_fail "_visual_checks overlap/dangling coverage"
 fi
 
 # --- Summary ---

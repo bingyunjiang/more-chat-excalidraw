@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "title": "契约化流程",
+  "template": "flowchart",
+  "direction": "horizontal",
+  "nodes": [
+    {"id": "n1", "label": "输入", "type": "start"},
+    {"id": "n2", "label": "处理", "type": "process"},
+    {"id": "n3", "label": "输出", "type": "end"}
+  ],
+  "edges": [
+    {"id": "e1", "from": "n1", "to": "n2"},
+    {"id": "e2", "from": "n2", "to": "n3"}
+  ],
+  "visual_contract": {
+    "decisive_facts": [
+      {"id": "fact-input", "statement": "输入先于处理", "refs": ["fixture:1"], "targets": ["n1", "e1"], "semanticRole": "input", "family": "pipeline", "status": "confirmed"},
+      {"id": "fact-process", "statement": "处理是中心步骤", "refs": ["fixture:2"], "targets": ["n2"], "semanticRole": "processing", "family": "pipeline"},
+      {"id": "fact-output", "statement": "处理产生输出", "refs": ["fixture:3"], "targets": ["n3", "e2"], "semanticRole": "output", "family": "pipeline"}
+    ],
+    "preserve": ["input-to-output order"],
+    "allowed_abstraction": ["omit implementation details"],
+    "forbidden_invention": ["no extra service"],
+    "layout_signals": {"direction": "top-to-bottom"},
+    "visual_families": {"primary": "pipeline", "supporting": []}
+  }
+}

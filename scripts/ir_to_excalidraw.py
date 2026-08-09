@@ -172,10 +172,16 @@ def _text_color_for_fill(fill, fallback):
 
 
 def _arrow_el(el_id, x, y, points, theme, from_id, to_id, style="solid", bidirectional=False):
-    return _base_el(el_id, "arrow", x, y, 0, 0, theme, {
+    xs = [point[0] for point in points]
+    ys = [point[1] for point in points]
+    width = max(xs) - min(xs) if xs else 0
+    height = max(ys) - min(ys) if ys else 0
+    return _base_el(el_id, "arrow", x, y, width, height, theme, {
         "strokeColor": theme["lineColor"],
-        "backgroundColor": "transparent",
-        "strokeStyle": style, "roundness": {"type": 2},
+        "backgroundColor": "transparent", "strokeStyle": style,
+        # Orthogonal routes must stay orthogonal after restoreElements(). A
+        # rounded multi-point arrow can be reinterpreted as a large Bézier arc.
+        "roundness": {"type": 2} if len(points) == 2 else None,
         "points": points,
         "startBinding": {"elementId": from_id, "focus": 0.5, "gap": 8},
         "endBinding": {"elementId": to_id, "focus": 0.5, "gap": 8},
@@ -275,7 +281,7 @@ def _layout_horizontal(nodes, node_styles, start_x=80, start_y=60, h_gap=200, v_
     return positions
 
 
-def _layout_swimlane(nodes, node_styles, groups, start_x=60, start_y=60, h_gap=100, v_gap=100):
+def _layout_swimlane(nodes, node_styles, groups, start_x=60, start_y=120, h_gap=80, v_gap=100):
     """泳道布局：每个 group 一横行，节点从左到右"""
     positions = {}
     lane_nodes = {}
@@ -283,10 +289,18 @@ def _layout_swimlane(nodes, node_styles, groups, start_x=60, start_y=60, h_gap=1
         for nid in g.get("nodes", []):
             lane_nodes.setdefault(g["id"], []).append(nid)
     lane_ids = [g["id"] for g in groups]
+    lane_widths = {}
+    for gid in lane_ids:
+        ids = lane_nodes.get(gid, [])
+        lane_widths[gid] = sum(node_styles[nid]["w"] for nid in ids) + h_gap * max(0, len(ids) - 1)
+    max_lane_width = max(lane_widths.values(), default=0)
     y = start_y
     for gid in lane_ids:
         ids = lane_nodes.get(gid, [])
-        x = start_x + 80
+        # Center shorter stages under the widest lane. Engineering workflows
+        # then read around a stable visual axis instead of leaving a large,
+        # accidental blank area to the right of later stages.
+        x = start_x + 80 + (max_lane_width - lane_widths.get(gid, 0)) / 2
         for nid in ids:
             st = node_styles[nid]
             positions[nid] = (x, y)
@@ -359,6 +373,87 @@ def _layout_graphviz(ir_nodes, ir_edges, node_styles, engine="dot"):
     return positions
 
 
+def _visual_contract_annotations(ir):
+    """Validate and index an optional visual contract."""
+    contract = ir.get("visual_contract")
+    if contract is None:
+        return None
+    if not isinstance(contract, dict):
+        raise ValueError("visual_contract must be an object")
+    facts = contract.get("decisive_facts")
+    if not isinstance(facts, list) or not 3 <= len(facts) <= 6:
+        raise ValueError("visual_contract.decisive_facts must contain 3-6 facts")
+    by_target, fact_ids = {}, set()
+    for fact in facts:
+        if not isinstance(fact, dict) or not isinstance(fact.get("id"), str) or not fact["id"]:
+            raise ValueError("each visual fact needs a non-empty string id")
+        fid = fact["id"]
+        if fid in fact_ids:
+            raise ValueError(f"duplicate visual fact id: {fid}")
+        fact_ids.add(fid)
+        if not isinstance(fact.get("statement"), str) or not fact["statement"].strip():
+            raise ValueError(f"visual fact {fid!r} needs a statement")
+        refs = [fact["refs"]] if isinstance(fact.get("refs"), str) else fact.get("refs")
+        if not isinstance(refs, list) or not refs or not all(isinstance(ref, str) and ref for ref in refs):
+            raise ValueError(f"visual fact {fid!r} needs one or more refs")
+        targets = [fact["targets"]] if isinstance(fact.get("targets"), str) else fact.get("targets", [])
+        if not isinstance(targets, list) or not all(isinstance(target, str) and target for target in targets):
+            raise ValueError(f"visual fact {fid!r} targets must be string IDs")
+        status = fact.get("status", "proposed")
+        if status not in ("proposed", "confirmed"):
+            raise ValueError(f"visual fact {fid!r} status must be proposed or confirmed")
+        for target in targets:
+            by_target.setdefault(target, []).append({
+                "id": fid, "refs": refs, "role": fact.get("semanticRole"),
+                "family": fact.get("family"), "status": status,
+            })
+    families = contract.get("visual_families")
+    if not isinstance(families, dict) or not isinstance(families.get("primary"), str) or not families["primary"]:
+        raise ValueError("visual_contract.visual_families.primary is required")
+    supporting = [families["supporting"]] if isinstance(families.get("supporting"), str) else families.get("supporting", [])
+    if not isinstance(supporting, list) or len(set(supporting)) > 2 or not all(isinstance(v, str) and v for v in supporting):
+        raise ValueError("visual_contract.visual_families.supporting must contain at most two names")
+    allowed = {families["primary"], *supporting}
+    for fact in facts:
+        if fact.get("family") and fact["family"] not in allowed:
+            raise ValueError(f"visual fact {fact['id']!r} uses an undeclared family")
+    for key in ("preserve", "allowed_abstraction", "forbidden_invention"):
+        entries = contract.get(key, [])
+        if not isinstance(entries, list) or not all(isinstance(item, (str, dict)) for item in entries):
+            raise ValueError(f"visual_contract.{key} must be a list")
+        if any(isinstance(item, dict) and item.get("status", "proposed") not in ("proposed", "confirmed") for item in entries):
+            raise ValueError(f"visual_contract.{key} status must be proposed or confirmed")
+    return {"by_target": by_target, "primary": families["primary"]}
+
+
+def _apply_visual_contract(elements, ir):
+    indexed = _visual_contract_annotations(ir)
+    if indexed is None:
+        return
+    for el in elements:
+        eid = el.get("id", "")
+        target = (el.get("customData") or {}).get("libraryNodeId")
+        if not target:
+            for prefix in ("txt-", "libtxt-", "arrow-", "elbl-"):
+                if eid.startswith(prefix):
+                    target = eid[len(prefix):]
+                    break
+        if not target and el.get("type") in ("rectangle", "ellipse", "diamond"):
+            target = eid
+        facts = indexed["by_target"].get(target)
+        if not facts:
+            continue
+        custom = dict(el.get("customData") or {})
+        custom.update({
+            "semanticRole": next((f["role"] for f in facts if f["role"]), "visual-fact"),
+            "visualFactIds": [f["id"] for f in facts],
+            "visualSources": sorted({ref for f in facts for ref in f["refs"]}),
+            "visualFamily": facts[0]["family"] or indexed["primary"],
+            "visualStatus": "confirmed" if all(f["status"] == "confirmed" for f in facts) else "proposed",
+        })
+        el["customData"] = custom
+
+
 # ─── 主转换 ────────────────────────────────────────────────────────────────
 def convert(ir, template_override=None, layout_engine=None, icons=False, library=False, library_dir=None):
     """IR dict → .excalidraw dict"""
@@ -385,6 +480,13 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
         # 用户自定义形状/颜色
         if isinstance(node.get("style"), str) and node["style"].startswith("#"):
             style["fill"] = node["style"]
+        # Size simple nodes from their semantic label before layout. Fixed
+        # widths make engineering terms overflow ellipses/diamonds even when
+        # the text element itself reports a valid container binding.
+        if node.get("type") not in ("marker", "milestone"):
+            label_font = 16 if style.get("shape") == "diamond" else 18
+            required_w = estimate_text_width(node.get("label", ""), label_font) + 40
+            style["w"] = max(style["w"], min(280, required_w))
         node_styles[nid] = style
 
     # Library components have their own geometry. Resolve their bounding boxes
@@ -731,11 +833,48 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
         dx = tx2 + st_to["w"] / 2 - ax
         dy = ty2 - ay
         pts = [[0, 0], [dx, dy]]
-        if template in ("architecture", "swimlane") and abs(dy) > 20:
+        preferred_label_segment = None
+        same_lane = abs((fy + st_from["h"] / 2) - (ty2 + st_to["h"] / 2)) < 30
+        if template == "swimlane" and same_lane and tx2 < fx:
+            # Backward loop inside one lane: route above the nodes instead of
+            # drawing a straight line through the intermediate process boxes.
+            ax = fx
+            ay = fy + st_from["h"] / 2
+            target_x = tx2 + st_to["w"]
+            target_y = ty2 + st_to["h"] / 2
+            lane = 50 + (sum(ord(c) for c in str(eid)) % 3) * 16
+            dx = target_x - ax
+            dy = target_y - ay
+            pts = [[0, 0], [0, -lane], [dx, -lane], [dx, dy]]
+            preferred_label_segment = 1
+        elif template == "swimlane" and same_lane:
+            # Normal lane flow is a short, direct horizontal connector.
+            ax = fx + st_from["w"]
+            ay = fy + st_from["h"] / 2
+            dx = tx2 - ax
+            dy = ty2 + st_to["h"] / 2 - ay
+            pts = [[0, 0], [dx, dy]]
+        elif template == "swimlane" and ty2 < fy:
+            # Validation/refinement loops returning to an earlier lane travel
+            # around the left edge of the diagram, keeping the main flow clear.
+            ax = fx
+            ay = fy + st_from["h"] / 2
+            target_x = tx2
+            target_y = ty2 + st_to["h"] / 2
+            lane = 70 + (sum(ord(c) for c in str(eid)) % 3) * 20
+            diagram_left = min((pos[0] for pos in positions.values()), default=min(fx, tx2))
+            outer_x = diagram_left - lane
+            dx = target_x - ax
+            dy = target_y - ay
+            pts = [[0, 0], [outer_x - ax, 0], [outer_x - ax, dy], [dx, dy]]
+            preferred_label_segment = 1
+        elif template in ("architecture", "swimlane") and abs(dy) > 20:
             lane = ((sum(ord(c) for c in str(eid)) % 5) - 2) * 12
             mid_y = (ay + ty2) / 2 + lane
             pts = [[0, 0], [0, mid_y - ay], [tx2 + st_to["w"] / 2 - ax, mid_y - ay], [dx, dy]]
-        if direction == "horizontal" or (abs(dy) < 30 and dx != 0):
+        if (direction == "horizontal" or (abs(dy) < 30 and dx != 0)) and not (
+            template == "swimlane" and same_lane and tx2 < fx
+        ):
             ax = fx + st_from["w"]
             ay = fy + st_from["h"] / 2
             dx = tx2 - ax
@@ -759,8 +898,18 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
         # 边标签
         if edge.get("label"):
             label_w = max(60, int(estimate_text_width(edge["label"], 13) + 18))
-            lx = ax + dx / 2 - label_w / 2
-            ly = ay + dy / 2 - 14
+            # Put the label on the longest routed segment. This keeps labels
+            # attached to detours instead of floating across unrelated nodes.
+            segments = list(zip(pts, pts[1:]))
+            if preferred_label_segment is not None and preferred_label_segment < len(segments):
+                p1, p2 = segments[preferred_label_segment]
+            else:
+                p1, p2 = max(
+                    segments,
+                    key=lambda pair: abs(pair[1][0] - pair[0][0]) + abs(pair[1][1] - pair[0][1]),
+                )
+            lx = ax + (p1[0] + p2[0]) / 2 - label_w / 2
+            ly = ay + (p1[1] + p2[1]) / 2 - 14
             elements.append(_text_el(
                 f"elbl-{eid}", lx, ly, edge["label"], theme,
                 fontSize=13, w=label_w, h=20, color=theme["lineColor"],
@@ -768,9 +917,18 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
 
     # 6. 标题
     if ir.get("title"):
+        min_x = min((positions[nid][0] for nid in positions), default=40)
+        max_x = max(
+            (positions[nid][0] + node_styles.get(nid, {"w": 0})["w"] for nid in positions),
+            default=440,
+        )
+        min_y = min((positions[nid][1] for nid in positions), default=60)
+        title_w = max(400, int(estimate_text_width(ir["title"], 24) + 40))
+        title_x = min_x + (max_x - min_x - title_w) / 2
+        title_y = max(10, min_y - 90)
         elements.append(_text_el(
-            "title-0", 40, 10, ir["title"], theme,
-            fontSize=24, w=400, h=30, color=theme["titleColor"],
+            "title-0", title_x, title_y, ir["title"], theme,
+            fontSize=24, w=title_w, h=30, color=theme["titleColor"],
         ))
 
     # 6.5 云架构图标注入（C.7，借鉴 excalidraw-icons-mcp）
@@ -824,6 +982,8 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             "gridSize": 20,
         },
     }
+    if ir.get("visual_contract") is not None:
+        result["visual_contract"] = ir["visual_contract"]
 
     # 7.1 动画元数据注入（借鉴 excalimate：customData.animate + 7 级顺序规则）
     # 标题(1) → 框架(2) → 主要节点(3) → 连线(4) → 细节文字(5)
@@ -840,20 +1000,45 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
         elif etype == "text":
             el["customData"] = {**(el.get("customData") or {}), "animate": {"order": 5, "duration": 400, "type": "fade-in"}}
 
+    # Optional only: do not alter legacy IR output when no contract exists.
+    _apply_visual_contract(elements, ir)
+
     return result
 
 
 # ─── 示例 IR ───────────────────────────────────────────────────────────────
 EXAMPLES = {
     "fea": {
-        "version": 1, "title": "有限元结构仿真工作流", "template": "flowchart", "theme": "blueprint", "direction": "vertical",
+        "version": 1,
+        "title": "有限元结构仿真工作流",
+        "template": "swimlane",
+        "theme": "blueprint",
         "nodes": [
-            {"id":"fea01","label":"需求与工况定义","type":"start"},{"id":"fea02","label":"CAD几何清理","type":"process"},{"id":"fea03","label":"材料本构参数","type":"process"},{"id":"fea04","label":"单元类型选择","type":"process"},{"id":"fea05","label":"网格划分","type":"process"},{"id":"fea06","label":"边界条件与载荷","type":"process"},{"id":"fea07","label":"接触/连接定义","type":"process"},{"id":"fea08","label":"求解器与步长","type":"process"},{"id":"fea09","label":"计算","type":"process"},{"id":"fea10","label":"收敛判断","type":"decision"},{"id":"fea11","label":"结果提取","type":"process"},{"id":"fea12","label":"网格无关性判断","type":"decision"},{"id":"fea13","label":"试验或解析验证","type":"decision"},{"id":"fea14","label":"结果归档与报告","type":"end"}
+            {"id": "fea01", "label": "需求与工况定义", "type": "start"},
+            {"id": "fea02", "label": "CAD 几何清理", "type": "process", "style": "#dbeafe"},
+            {"id": "fea03", "label": "材料本构参数", "type": "process", "style": "#dbeafe"},
+            {"id": "fea04", "label": "单元类型选择", "type": "process", "style": "#dbeafe"},
+            {"id": "fea05", "label": "网格划分", "type": "process", "style": "#dbeafe"},
+            {"id": "fea06", "label": "边界条件与载荷", "type": "process", "style": "#dbeafe"},
+            {"id": "fea07", "label": "接触/连接定义", "type": "process", "style": "#dbeafe"},
+            {"id": "fea08", "label": "求解器与增量步", "type": "process", "style": "#ede9fe"},
+            {"id": "fea09", "label": "提交计算", "type": "process", "style": "#ede9fe"},
+            {"id": "fea10", "label": "收敛判断", "type": "decision", "style": "#fef3c7"},
+            {"id": "fea11", "label": "场变量与响应提取", "type": "process", "style": "#dcfce7"},
+            {"id": "fea12", "label": "网格无关性判断", "type": "decision", "style": "#fef3c7"},
+            {"id": "fea13", "label": "试验或解析验证", "type": "decision", "style": "#fef3c7"},
+            {"id": "fea14", "label": "模型、结果与报告归档", "type": "end"},
         ],
         "edges": [
             {"id":"feae01","from":"fea01","to":"fea02"},{"id":"feae02","from":"fea02","to":"fea03"},{"id":"feae03","from":"fea03","to":"fea04"},{"id":"feae04","from":"fea04","to":"fea05"},{"id":"feae05","from":"fea05","to":"fea06"},{"id":"feae06","from":"fea06","to":"fea07"},{"id":"feae07","from":"fea07","to":"fea08"},{"id":"feae08","from":"fea08","to":"fea09"},{"id":"feae09","from":"fea09","to":"fea10"},{"id":"feae10","from":"fea10","to":"fea11","label":"是"},{"id":"feae11","from":"fea10","to":"fea08","label":"否/调整"},{"id":"feae12","from":"fea11","to":"fea12"},{"id":"feae13","from":"fea12","to":"fea13","label":"是"},{"id":"feae14","from":"fea12","to":"fea05","label":"否/细化网格"},{"id":"feae15","from":"fea13","to":"fea14","label":"是"},{"id":"feae16","from":"fea13","to":"fea03","label":"否/修正模型假设"}
         ],
-"groups":[{"id":"fea-pre","name":"前处理","nodes":["fea01","fea02","fea03","fea04","fea05","fea06","fea07"],"level":0},{"id":"fea-solve","name":"求解","nodes":["fea08","fea09","fea10"],"level":1},{"id":"fea-post","name":"后处理","nodes":["fea11","fea12"],"level":2},{"id":"fea-verify","name":"验证与报告","nodes":["fea13","fea14"],"level":3}],        "metadata":{"scene":"finite-element-analysis","complexity":"complex"}
+        "groups": [
+            {"id": "fea-pre", "name": "1  前处理", "nodes": ["fea01", "fea02", "fea03", "fea04", "fea05", "fea06", "fea07"], "level": 0},
+            {"id": "fea-solve", "name": "2  求解与收敛", "nodes": ["fea08", "fea09", "fea10"], "level": 1},
+            {"id": "fea-post", "name": "3  后处理与网格验证", "nodes": ["fea11", "fea12"], "level": 2},
+            {"id": "fea-verify", "name": "4  可信度验证与归档", "nodes": ["fea13", "fea14"], "level": 3},
+        ],
+        "metadata": {"scene": "finite-element-analysis", "complexity": "complex"},
     },
     "flowchart": {
         "version": 1,
