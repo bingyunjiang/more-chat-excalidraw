@@ -19,7 +19,7 @@ import re
 TEMPLATES = {
     "flowchart": {
         "name": "流程图 Flowchart",
-        "aliases": ["流程", "步骤", "顺序", "流程"],
+        "aliases": ["流程", "步骤", "顺序", "有限元", "FEA", "finite element", "结构力学", "网格收敛", "网格无关性", "接触非线性", "材料本构", "热-结构耦合", "modal", "fatigue"],
         "scenes": ["business-process", "workflow", "step-by-step"],
         "complexity": "all",
         "description": "纵向或横向：矩形步骤 + 菱形决策 + 箭头",
@@ -75,7 +75,7 @@ TEMPLATES = {
     },
     "swimlane": {
         "name": "泳道图 Swimlane",
-        "aliases": ["泳道", "跨部门", "分工"],
+        "aliases": ["泳道", "跨部门", "分工", "有限元流程", "仿真流程"],
         "scenes": ["business-process", "role-responsibility", "cross-team"],
         "complexity": "medium",
         "description": "水平泳道按角色分区，流程穿越泳道",
@@ -197,6 +197,7 @@ THEMES = {
 
 # 场景 → 模板映射
 SCENE_MAP = {
+    "finite-element-analysis": ["flowchart", "swimlane"],
     "business-process": ["flowchart", "swimlane"],
     "workflow": ["flowchart", "swimlane"],
     "step-by-step": ["flowchart", "timeline"],

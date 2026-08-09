@@ -28,12 +28,13 @@ const REQUIRED_BUNDLE_FILES = ["index.html", "render-entry.js", "render-bundle.j
 function parseArgs(argv) {
   const args = argv.slice(2);
   const positional = [];
-  const opts = { format: "png", noServer: false };
+  const opts = { format: "png", noServer: false, checkBrowser: false };
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === "--format" || a === "-f") { opts.format = args[++i]; continue; }
     if (a.startsWith("--format=")) { opts.format = a.split("=")[1]; continue; }
     if (a === "--no-server") { opts.noServer = true; continue; }
+    if (a === "--check-browser") { opts.checkBrowser = true; continue; }
     if (a === "--help" || a === "-h") { opts.help = true; continue; }
     positional.push(a);
   }
@@ -66,15 +67,81 @@ function findPlaywright() {
   }
 }
 
-function findChromium() {
-  const cacheRoot = path.join(os.homedir(), "Library", "Caches", "ms-playwright");
-  const candidates = [
-    path.join(cacheRoot, "chromium-1228", "chrome-mac-arm64", "Google Chrome for Testing.app", "Contents", "MacOS", "Google Chrome for Testing"),
-    path.join(cacheRoot, "chromium-1208", "chrome-mac-arm64", "Google Chrome for Testing.app", "Contents", "MacOS", "Google Chrome for Testing"),
-    path.join(cacheRoot, "chromium_headless_shell-1228", "chrome-headless-shell-mac-arm64", "headless_shell"),
-    path.join(cacheRoot, "chromium_headless_shell-1208", "chrome-headless-shell-mac-arm64", "headless_shell"),
-  ];
-  return candidates.find((p) => fs.existsSync(p)) || null;
+function playwrightCacheRoot() {
+  const configured = process.env.PLAYWRIGHT_BROWSERS_PATH;
+  if (configured && configured !== "0") return configured;
+  if (process.platform === "darwin") {
+    return path.join(os.homedir(), "Library", "Caches", "ms-playwright");
+  }
+  if (process.platform === "win32") {
+    return path.join(process.env.LOCALAPPDATA || os.homedir(), "ms-playwright");
+  }
+  return path.join(os.homedir(), ".cache", "ms-playwright");
+}
+
+function findExecutable(root, names) {
+  if (!root || !fs.existsSync(root)) return null;
+  const pending = [root];
+  while (pending.length) {
+    const current = pending.shift();
+    let entries;
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true })
+        .sort((a, b) => a.name.localeCompare(b.name));
+    } catch (_) {
+      continue;
+    }
+    for (const entry of entries) {
+      const candidate = path.join(current, entry.name);
+      if (entry.isDirectory()) pending.push(candidate);
+      else if (names.has(entry.name)) return candidate;
+    }
+  }
+  return null;
+}
+
+function findChromium(playwright = null) {
+  const override = process.env.EXCALIDRAW_CHROMIUM_EXECUTABLE;
+  if (override) return fs.existsSync(override) ? override : null;
+
+  const cacheRoot = playwrightCacheRoot();
+  let dirs = [];
+  try {
+    dirs = fs.readdirSync(cacheRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && /^chromium_headless_shell-\d+$/.test(entry.name))
+      .map((entry) => ({
+        name: entry.name,
+        revision: Number(entry.name.match(/(\d+)$/)[1]),
+      }));
+  } catch (_) {
+    return null;
+  }
+
+  // Match Playwright's expected revision when possible. Headless shell avoids
+  // registering a GUI application with macOS, which can abort inside an agent
+  // sandbox and display a "Google Chrome for Testing" crash dialog.
+  let expectedRevision = null;
+  try {
+    const expectedPath = playwright?.chromium?.executablePath?.() || "";
+    const match = expectedPath.match(/chromium(?:_headless_shell)?-(\d+)/);
+    if (match) expectedRevision = Number(match[1]);
+  } catch (_) {
+    /* fall back to the newest complete headless shell */
+  }
+  dirs.sort((a, b) => {
+    if (a.revision === expectedRevision) return -1;
+    if (b.revision === expectedRevision) return 1;
+    return b.revision - a.revision;
+  });
+
+  const names = new Set(["chrome-headless-shell", "headless_shell", "chrome-headless-shell.exe"]);
+  for (const entry of dirs) {
+    const dir = path.join(cacheRoot, entry.name);
+    if (!fs.existsSync(path.join(dir, "INSTALLATION_COMPLETE"))) continue;
+    const executable = findExecutable(dir, names);
+    if (executable) return executable;
+  }
+  return null;
 }
 
 function createServer(dir) {
@@ -133,7 +200,10 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
   // Playwright is only needed for PNG/PDF branches below.
   const { renderSvgFromScene } = require("./lib/svg_render");
   const sceneData = JSON.parse(fs.readFileSync(sceneFile, "utf-8"));
-  const { svg } = renderSvgFromScene(sceneData);
+  const { svg, stats } = renderSvgFromScene(sceneData);
+  const viewBox = stats?.viewBox || {};
+  const vw = Math.min(16384, Math.max(320, Math.ceil(viewBox.width || 1600)));
+  const vh = Math.min(16384, Math.max(240, Math.ceil(viewBox.height || 1200)));
 
   fs.mkdirSync(outdir, { recursive: true });
   const base = path.basename(sceneFile, path.extname(sceneFile));
@@ -158,7 +228,16 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
       }
       return true;
     }
-    const executablePath = findChromium();
+    const executablePath = findChromium(playwright);
+    if (!executablePath) {
+      console.error("[WARN] Safe Chromium headless shell not found. PNG skipped; SVG is available.");
+      if (!svgSaved) {
+        const svgPath2 = path.join(outdir, `${base}.svg`);
+        fs.writeFileSync(svgPath2, svg);
+        console.log(`[OK] ${svgPath2} (fallback SVG, safe headless browser unavailable)`);
+      }
+      return true;
+    }
     let browser;
     try {
       browser = await playwright.chromium.launch({
@@ -226,6 +305,12 @@ async function renderWithPlaywright(sceneFile, outdir, opts) {
     return false;
   }
 
+  const executablePath = findChromium(playwright);
+  if (!executablePath) {
+    console.error("[WARN] Safe Chromium headless shell not found. Falling back to SVG render.");
+    return renderFallbackSvg(sceneFile, outdir, opts);
+  }
+
   const workdir = fs.mkdtempSync(path.join(os.tmpdir(), "excalidraw-render-"));
   fs.copyFileSync(sceneFile, path.join(workdir, "scene.excalidraw"));
   for (const f of REQUIRED_BUNDLE_FILES) {
@@ -249,7 +334,6 @@ async function renderWithPlaywright(sceneFile, outdir, opts) {
     return false;
   }
 
-  const executablePath = findChromium();
   let browser;
   try {
     browser = await playwright.chromium.launch({
@@ -331,15 +415,27 @@ Render a .excalidraw file to PNG and/or SVG using the local render bundle.
 Options:
   --format png|svg|both   Output format (default: png)
   --no-server             Skip HTTP server, use fallback SVG render
+  --check-browser         Print the safe headless browser selected for rendering
 
 Environment:
   EXCALIDRAW_RENDER_BUNDLE  Path to render bundle directory (default: scripts/render-bundle)
+  EXCALIDRAW_CHROMIUM_EXECUTABLE  Explicit trusted headless Chromium executable
 `);
     process.exit(0);
   }
 
+  if (opts.checkBrowser) {
+    const executablePath = findChromium(findPlaywright());
+    if (!executablePath) {
+      console.error("[ERROR] No safe Chromium headless shell found.");
+      process.exit(3);
+    }
+    console.log(executablePath);
+    process.exit(0);
+  }
+
   const sceneFile = positional[0];
-  const outdir = positional[1] || path.dirname(sceneFile);
+  const outdir = positional[1] || (sceneFile ? path.dirname(sceneFile) : ".");
 
   if (!sceneFile) {
     console.error("Usage: node render_preview.js <file.excalidraw> [outdir] [--format png|svg|both]");

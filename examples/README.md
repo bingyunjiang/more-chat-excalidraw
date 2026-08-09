@@ -79,10 +79,18 @@
 - macOS / Python 3 / Node.js
 - Graphviz 15.1.1（dot/neato 布局测试）
 - Playwright（渲染引擎）
-- Excalidraw Libraries（localhost:8080，140 个本地缓存库）
+- 内置 Library（self-authored MIT 核心组件；离线可用）
 
-## 库组件缓存
+## Library 组件
 
-`references/excalidraw-libs/` 包含 140 个 `.excalidrawlib` 文件（56MB），来自 Excalidraw Libraries 生态。这些文件由 `library_loader.py --cache` 从 `localhost:8080` 下载，也可通过 `python3 scripts/library_loader.py --search <关键词>` 搜索更多组件。
+`assets/builtin-libraries/core.excalidrawlib` 随 skill 分发，默认覆盖 C4 风格组件、Kubernetes、AWS Serverless 和 BPMN 核心映射，不需要用户下载。文件来源、许可证与 SHA-256 记录在同目录 `manifest.json`，可运行 `python3 scripts/validate_builtin_libraries.py` 验证完整性。
 
-`library_loader.py` 的搜索路径优先级：`references/excalidraw-libs/` → `/tmp/excalidraw-libs/`。
+如需使用自定义或第三方 Library，可通过 `--library-dir <目录>` 显式覆盖；第三方资产的版权与许可证由使用者单独核验。
+
+## 新增 FEA 示例
+
+`fea-workflow-ir.json` 描述需求、几何、材料、网格、边界/接触、求解收敛、网格无关性、验证和报告归档流程；可用 `python3 scripts/ir_to_excalidraw.py --example fea --output examples/fea-workflow.excalidraw --validate` 确定性重建。
+
+## 内置 Library
+
+核心映射默认使用 `assets/builtin-libraries/core.excalidrawlib`（self-authored、MIT、v0.0.1），无需下载；第三方 `.excalidrawlib` 仅可通过显式 `--library-dir` 覆盖，许可状态需自行核验。

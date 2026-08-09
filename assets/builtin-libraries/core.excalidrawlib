@@ -1,0 +1,606 @@
+{
+  "type": "excalidrawlib",
+  "version": 2,
+  "libraryItems": [
+    {
+      "name": "Database",
+      "elements": [
+        {
+          "id": "database",
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#ffffff",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": null,
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "Component",
+      "elements": [
+        {
+          "id": "component",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#ffffff",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "Person",
+      "elements": [
+        {
+          "id": "person",
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#0c37a2",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": null,
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "Web App",
+      "elements": [
+        {
+          "id": "web-app",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#a5d8ff",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "deploy",
+      "elements": [
+        {
+          "id": "deploy",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#d0bfff",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "Lambda",
+      "elements": [
+        {
+          "id": "lambda",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#ffd8a8",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "S3",
+      "elements": [
+        {
+          "id": "s3",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#c3fae8",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "CloudFront",
+      "elements": [
+        {
+          "id": "cloudfront",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#a5d8ff",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "DynamoDB",
+      "elements": [
+        {
+          "id": "dynamodb",
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#c3fae8",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": null,
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "EventBridge",
+      "elements": [
+        {
+          "id": "eventbridge",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#fcc2d7",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "SQS",
+      "elements": [
+        {
+          "id": "sqs",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#fff3bf",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "SNS",
+      "elements": [
+        {
+          "id": "sns",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#fff3bf",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "AppSync",
+      "elements": [
+        {
+          "id": "appsync",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#d0bfff",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "Aurora",
+      "elements": [
+        {
+          "id": "aurora",
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#c3fae8",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": null,
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "Task",
+      "elements": [
+        {
+          "id": "task",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#ffffff",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "Start",
+      "elements": [
+        {
+          "id": "start",
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#b2f2bb",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": null,
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    },
+    {
+      "name": "End",
+      "elements": [
+        {
+          "id": "end",
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": 180,
+          "height": 80,
+          "angle": 0,
+          "strokeColor": "#1e1e1e",
+          "backgroundColor": "#ffc9c9",
+          "fillStyle": "solid",
+          "strokeWidth": 2,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [
+            "builtin"
+          ],
+          "frameId": null,
+          "roundness": null,
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 0,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false
+        }
+      ]
+    }
+  ]
+}

@@ -335,10 +335,43 @@ python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example flowchart --output 
 python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example flowchart --output /tmp/e2e-det-b.excalidraw >/dev/null 2>&1 && \
 cmp -s /tmp/e2e-det-a.excalidraw /tmp/e2e-det-b.excalidraw
 if [ "$?" -eq 0 ]; then log_pass "same IR produces byte-identical output"; else log_fail "generation is not deterministic"; fi
-if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example architecture --library --output /tmp/e2e-library.excalidraw >/dev/null 2>&1 && python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" /tmp/e2e-library.excalidraw --visual --fail-on-warning >/dev/null 2>&1; then
-  log_pass "--library generation and validation"
+if python3 "$PROJECT_DIR/scripts/validate_builtin_libraries.py" >/dev/null 2>&1; then
+  log_pass "built-in library manifest and SHA-256"
 else
-  log_fail "--library generation/validation"
+  log_fail "built-in library manifest/hash validation"
+fi
+LIBRARY_ISOLATED=$(mktemp -d)
+mkdir -p "$LIBRARY_ISOLATED/home" "$LIBRARY_ISOLATED/tmp"
+if HOME="$LIBRARY_ISOLATED/home" TMPDIR="$LIBRARY_ISOLATED/tmp" \
+  python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example architecture --library \
+    --output "$LIBRARY_ISOLATED/architecture.excalidraw" >/dev/null 2>&1 && \
+  HOME="$LIBRARY_ISOLATED/home" TMPDIR="$LIBRARY_ISOLATED/tmp" \
+  python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" "$LIBRARY_ISOLATED/architecture.excalidraw" \
+    --visual --fail-on-warning >/dev/null 2>&1; then
+  log_pass "built-in --library works offline with isolated HOME/TMPDIR"
+else
+  log_fail "isolated built-in --library generation/validation"
+fi
+rm -rf "$LIBRARY_ISOLATED"
+if python3 - "$PROJECT_DIR/scripts" <<'PY'
+import pathlib, sys
+sys.path.insert(0, sys.argv[1])
+import library_loader
+
+missing = []
+for key, mapping in library_loader.LIBRARY_MAPPING.items():
+    if mapping is not None and library_loader.lookup_component(key, key) is None:
+        missing.append(key)
+if missing:
+    raise SystemExit(f"unresolved built-in mappings: {missing}")
+PY
+then log_pass "all configured library mappings resolve offline"; else log_fail "built-in library mapping coverage"; fi
+if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example architecture \
+  --library-dir "$PROJECT_DIR/assets/builtin-libraries" \
+  --output /tmp/e2e-library-override.excalidraw >/dev/null 2>&1; then
+  log_pass "--library-dir explicit override"
+else
+  log_fail "--library-dir explicit override"
 fi
 if python3 - "$PROJECT_DIR/examples/microservice-arch-ir.json" "$PROJECT_DIR/scripts/ir_to_excalidraw.py" <<'PY'
 import json, subprocess, sys, tempfile

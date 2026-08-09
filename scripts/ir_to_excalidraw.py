@@ -158,6 +158,19 @@ def _library_text_color(elements):
     return "#ffffff" if fills and max(fills)[1] < 0.30 else "#374151"
 
 
+def _text_color_for_fill(fill, fallback):
+    if not isinstance(fill, str) or not fill.startswith("#"):
+        return fallback
+    try:
+        h = fill.lstrip("#"); h = "".join(c * 2 for c in h) if len(h) == 3 else h
+        rgb = tuple(int(h[i:i+2], 16) / 255 for i in (0, 2, 4))
+        linear = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+        lum = 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+        return "#ffffff" if lum < 0.30 else "#374151"
+    except (ValueError, IndexError):
+        return fallback
+
+
 def _arrow_el(el_id, x, y, points, theme, from_id, to_id, style="solid", bidirectional=False):
     return _base_el(el_id, "arrow", x, y, 0, 0, theme, {
         "strokeColor": theme["lineColor"],
@@ -347,7 +360,7 @@ def _layout_graphviz(ir_nodes, ir_edges, node_styles, engine="dot"):
 
 
 # ─── 主转换 ────────────────────────────────────────────────────────────────
-def convert(ir, template_override=None, layout_engine=None, icons=False, library=False):
+def convert(ir, template_override=None, layout_engine=None, icons=False, library=False, library_dir=None):
     """IR dict → .excalidraw dict"""
     template = template_override or ir.get("template", "flowchart")
     theme_key = ir.get("theme", "default")
@@ -385,7 +398,11 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             import library_loader as _ll
             lib_loader = _ll
             for node in ir_nodes:
-                match = lib_loader.lookup_component(node.get("type", "plain"), node.get("label", ""))
+                match = lib_loader.lookup_component(
+                    node.get("type", "plain"),
+                    node.get("label", ""),
+                    lib_dir=library_dir,
+                )
                 if not match:
                     continue
                 raw_elements, scale = match
@@ -596,7 +613,8 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
                     f"libtxt-{nid}", lib_bbox["x"] + (lib_bbox["width"] - available_w) / 2,
                     lib_bbox["y"] + (lib_bbox["height"] - font * 1.35) / 2,
                     label, theme, fontSize=font, w=available_w, h=max(18, font * 1.35),
-                    color=theme["textColor"], container_id=nid,
+                    color=("#374151" if node.get("type") == "database" else _library_text_color(lib_els)),
+                    container_id=nid,
                 )
                 overlay["groupIds"] = list(anchor_el.get("groupIds") or [])
                 overlay["frameId"] = frame_id
@@ -623,7 +641,7 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             ty = y + (h - (node.get("type") in ("start", "end", "topic", "marker", "milestone") and 24 or 26)) / 2
             if shape == "diamond":
                 ty = y + (h - 24) / 2
-            text_color = theme["textColor"]
+            text_color = _text_color_for_fill(st["fill"], theme["textColor"])
             if shape == "ellipse" and st["fill"] in (SEMANTIC_FILL["input"], SEMANTIC_FILL["storage"]):
                 text_color = "#1e3a5f" if theme_key == "default" else theme["textColor"]
             elements.append(_text_el(
@@ -740,11 +758,12 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
                     break
         # 边标签
         if edge.get("label"):
-            lx = ax + dx / 2 - 20
+            label_w = max(60, int(estimate_text_width(edge["label"], 13) + 18))
+            lx = ax + dx / 2 - label_w / 2
             ly = ay + dy / 2 - 14
             elements.append(_text_el(
                 f"elbl-{eid}", lx, ly, edge["label"], theme,
-                fontSize=13, w=60, h=20, color=theme["lineColor"],
+                fontSize=13, w=label_w, h=20, color=theme["lineColor"],
             ))
 
     # 6. 标题
@@ -826,6 +845,16 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
 
 # ─── 示例 IR ───────────────────────────────────────────────────────────────
 EXAMPLES = {
+    "fea": {
+        "version": 1, "title": "有限元结构仿真工作流", "template": "flowchart", "theme": "blueprint", "direction": "vertical",
+        "nodes": [
+            {"id":"fea01","label":"需求与工况定义","type":"start"},{"id":"fea02","label":"CAD几何清理","type":"process"},{"id":"fea03","label":"材料本构参数","type":"process"},{"id":"fea04","label":"单元类型选择","type":"process"},{"id":"fea05","label":"网格划分","type":"process"},{"id":"fea06","label":"边界条件与载荷","type":"process"},{"id":"fea07","label":"接触/连接定义","type":"process"},{"id":"fea08","label":"求解器与步长","type":"process"},{"id":"fea09","label":"计算","type":"process"},{"id":"fea10","label":"收敛判断","type":"decision"},{"id":"fea11","label":"结果提取","type":"process"},{"id":"fea12","label":"网格无关性判断","type":"decision"},{"id":"fea13","label":"试验或解析验证","type":"decision"},{"id":"fea14","label":"结果归档与报告","type":"end"}
+        ],
+        "edges": [
+            {"id":"feae01","from":"fea01","to":"fea02"},{"id":"feae02","from":"fea02","to":"fea03"},{"id":"feae03","from":"fea03","to":"fea04"},{"id":"feae04","from":"fea04","to":"fea05"},{"id":"feae05","from":"fea05","to":"fea06"},{"id":"feae06","from":"fea06","to":"fea07"},{"id":"feae07","from":"fea07","to":"fea08"},{"id":"feae08","from":"fea08","to":"fea09"},{"id":"feae09","from":"fea09","to":"fea10"},{"id":"feae10","from":"fea10","to":"fea11","label":"是"},{"id":"feae11","from":"fea10","to":"fea08","label":"否/调整"},{"id":"feae12","from":"fea11","to":"fea12"},{"id":"feae13","from":"fea12","to":"fea13","label":"是"},{"id":"feae14","from":"fea12","to":"fea05","label":"否/细化网格"},{"id":"feae15","from":"fea13","to":"fea14","label":"是"},{"id":"feae16","from":"fea13","to":"fea03","label":"否/修正模型假设"}
+        ],
+"groups":[{"id":"fea-pre","name":"前处理","nodes":["fea01","fea02","fea03","fea04","fea05","fea06","fea07"],"level":0},{"id":"fea-solve","name":"求解","nodes":["fea08","fea09","fea10"],"level":1},{"id":"fea-post","name":"后处理","nodes":["fea11","fea12"],"level":2},{"id":"fea-verify","name":"验证与报告","nodes":["fea13","fea14"],"level":3}],        "metadata":{"scene":"finite-element-analysis","complexity":"complex"}
+    },
     "flowchart": {
         "version": 1,
         "title": "用户注册流程",
@@ -900,12 +929,13 @@ def main():
     ap.add_argument("input", nargs="?", help="IR JSON 文件路径")
     ap.add_argument("--output", "-o", help="输出 .excalidraw 文件路径")
     ap.add_argument("--validate", action="store_true", help="转换后运行校验")
-    ap.add_argument("--example", help="使用内置示例：flowchart/architecture/mindmap")
+    ap.add_argument("--example", help="使用内置示例：fea/flowchart/architecture/mindmap")
     ap.add_argument("--template-list", action="store_true", help="列出支持的模板")
     ap.add_argument("--theme", help="覆盖主题：default/sketch/blueprint/minimal")
     ap.add_argument("--layout", help="布局引擎：dot/neato/twopi（Graphviz，需 brew install graphviz）")
     ap.add_argument("--icons", action="store_true", help="注入云架构技术图标（自包含 SVG，icon_library.py）")
     ap.add_argument("--library", action="store_true", help="使用 Excalidraw Libraries 组件替换简单形状（library_loader.py）")
+    ap.add_argument("--library-dir", help="显式使用自定义 .excalidrawlib 目录（同时启用 --library）")
     args = ap.parse_args()
 
     if args.template_list:
@@ -929,7 +959,14 @@ def main():
         ir = dict(ir)
         ir["theme"] = args.theme
 
-    result = convert(ir, layout_engine=args.layout, icons=args.icons, library=args.library)
+    use_library = args.library or bool(args.library_dir)
+    result = convert(
+        ir,
+        layout_engine=args.layout,
+        icons=args.icons,
+        library=use_library,
+        library_dir=args.library_dir,
+    )
 
     out_path = args.output
     if not out_path:
@@ -945,7 +982,7 @@ def main():
     for el in result["elements"]:
         by_type[el["type"]] = by_type.get(el["type"], 0) + 1
     print(f"  类型统计: {by_type}")
-    print(f"  主题: {ir.get('theme', 'default')}  布局: {args.layout or '内置'}  图标: {'是' if args.icons else '否'}  库组件: {'是' if args.library else '否'}")
+    print(f"  主题: {ir.get('theme', 'default')}  布局: {args.layout or '内置'}  图标: {'是' if args.icons else '否'}  库组件: {'是' if use_library else '否'}")
 
     if args.validate:
         import subprocess

@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "assets": [
+    {
+      "filename": "core.excalidrawlib",
+      "provenance": "original/self-authored",
+      "license": "MIT",
+      "sha256": "7826403f6db372266aaeac13c4336723ddde68bcac95648b908bdc059e77a9d2",
+      "used_mappings": "all fallback mappings"
+    }
+  ]
+}

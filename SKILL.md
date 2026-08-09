@@ -20,7 +20,7 @@ Graphviz（自动布局）、本地 Excalidraw 应用（打开画布）。
 3. **IR → `.excalidraw` JSON**：运行 `python3 scripts/ir_to_excalidraw.py <ir.json> --output output/<topic>.excalidraw` 自动完成布局、元素生成、箭头绑定与配色。也可手工按 [references/excalidraw-schema.md](references/excalidraw-schema.md) 与元素模板生成。默认输出到当前工作区，文件名建议 `output/<topic>-YYYYMMDD-HHMM.excalidraw`。
 4. **校验**：运行 `python3 scripts/validate_excalidraw.py <file>`，修复所有 error 后再交付。
 5. **实时预览**：启动 `node scripts/preview_server.js [<file>] [--open]`（默认端口 6060，预览页会轮询 API 实时刷新，模式参考 al1y/mcp-excalidraw）。之后每次生成或修改 `.excalidraw`，用 `node scripts/push_preview.js <file>` 推送，已打开的预览页约 1.5 秒内自动更新。交付前先看预览，检查元素是否重叠、文字是否溢出、连线是否绑定正确；发现问题直接修正后重新推送。需要浏览器内编辑时访问 `http://localhost:6060/editor`（完整 Excalidraw 编辑器，编辑后点"保存到服务器"写回文件）；需要分步讲解动画时访问 `http://localhost:6060/animate`（按 customData.animate 顺序逐帧播放）。
-6. **静态渲染**（可选，出图）：需要 PNG/SVG 文件时运行 `node scripts/render_preview.js <file> --format both` 生成同目录预览文件；沙箱内无法起浏览器时自动降级为纯 SVG。
+6. **静态渲染**（可选，出图）：需要 PNG/SVG 文件时运行 `node scripts/render_preview.js <file> --format both` 生成同目录预览文件；只自动使用 Playwright `chrome-headless-shell`，不启动完整 GUI Chrome；沙箱内无法起安全浏览器时自动降级为纯 SVG。可用 `node scripts/render_preview.js --check-browser` 查看选择结果。
 7. **打开与迭代**：运行 `node scripts/open_in_excalidraw.js <file>` 把画布推送到本地 Excalidraw（http://localhost:5001/）并打开浏览器；页面会自动刷新导入，用户可直接编辑。用户提出修改时增量更新元素（保持既有 `id` 不变，被替换的元素用新 `id`），不要整图重画。
 
 ## 质量规则
@@ -42,14 +42,14 @@ npm run build:all --prefix scripts/web
 node scripts/check_web_lock.mjs
 ```
 
-相同 IR 默认生成字节级稳定场景；只有显式设置 `EXCALIDRAW_UPDATED` 才控制更新时间。`--library` 是可选实验能力，依赖 `references/excalidraw-libs/` 本地缓存；缓存缺失时回退到内置形状。`open_in_excalidraw.js` 仅在 macOS 自动使用 launchd 启动服务，浏览器打开按 macOS/Linux/Windows 分别使用 `open`/`xdg-open`/`cmd.exe start`。
+相同 IR 默认生成字节级稳定场景；只有显式设置 `EXCALIDRAW_UPDATED` 才控制更新时间。`--library` 默认使用 skill 自带的 self-authored MIT 核心组件，无需下载；只有需要自定义组件时才使用 `--library-dir <目录>` 显式覆盖。`open_in_excalidraw.js` 仅在 macOS 自动使用 launchd 启动服务，浏览器打开按 macOS/Linux/Windows 分别使用 `open`/`xdg-open`/`cmd.exe start`。
 
 严格视觉验收可加 `--visual --fail-on-warning`；默认校验仍只报告 warning，不破坏兼容性。
 
 ### scripts/
 
 - `template_selector.py`：模板选择器。`--list` 列出 10 种模板；`--recommend "<意图>"` 根据关键词推荐最佳模板与主题；`--info <模板>` 查看详情；`--params <模板> --theme <主题>` 输出带参数的模板元数据。
-- `ir_to_excalidraw.py`：IR → Excalidraw JSON 转换器。`--example flowchart/architecture/mindmap` 生成内置示例；`--validate` 转换后自动校验（含视觉质量检查）；`--layout dot|neato|twopi` 使用 Graphviz 自动布局（借鉴 drawmode）；`--icons` 注入云架构技术图标（自包含 SVG）。支持 10 种模板布局、4 套主题，并自动注入 `customData.animate` 动画元数据。
+- `ir_to_excalidraw.py`：IR → Excalidraw JSON 转换器。`--example fea/flowchart/architecture/mindmap` 生成内置示例；`--validate` 转换后自动校验（含视觉质量检查）；`--layout dot|neato|twopi` 使用 Graphviz 自动布局（借鉴 drawmode）；`--icons` 注入云架构技术图标（自包含 SVG）。支持工程有限元（FEA）流程、10 种模板布局、4 套主题，并自动注入 `customData.animate` 动画元数据。
 - `icon_library.py`：自包含云架构图标库（借鉴 excalidraw-icons-mcp）。67 个技术图标按类型配色（数据库/队列/网关/计算/存储/缓存/监测/CI/CD/基础设施），`--list` 列出、`--svg <技术>` 输出、`--json` 导出注册表。
 - `render_animation_gif.py`：关键帧动画 → GIF 导出（借鉴 excalimate）。读取 `customData.animate` 顺序，按帧渲染合成 GIF（依赖 pillow，SVG→PNG 用 cairosvg 或 rsvg-convert）。
 - `mermaid_to_excalidraw.js`：Mermaid → Excalidraw 转换（flowchart/sequenceDiagram 子集）。解析为 IR 后复用 ir_to_excalidraw.py 完成布局。

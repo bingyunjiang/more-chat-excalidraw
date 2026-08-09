@@ -21,6 +21,7 @@ from pathlib import Path
 
 # 默认库缓存目录
 DEFAULT_LIB_DIR = os.path.join(os.path.dirname(__file__), "..", "references", "excalidraw-libs")
+BUILTIN_LIB_DIR = os.path.join(os.path.dirname(__file__), "..", "assets", "builtin-libraries")
 FALLBACK_LIB_DIR = "/tmp/excalidraw-libs"
 
 
@@ -65,7 +66,7 @@ LIBRARY_MAPPING = {
     "web app":          ("dmitry-burnyshev_c4-architecture.excalidrawlib", "Web App", 0.7),
     "web 前端":         ("dmitry-burnyshev_c4-architecture.excalidrawlib", "Web App", 0.7),
     "frontend":         ("dmitry-burnyshev_c4-architecture.excalidrawlib", "Web App", 0.7),
-    "mobile app":       ("dmitry-burnyshev_c4-architecture.excalidrawlib", "Mobile App", 0.7),
+    "mobile app":       ("dmitry-burnyshev_c4-architecture.excalidrawlib", "Web App", 0.7),
 
     # ── AWS 服务 ──
     "lambda":           ("stojanovic_aws-serverless-icons-v2.excalidrawlib", "Lambda", 1.2),
@@ -80,8 +81,8 @@ LIBRARY_MAPPING = {
 
     # ── BPMN ──
     "task":             ("fraoustin_bpmn.excalidrawlib", "task", 0.7),
-    "start event":      ("fraoustin_bpmn.excalidrawlib", "start event", 0.7),
-    "end event":        ("fraoustin_bpmn.excalidrawlib", "end event", 0.7),
+    "start event":      ("fraoustin_bpmn.excalidrawlib", "Start", 0.7),
+    "end event":        ("fraoustin_bpmn.excalidrawlib", "End", 0.7),
 
     # ── 通用形状回退（保持简单形状）──
     "start":            None,
@@ -120,7 +121,9 @@ TECH_LABEL_ALIASES = {
 
 
 def _find_lib_dir():
-    """定位库文件目录。"""
+    """Return built-in assets first; external cache is explicit override."""
+    if os.path.isdir(BUILTIN_LIB_DIR):
+        return BUILTIN_LIB_DIR
     if os.path.isdir(DEFAULT_LIB_DIR):
         return DEFAULT_LIB_DIR
     if os.path.isdir(FALLBACK_LIB_DIR):
@@ -374,7 +377,10 @@ def _load_mapped_component(mapping, lib_dir=None):
     try:
         lib = load_library(lib_file, lib_dir)
     except FileNotFoundError:
-        return None
+        try:
+            lib = load_library("core.excalidrawlib", BUILTIN_LIB_DIR)
+        except FileNotFoundError:
+            return None
 
     for item in lib["items"]:
         if item["name"].lower() == item_name.lower():

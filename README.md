@@ -74,7 +74,21 @@ Turn natural conversation into editable Excalidraw canvases
 
 ## 你可以用它做什么
 
-### 1. 一句话生成图表
+### 1. 工程有限元流程示例
+
+可直接对 Agent 说：
+
+> 使用 more-chat-excalidraw 绘制一张结构力学有限元仿真流程图，包含需求与工况、CAD 几何清理、材料本构、单元类型、网格划分、边界与载荷、接触/连接、求解器与步长、收敛判断、结果提取、网格无关性、试验或解析验证、结果归档；画出不收敛、网格未独立和验证失败的回路，使用蓝图主题，严格校验并输出 Excalidraw、PNG、SVG 和 PDF。
+
+也可直接运行内置示例：
+
+```bash
+python3 scripts/ir_to_excalidraw.py --example fea --output examples/fea-workflow.excalidraw --validate
+```
+
+该示例覆盖工况、几何、材料本构、单元/网格、边界与接触、求解收敛、网格无关性、验证及报告归档。
+
+### 2. 一句话生成图表
 
 对 Agent 说"画一个微服务架构图"，自动推荐模板、生成 IR、完成布局配色并输出 `.excalidraw`：
 
@@ -173,7 +187,7 @@ npm run build:all --prefix scripts/web
 node scripts/check_web_lock.mjs
 ```
 
-CI 会真实执行依赖安装、editor/render bundle 构建、MCP 工具调用与 e2e suite。Playwright、Graphviz、本地 Excalidraw 和端口服务均是可选环境能力；沙箱可能阻止端口、浏览器或 web root 写入，此时保留 SVG fallback 并明确报告环境受阻。生成默认字节级可复现；`EXCALIDRAW_UPDATED` 可显式控制更新时间。`--library` 为依赖本地缓存的可选实验路径，缺失时回退内置形状。
+CI 会真实执行依赖安装、editor/render bundle 构建、MCP 工具调用与 e2e suite。Playwright、Graphviz、本地 Excalidraw 和端口服务均是可选环境能力；沙箱可能阻止端口、浏览器或 web root 写入，此时保留 SVG fallback 并明确报告环境受阻。生成默认字节级可复现；`EXCALIDRAW_UPDATED` 可显式控制更新时间。`--library` 默认使用内置 self-authored MIT 组件、无需下载；自定义或第三方 Library 仅可通过 `--library-dir` 显式覆盖。
 
 需要把视觉警告当作质量门时使用 `python3 scripts/validate_excalidraw.py <file> --visual --fail-on-warning`；默认模式仍兼容仅报告 warning。
 
@@ -207,6 +221,7 @@ bash scripts/test_e2e.sh
 
 - **preview_server.js**：需要绑定端口，沙箱内运行需 escalation；启动后一切写入都在内存和预览页，不碰本地 Excalidraw web root
 - **render_preview.js**：沙箱内无法启动 HTTP 服务器或 Chromium 时，自动 fallback 到 SVG 渲染
+- **浏览器安全**：PNG/PDF 渲染只自动选择 Playwright 的 `chrome-headless-shell`，不启动完整的 “Google Chrome for Testing” GUI 应用；可用 `node scripts/render_preview.js --check-browser` 查看选择结果
 - **open_in_excalidraw.js**：沙箱内无法写入 web root 时，给出明确提示和手动操作命令（exit code 3）
 - **ir_to_excalidraw.py / validate_excalidraw.py**：纯 Python 标准库，沙箱内可直接运行
 

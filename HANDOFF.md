@@ -75,9 +75,12 @@ node scripts/mcp_server.mjs   # 工具: generate_diagram / validate_diagram / pu
 
 ## 本轮已完成与仍待验证
 
+- 新增 `fea` 工程有限元流程示例及四格式产物；严格视觉与确定性已验证。
+- 核心 Library 已 self-authored MIT 内置；第三方缓存仅作可选覆盖且 needs_verification。
+
 - 已完成：web 依赖声明与 build:all、CI 构建、MCP 实际调用、默认确定性、Library 两阶段布局、跨平台 opener 安全调用。
 - 已完成：Library 代表性 `--visual` 校验与本地缓存 SHA-256 清单。
-- 未在线验证：干净网络环境下的完整 `npm ci`（本机离线缓存缺 tarball）；未在真实 Windows/Linux 桌面实机验证浏览器/服务启动。
+- 已在当前 macOS 环境完成 `npm ci`、web bundle 构建与 33 项 e2e；尚未在真实 Windows/Linux 桌面实机验证浏览器/服务启动。
 
 ## 已知问题与后续
 
