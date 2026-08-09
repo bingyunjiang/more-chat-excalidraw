@@ -626,8 +626,14 @@ mod._visual_checks([
     {"id": "a", "type": "rectangle", "x": 0, "y": 0, "width": 100, "height": 100},
     {"id": "b", "type": "rectangle", "x": 10, "y": 10, "width": 100, "height": 100},
     {"id": "dangling", "type": "arrow", "x": 0, "y": 0, "width": 10, "height": 0, "points": [[0, 0], [10, 0]]},
+    {"id": "txt-node", "type": "text", "x": 200, "y": 200, "width": 160, "height": 40, "text": "节点正文"},
+    {"id": "elbl-edge", "type": "text", "x": 230, "y": 210, "width": 120, "height": 40, "text": "边标签", "fontSize": 34},
 ], warnings, {"visual_families": {"primary": "pipeline"}})
-if not any("overlaps" in item for item in warnings) or not any("dangling" in item for item in warnings):
+if (
+    not any("overlaps" in item for item in warnings)
+    or not any("dangling" in item for item in warnings)
+    or not any("overlaps readable text" in item for item in warnings)
+):
     raise SystemExit("_visual_checks regression coverage failed")
 PY
 then

@@ -86,6 +86,12 @@ def _rects_overlap(a, b):
     return ox * oy
 
 
+def _rect_area(bbox):
+    """Return bbox area, guarding malformed or degenerate boxes."""
+    x1, y1, x2, y2 = bbox
+    return max(0, x2 - x1) * max(0, y2 - y1)
+
+
 def _visual_checks(elements, warnings, visual_contract=None, sketch=False, cjk_handwriting=False):
     """Layout quality heuristics: overlaps, dangling arrows, density."""
     # Skip connector elements and tiny markers when computing overlaps
@@ -168,6 +174,41 @@ def _visual_checks(elements, warnings, visual_contract=None, sketch=False, cjk_h
             lb = _bbox(label)
             if lb and _rects_overlap(tb, lb) > 0:
                 warnings.append(f"visual: title {title.get('id')!r} overlaps edge label {label.get('id')!r}")
+
+    # Readability guard: expressive hand-drawn edge labels are allowed to be
+    # large, but they must not cover node body text. Container overlap alone can
+    # be aesthetically acceptable in sketch diagrams; text occlusion is not.
+    readable_texts = [
+        el for el in elements
+        if isinstance(el, dict)
+        and el.get("type") == "text"
+        and not str(el.get("id", "")).startswith(("elbl-", "title-"))
+        and str(el.get("text", "")).strip()
+    ]
+    for label in edge_labels:
+        lb = _bbox(label)
+        if not lb or not str(label.get("text", "")).strip():
+            continue
+        label_area = _rect_area(lb)
+        if label_area <= 0:
+            continue
+        for text_el in readable_texts:
+            if label.get("id") == text_el.get("id"):
+                continue
+            tb = _bbox(text_el)
+            if not tb:
+                continue
+            area = _rects_overlap(lb, tb)
+            if area <= 0:
+                continue
+            text_area = _rect_area(tb)
+            small = min(label_area, text_area)
+            ratio = area / small if small > 0 else 0
+            if area >= 80 or ratio >= 0.08:
+                warnings.append(
+                    f"visual: edge label {label.get('id')!r} overlaps readable text "
+                    f"{text_el.get('id')!r} ({area:.0f}px^2, {ratio:.0%} of smaller)"
+                )
 
     # Layout density: minimum spacing between containers
     for i in range(len(containers)):

@@ -246,7 +246,7 @@ bash scripts/test_e2e.sh
 ## 质量与验证
 
 - **结构校验**：元素 id 唯一、字段类型、引用完整性（boundElements / containerId / frameId / 箭头绑定交叉检查）
-- **视觉质量门**：`--visual` 检查元素重叠、悬空箭头、布局密度
+- **视觉质量门**：`--visual` 检查元素重叠、悬空箭头、布局密度，以及边标签遮挡可读文本
 - **e2e 测试**：`bash scripts/test_e2e.sh` 覆盖生成、校验、渲染、预览、编辑器、保存、多画布、动画、Mermaid、知识图谱、Graphviz、增量编辑、MCP、确定性与 Library visual；具体结果以当前环境输出为准
 - **CI**：GitHub Actions（validate + smoke + e2e），见 `.github/workflows/ci.yml`
 

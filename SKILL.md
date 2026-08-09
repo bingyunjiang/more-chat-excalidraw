@@ -33,6 +33,7 @@ Graphviz（自动布局）、本地 Excalidraw 应用（打开画布）。
 - 文本宽度不超过所在图形宽度（经验值：宽度 ≈ 字号 × 中文字数 × 1.0），必要时放大图形或换行。
 - 同一逻辑分区的元素放入同一 `groupIds` 分组；顶层框架用 `frame` 元素承载标题区。
 - 交付前必须实际查看 PNG 或 SVG；不得仅凭 JSON 校验宣称视觉完成。检查画布比例、文字溢出、回路穿越节点、阶段对齐以及导出是否混入调试页眉/大面积空白。
+- 视觉修复时先判断用户喜欢的是哪种图的气质。内容地图、机理图谱和研究板应优先保留有机手绘布局，可用编号、色块和少量引导线建立阅读顺序；不要为了“有章法”把它硬改成拥挤的网格流程图。装饰性线条或框体局部遮挡可以接受，但任何箭头标签、批注或线条都不得遮住节点正文。
 - 箭头 `width/height` 必须匹配 `points` 的真实几何范围；多段正交线不得使用会被恢复为大弧线的圆角配置。
 - 当用户要求突出 Excalidraw 风格时，优先使用关系图、概念图或研究分析板，而不是退化成普通流程图。组合 `note/callout/topic`、双语多行文字、分组框和语义箭头。
 - 节点可用 `font: hand|sans|mono|long-cang|ma-shan-zheng|liu-jian-mao-cao` 建立字体层级。**所有 10 种模板和 4 套主题中的中文**默认使用本地 Excalidraw（`http://localhost:5001/`）提供的 `Ma Shan Zheng`（fontFamily 11），可切换 `Long Cang`（12）或 `Liu Jian Mao Cao`（13）；default/sketch 的纯英文继续使用 Virgil，minimal/blueprint 的纯英文继续使用 Helvetica。IR 顶层 `cjkFontFamily` / `cjkFontFallbacks` 可覆盖中文字体栈。含中文文本不得被通用 `font: hand|sans|mono` 覆盖回英文/等宽字体；只有显式中文字体名才切换中文字体。字体仅引用用户已有的本地 Excalidraw 资产、不随 skill 重复分发；服务不可用时回退本机手写字体。交付前必须目检 PNG，确认中文不是系统无衬线回退。边可用 `curve`、`curveOffset`、`color`、`strokeWidth`、`style: dashed`、`startArrowhead/endArrowhead` 表达因果、反馈和证据关系；手绘主题边标签默认 32px，并可用 `labelFontSize` / `labelOffset` 调整，避免 trigger/detect 一类注记小到不可读或压在线上。

@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "title": "数字孪生内容地图 · Digital Twin Content Map",
+  "template": "relationship",
+  "theme": "sketch",
+  "sketchStyle": "mechanism-map",
+  "cjkFontFamily": "Ma Shan Zheng",
+  "cjkFontFallbacks": ["Long Cang", "Liu Jian Mao Cao", "Hannotate SC"],
+  "direction": "free",
+  "nodes": [
+    {
+      "id": "twin",
+      "label": "数字孪生\nDigital Twin\n物理对象 + 数据 + 模型 + 决策闭环",
+      "type": "topic",
+      "style": "#fff3bf",
+      "strokeColor": "#e67700",
+      "strokeWidth": 3,
+      "fontSize": 24,
+      "position": {"x": 560, "y": 330}
+    },
+    {
+      "id": "physical",
+      "label": "1 真实对象\n资产 / 产线 / 产品 / 园区\nPhysical Asset",
+      "type": "input",
+      "style": "#d0ebff",
+      "strokeColor": "#1971c2",
+      "fontSize": 20,
+      "position": {"x": 80, "y": 130}
+    },
+    {
+      "id": "telemetry",
+      "label": "2 实时数据\n传感器、PLC、SCADA、日志\nTelemetry",
+      "type": "input",
+      "style": "#d0ebff",
+      "strokeColor": "#1971c2",
+      "fontSize": 20,
+      "position": {"x": 80, "y": 520}
+    },
+    {
+      "id": "data",
+      "label": "3 数据底座\n时序库、事件库、湖仓、质量规则\nData Foundation",
+      "type": "database",
+      "style": "#c3fae8",
+      "strokeColor": "#0b7285",
+      "fontSize": 20,
+      "position": {"x": 330, "y": 690}
+    },
+    {
+      "id": "semantic",
+      "label": "4 语义资产模型\n统一 asset ID、BOM、CAD、工艺、测点\nSemantic Graph",
+      "type": "database",
+      "style": "#e6fcf5",
+      "strokeColor": "#087f5b",
+      "fontSize": 19,
+      "position": {"x": 780, "y": 690}
+    },
+    {
+      "id": "model",
+      "label": "5 孪生模型\n几何结构 + 物理仿真 + ML 代理模型\nModel Stack",
+      "type": "service",
+      "style": "#e5dbff",
+      "strokeColor": "#5f3dc4",
+      "fontSize": 20,
+      "position": {"x": 1050, "y": 480}
+    },
+    {
+      "id": "state",
+      "label": "6 当前孪生态\n状态估计、校准、误差解释\nTwin State",
+      "type": "service",
+      "style": "#d3f9d8",
+      "strokeColor": "#2b8a3e",
+      "fontSize": 20,
+      "position": {"x": 1050, "y": 190}
+    },
+    {
+      "id": "scenario",
+      "label": "7 场景推演\nWhat-if、风险预演、参数优化\nScenario Engine",
+      "type": "callout",
+      "style": "#fff4e6",
+      "strokeColor": "#e8590c",
+      "fontSize": 20,
+      "position": {"x": 760, "y": 40}
+    },
+    {
+      "id": "apps",
+      "label": "8 业务应用\n监控、预测维护、能效、质量追溯\nApplications",
+      "type": "output",
+      "style": "#d3f9d8",
+      "strokeColor": "#2f9e44",
+      "fontSize": 20,
+      "position": {"x": 330, "y": 40}
+    },
+    {
+      "id": "decision",
+      "label": "9 决策与执行\n告警、建议、工单、控制策略\nDecision",
+      "type": "output",
+      "style": "#ffe3e3",
+      "strokeColor": "#c2255c",
+      "fontSize": 20,
+      "position": {"x": 330, "y": 300}
+    },
+    {
+      "id": "feedback",
+      "label": "10 闭环反馈\n人审或自动：参数下发、调度调整\nFeedback Loop",
+      "type": "callout",
+      "style": "#ffd8a8",
+      "strokeColor": "#d9480f",
+      "fontSize": 20,
+      "position": {"x": 80, "y": 320}
+    },
+    {
+      "id": "governance",
+      "label": "治理底座\n身份、权限、安全、血缘、模型版本、数据质量",
+      "type": "note",
+      "style": "#f8f9fa",
+      "strokeColor": "#495057",
+      "strokeStyle": "dashed",
+      "fontSize": 19,
+      "position": {"x": 560, "y": 820}
+    },
+    {
+      "id": "fidelity",
+      "label": "关键验收点：孪生可信度\n精度、刷新频率、覆盖边界、误差闭环\nTwin Fidelity",
+      "type": "note",
+      "style": "#fff9db",
+      "strokeColor": "#f08c00",
+      "strokeWidth": 2,
+      "fontSize": 20,
+      "position": {"x": 760, "y": 315}
+    }
+  ],
+  "edges": [
+    {"id": "e1", "from": "physical", "to": "telemetry", "label": "观测真实状态", "color": "#1971c2", "strokeWidth": 3, "labelFontSize": 34, "labelOffset": 52},
+    {"id": "e2", "from": "telemetry", "to": "data", "label": "采集 / 清洗 / 存储", "color": "#0b7285", "strokeWidth": 3, "labelFontSize": 34, "labelOffset": 54},
+    {"id": "e3", "from": "data", "to": "semantic", "label": "统一资产 ID", "color": "#087f5b", "strokeWidth": 3, "labelFontSize": 34, "labelOffset": 54},
+    {"id": "e4", "from": "semantic", "to": "model", "label": "结构、关系、边界条件", "color": "#5f3dc4", "strokeWidth": 3, "labelFontSize": 34, "labelOffset": 56},
+    {"id": "e5", "from": "model", "to": "state", "label": "仿真 + 预测 + 校准", "color": "#2b8a3e", "strokeWidth": 3, "labelFontSize": 34, "labelOffset": 56},
+    {"id": "e6", "from": "state", "to": "scenario", "label": "当前孪生态", "color": "#2b8a3e", "strokeWidth": 3, "labelFontSize": 34, "labelOffset": 54},
+    {"id": "e7", "from": "scenario", "to": "apps", "label": "洞察 / KPI", "color": "#c2255c", "strokeWidth": 3, "labelFontSize": 34, "labelOffset": 54},
+    {"id": "e8", "from": "apps", "to": "decision", "label": "告警、建议、工单", "color": "#c2255c", "strokeWidth": 3, "labelFontSize": 34, "labelOffset": 56},
+    {"id": "e9", "from": "decision", "to": "feedback", "label": "人审 / 自动化", "color": "#d9480f", "strokeWidth": 3, "labelFontSize": 34, "labelOffset": 54},
+    {"id": "e10", "from": "feedback", "to": "physical", "label": "参数下发 / 调度调整", "style": "dashed", "curve": true, "curveOffset": 48, "color": "#d9480f", "strokeWidth": 3, "labelFontSize": 34, "labelOffset": 60},
+    {"id": "e11", "from": "twin", "to": "physical", "label": "锚定对象", "style": "dashed", "color": "#868e96", "labelFontSize": 34, "labelOffset": 50},
+    {"id": "e12", "from": "twin", "to": "model", "label": "模型镜像", "style": "dashed", "color": "#868e96", "labelFontSize": 34, "labelOffset": 50},
+    {"id": "e13", "from": "fidelity", "to": "state", "label": "可信度校验", "style": "dashed", "color": "#f08c00", "strokeWidth": 2, "labelFontSize": 34, "labelOffset": 56},
+    {"id": "e14", "from": "governance", "to": "data", "label": "质量 / 血缘", "style": "dashed", "color": "#495057", "labelFontSize": 34, "labelOffset": 50},
+    {"id": "e15", "from": "governance", "to": "semantic", "label": "权限 / 版本", "style": "dashed", "color": "#495057", "labelFontSize": 34, "labelOffset": 50}
+  ],
+  "groups": [
+    {
+      "id": "g_loop",
+      "name": "数字孪生闭环 / Digital Twin Loop",
+      "nodes": ["physical", "telemetry", "data", "semantic", "model", "state", "scenario", "apps", "decision", "feedback"],
+      "backgroundColor": "#ffffff",
+      "level": 0
+    },
+    {
+      "id": "g_review",
+      "name": "规模化前必须回答 / Must-have Review",
+      "nodes": ["governance", "fidelity"],
+      "backgroundColor": "#fffaf0",
+      "level": 1
+    }
+  ],
+  "metadata": {
+    "scene": "digital-twin-content-map-final",
+    "complexity": "medium",
+    "source": "interactive skill test with visual iteration",
+    "summary": [
+      "数字孪生的核心不是 3D 展示，而是围绕真实资产建立数据、语义、模型和决策闭环。",
+      "最小可行闭环是：真实对象 → 实时数据 → 数据底座 → 语义资产模型 → 孪生模型 → 当前孪生态 → 场景推演 → 应用决策 → 反馈现场。",
+      "规模化关键是治理底座与孪生可信度。"
+    ]
+  }
+}

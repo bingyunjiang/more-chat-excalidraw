@@ -18,7 +18,7 @@
     {"id":"tre01","from":"tr01","to":"tr05","curve":true,"curveOffset":34,"color":"#e03131","strokeWidth":2},
     {"id":"tre02","from":"tr02","to":"tr05","curve":true,"curveOffset":26,"color":"#e03131","strokeWidth":3,"label":"trigger"},
     {"id":"tre03","from":"tr03","to":"tr05","curve":true,"curveOffset":34,"color":"#e03131","strokeWidth":2},
-    {"id":"tre04","from":"tr04","to":"tr05","style":"dashed","color":"#f08c00","strokeWidth":2,"label":"onset"},
+    {"id":"tre04","from":"tr04","to":"tr05","style":"dashed","color":"#f08c00","strokeWidth":2,"label":""},
     {"id":"tre05","from":"tr05","to":"tr06","style":"dashed","color":"#e8590c","strokeWidth":2,"label":"propagation"},
     {"id":"tre06","from":"tr05","to":"tr07","curve":true,"curveOffset":34,"color":"#2b8a3e","strokeWidth":2,"label":"detect"},
     {"id":"tre07","from":"tr05","to":"tr08","curve":true,"curveOffset":24,"color":"#1971c2","strokeWidth":3,"label":"isolate"},

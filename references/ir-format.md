@@ -120,7 +120,7 @@
 | `id` | string | 是 | 边唯一 ID |
 | `from` | string | 是 | 起点节点 ID |
 | `to` | string | 是 | 终点节点 ID |
-| `label` | string | 否 | 边标签（渲染为箭头旁注释） |
+| `label` | string | 否 | 边标签（渲染为箭头旁注释）；关系密集或节点文字较长时可留空，避免标签遮住节点正文 |
 | `style` | string | 否 | solid/dashed/dotted，默认 solid |
 | `bidirectional` | boolean | 否 | 双向箭头（请求-响应模式） |
 | `note` | string | 否 | 备注 |
@@ -129,7 +129,7 @@
 | `color` | string | 否 | 箭头语义颜色 |
 | `labelColor` | string | 否 | 箭头标签颜色，默认跟随箭头 |
 | `labelFontSize` | number | 否 | 箭头标签字号；`sketch` 默认 32，普通主题默认 13 |
-| `labelOffset` | number | 否 | 箭头标签离线条的偏移距离；用于避免标签压在线上 |
+| `labelOffset` | number | 否 | 箭头标签离线条的偏移距离；用于避免标签压在线上或覆盖节点正文 |
 | `strokeWidth` | number | 否 | 箭头粗细 |
 | `startArrowhead` | string/null | 否 | 起点样式，如 arrow/dot/bar/triangle |
 | `endArrowhead` | string/null | 否 | 终点样式，默认 arrow |

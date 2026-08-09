@@ -1,0 +1,362 @@
+{
+  "version": 1,
+  "title": "数字孪生内容地图 · Digital Twin Content Map",
+  "template": "architecture",
+  "theme": "sketch",
+  "sketchStyle": "review-markup",
+  "cjkFontFamily": "Ma Shan Zheng",
+  "cjkFontFallbacks": ["Long Cang", "Liu Jian Mao Cao", "Hannotate SC"],
+  "direction": "layered",
+  "nodes": [
+    {
+      "id": "asset",
+      "label": "真实资产 / 产线 / 设备\nPhysical Asset",
+      "type": "component",
+      "note": "数字孪生的锚点：一台设备、一条产线、一个园区或一个产品"
+    },
+    {
+      "id": "sensor",
+      "label": "传感器与工况采集\nSensors + Telemetry",
+      "type": "input",
+      "note": "温度、振动、电流、位置、环境、质量检测"
+    },
+    {
+      "id": "plc",
+      "label": "控制系统 / PLC / SCADA\nControl Layer",
+      "type": "service",
+      "note": "动作执行、报警、联锁、工艺参数"
+    },
+    {
+      "id": "edge",
+      "label": "边缘网关\nEdge Gateway",
+      "type": "service",
+      "note": "协议适配、缓存、清洗、低时延推理"
+    },
+    {
+      "id": "ingest",
+      "label": "实时接入与事件流\nIoT Ingestion / Stream",
+      "type": "service",
+      "note": "MQTT / OPC UA / Kafka / REST"
+    },
+    {
+      "id": "tsdb",
+      "label": "时序库 + 事件库\nTime-series + Events",
+      "type": "database",
+      "note": "高频状态、报警、运行轨迹"
+    },
+    {
+      "id": "lake",
+      "label": "数据湖仓 / 历史样本\nLakehouse",
+      "type": "database",
+      "note": "批量训练、报表、追溯与质量分析"
+    },
+    {
+      "id": "kg",
+      "label": "语义模型 / 资产知识图谱\nSemantic Asset Graph",
+      "type": "database",
+      "note": "统一 asset ID，连接 BOM、CAD、工艺、传感点、告警"
+    },
+    {
+      "id": "geometry",
+      "label": "几何/结构模型\nCAD / BIM / OpenUSD",
+      "type": "component",
+      "note": "形状、位置、装配、约束"
+    },
+    {
+      "id": "physics",
+      "label": "物理仿真模型\nCAE / CFD / Thermal",
+      "type": "service",
+      "note": "机理、边界条件、材料参数、失效模式"
+    },
+    {
+      "id": "ml",
+      "label": "数据驱动模型\nML / Surrogate Model",
+      "type": "service",
+      "note": "预测、异常检测、剩余寿命、代理模型"
+    },
+    {
+      "id": "state",
+      "label": "状态估计与校准\nState Estimation",
+      "type": "service",
+      "note": "把实时数据映射到可解释的孪生状态"
+    },
+    {
+      "id": "scenario",
+      "label": "场景推演与优化\nWhat-if + Optimization",
+      "type": "service",
+      "note": "策略比较、参数寻优、风险预演"
+    },
+    {
+      "id": "apps",
+      "label": "业务应用\nOps / Maintenance / Energy",
+      "type": "output",
+      "note": "监控、预测维护、能效优化、质量追溯"
+    },
+    {
+      "id": "decision",
+      "label": "决策建议 / 工单 / 报告\nDecision + Work Order",
+      "type": "output",
+      "note": "从洞察变成可执行动作"
+    },
+    {
+      "id": "feedback",
+      "label": "闭环反馈\nControl Feedback",
+      "type": "callout",
+      "note": "人审或自动控制：参数下发、调度调整、维修动作"
+    },
+    {
+      "id": "quality",
+      "label": "治理底座：身份、质量、安全、血缘\nGovernance",
+      "type": "note",
+      "note": "没有统一 ID、权限、数据质量和版本管理，孪生会变成演示孤岛"
+    },
+    {
+      "id": "fidelity",
+      "label": "关键评审点：孪生可信度\nTwin Fidelity",
+      "type": "callout",
+      "note": "模型精度、刷新频率、覆盖边界、误差可解释性"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "asset",
+      "to": "sensor",
+      "label": "观测真实状态",
+      "color": "#1971c2",
+      "strokeWidth": 2,
+      "labelFontSize": 34,
+      "labelOffset": 42
+    },
+    {
+      "id": "e2",
+      "from": "asset",
+      "to": "plc",
+      "label": "控制与动作",
+      "color": "#5f3dc4",
+      "strokeWidth": 2,
+      "labelFontSize": 34,
+      "labelOffset": 42
+    },
+    {
+      "id": "e3",
+      "from": "sensor",
+      "to": "edge",
+      "label": "采集 / 预处理",
+      "color": "#1971c2",
+      "labelFontSize": 34,
+      "labelOffset": 48
+    },
+    {
+      "id": "e4",
+      "from": "plc",
+      "to": "edge",
+      "label": "协议适配",
+      "style": "dashed",
+      "color": "#5f3dc4",
+      "labelFontSize": 34,
+      "labelOffset": 48
+    },
+    {
+      "id": "e5",
+      "from": "edge",
+      "to": "ingest",
+      "label": "实时流",
+      "color": "#0b7285",
+      "labelFontSize": 34,
+      "labelOffset": 44
+    },
+    {
+      "id": "e6",
+      "from": "ingest",
+      "to": "tsdb",
+      "label": "热数据",
+      "color": "#0b7285",
+      "labelFontSize": 34,
+      "labelOffset": 44
+    },
+    {
+      "id": "e7",
+      "from": "ingest",
+      "to": "lake",
+      "label": "冷数据 / 样本",
+      "style": "dashed",
+      "color": "#0b7285",
+      "labelFontSize": 34,
+      "labelOffset": 54
+    },
+    {
+      "id": "e8",
+      "from": "kg",
+      "to": "geometry",
+      "label": "统一资产 ID",
+      "color": "#e67700",
+      "strokeWidth": 2,
+      "labelFontSize": 34,
+      "labelOffset": 56
+    },
+    {
+      "id": "e9",
+      "from": "tsdb",
+      "to": "state",
+      "label": "实时状态",
+      "color": "#2f9e44",
+      "labelFontSize": 34,
+      "labelOffset": 48
+    },
+    {
+      "id": "e10",
+      "from": "lake",
+      "to": "ml",
+      "label": "训练 / 回放",
+      "style": "dashed",
+      "color": "#2f9e44",
+      "labelFontSize": 34,
+      "labelOffset": 52
+    },
+    {
+      "id": "e11",
+      "from": "geometry",
+      "to": "physics",
+      "label": "边界 / 网格 / 材料",
+      "color": "#2f9e44",
+      "labelFontSize": 34,
+      "labelOffset": 60
+    },
+    {
+      "id": "e12",
+      "from": "physics",
+      "to": "state",
+      "label": "机理约束",
+      "color": "#2f9e44",
+      "labelFontSize": 34,
+      "labelOffset": 48
+    },
+    {
+      "id": "e13",
+      "from": "ml",
+      "to": "state",
+      "label": "预测修正",
+      "color": "#2f9e44",
+      "labelFontSize": 34,
+      "labelOffset": 48
+    },
+    {
+      "id": "e14",
+      "from": "state",
+      "to": "scenario",
+      "label": "当前孪生态",
+      "color": "#2f9e44",
+      "strokeWidth": 2,
+      "labelFontSize": 34,
+      "labelOffset": 54
+    },
+    {
+      "id": "e15",
+      "from": "scenario",
+      "to": "apps",
+      "label": "洞察 / KPI",
+      "color": "#c2255c",
+      "labelFontSize": 34,
+      "labelOffset": 48
+    },
+    {
+      "id": "e16",
+      "from": "apps",
+      "to": "decision",
+      "label": "告警、建议、工单",
+      "color": "#c2255c",
+      "labelFontSize": 34,
+      "labelOffset": 56
+    },
+    {
+      "id": "e17",
+      "from": "decision",
+      "to": "feedback",
+      "label": "人审 / 自动化",
+      "color": "#c2255c",
+      "strokeWidth": 2,
+      "labelFontSize": 34,
+      "labelOffset": 52
+    },
+    {
+      "id": "e18",
+      "from": "feedback",
+      "to": "plc",
+      "label": "参数下发 / 调度调整",
+      "style": "dashed",
+      "curve": true,
+      "curveOffset": 72,
+      "color": "#d9480f",
+      "strokeWidth": 3,
+      "labelFontSize": 34,
+      "labelOffset": 72
+    },
+    {
+      "id": "e19",
+      "from": "quality",
+      "to": "kg",
+      "label": "标准、血缘、权限",
+      "style": "dashed",
+      "color": "#495057",
+      "labelFontSize": 34,
+      "labelOffset": 52
+    },
+    {
+      "id": "e20",
+      "from": "fidelity",
+      "to": "state",
+      "label": "误差闭环",
+      "style": "dashed",
+      "color": "#d9480f",
+      "labelFontSize": 34,
+      "labelOffset": 54
+    }
+  ],
+  "groups": [
+    {
+      "id": "g_physical",
+      "name": "真实世界 / Physical World",
+      "nodes": ["asset", "sensor", "plc"],
+      "backgroundColor": "#e7f5ff",
+      "level": 0
+    },
+    {
+      "id": "g_data",
+      "name": "数据底座 / Data Foundation",
+      "nodes": ["edge", "ingest", "tsdb", "lake", "kg", "quality"],
+      "backgroundColor": "#e6fcf5",
+      "level": 1
+    },
+    {
+      "id": "g_model",
+      "name": "孪生模型与仿真 / Twin Models",
+      "nodes": ["geometry", "physics", "ml", "state", "scenario", "fidelity"],
+      "backgroundColor": "#fff4e6",
+      "level": 2
+    },
+    {
+      "id": "g_apps",
+      "name": "运营应用与闭环 / Operations Loop",
+      "nodes": ["apps", "decision", "feedback"],
+      "backgroundColor": "#fff0f6",
+      "level": 3
+    }
+  ],
+  "metadata": {
+    "scene": "digital-twin-content-map",
+    "complexity": "rich",
+    "source": "interactive skill test",
+    "template_recommendation": {
+      "template": "architecture",
+      "theme": "sketch",
+      "sketchStyle": "review-markup",
+      "reason": "数字孪生需要展示组件分层、数据流、模型依赖和闭环反馈"
+    },
+    "summary": [
+      "数字孪生不是单个 3D 模型，而是资产身份、实时数据、语义关系、仿真/ML 模型、场景推演和业务闭环的组合。",
+      "核心验收点是 twin fidelity：模型边界、精度、刷新频率和误差闭环必须可解释。",
+      "治理底座决定能否规模化：统一 ID、数据质量、权限、安全与版本血缘。"
+    ]
+  }
+}

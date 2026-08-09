@@ -1,0 +1,337 @@
+{
+  "version": 1,
+  "title": "数字孪生内容地图｜有序分层版",
+  "template": "architecture",
+  "theme": "sketch",
+  "sketchStyle": "engineering-notebook",
+  "cjkFontFamily": "Ma Shan Zheng",
+  "cjkFontFallbacks": [
+    "Long Cang",
+    "Liu Jian Mao Cao",
+    "Hannotate SC"
+  ],
+  "direction": "free",
+  "nodes": [
+    {
+      "id": "physical",
+      "label": "01 真实对象\n资产 / 产线 / 产品 / 园区",
+      "type": "input",
+      "style": "#d0ebff",
+      "strokeColor": "#1971c2",
+      "fontSize": 21,
+      "position": {
+        "x": 80,
+        "y": 160
+      }
+    },
+    {
+      "id": "telemetry",
+      "label": "02 实时数据\n传感器 / 控制系统 / 日志",
+      "type": "input",
+      "style": "#d0ebff",
+      "strokeColor": "#1971c2",
+      "fontSize": 21,
+      "position": {
+        "x": 440,
+        "y": 160
+      }
+    },
+    {
+      "id": "data",
+      "label": "03 数据底座\n时序库 / 事件库 / 湖仓 / 质量规则",
+      "type": "database",
+      "style": "#c3fae8",
+      "strokeColor": "#0b7285",
+      "fontSize": 20,
+      "position": {
+        "x": 820,
+        "y": 160
+      }
+    },
+    {
+      "id": "semantic",
+      "label": "04 语义资产模型\n统一资产ID / 结构 / 工艺 / 测点",
+      "type": "database",
+      "style": "#e6fcf5",
+      "strokeColor": "#087f5b",
+      "fontSize": 20,
+      "position": {
+        "x": 820,
+        "y": 420
+      }
+    },
+    {
+      "id": "model",
+      "label": "05 孪生模型\n几何结构 / 物理仿真 / 数据模型",
+      "type": "service",
+      "style": "#e5dbff",
+      "strokeColor": "#5f3dc4",
+      "fontSize": 21,
+      "position": {
+        "x": 1180,
+        "y": 420
+      }
+    },
+    {
+      "id": "state",
+      "label": "06 当前孪生态\n状态估计 / 校准 / 误差解释",
+      "type": "service",
+      "style": "#d3f9d8",
+      "strokeColor": "#2b8a3e",
+      "fontSize": 21,
+      "position": {
+        "x": 1540,
+        "y": 420
+      }
+    },
+    {
+      "id": "scenario",
+      "label": "07 场景推演\n风险预演 / 参数优化 / 方案比较",
+      "type": "callout",
+      "style": "#fff4e6",
+      "strokeColor": "#e8590c",
+      "fontSize": 21,
+      "position": {
+        "x": 1900,
+        "y": 420
+      }
+    },
+    {
+      "id": "apps",
+      "label": "08 业务应用\n监控 / 预测维护 / 能效 / 质量追溯",
+      "type": "output",
+      "style": "#d3f9d8",
+      "strokeColor": "#2f9e44",
+      "fontSize": 21,
+      "position": {
+        "x": 1900,
+        "y": 690
+      }
+    },
+    {
+      "id": "decision",
+      "label": "09 决策与执行\n告警 / 建议 / 工单 / 控制策略",
+      "type": "output",
+      "style": "#ffe3e3",
+      "strokeColor": "#c2255c",
+      "fontSize": 21,
+      "position": {
+        "x": 1540,
+        "y": 690
+      }
+    },
+    {
+      "id": "feedback",
+      "label": "10 闭环反馈\n人审或自动下发，作用回现场",
+      "type": "callout",
+      "style": "#ffd8a8",
+      "strokeColor": "#d9480f",
+      "fontSize": 21,
+      "position": {
+        "x": 1180,
+        "y": 690
+      }
+    },
+    {
+      "id": "governance",
+      "label": "治理底座\n身份 / 权限 / 安全 / 血缘 / 模型版本 / 数据质量",
+      "type": "note",
+      "style": "#f8f9fa",
+      "strokeColor": "#495057",
+      "strokeStyle": "dashed",
+      "fontSize": 20,
+      "position": {
+        "x": 440,
+        "y": 850
+      }
+    },
+    {
+      "id": "fidelity",
+      "label": "关键验收点：孪生可信度\n精度 / 刷新频率 / 覆盖边界 / 误差闭环",
+      "type": "note",
+      "style": "#fff9db",
+      "strokeColor": "#f08c00",
+      "strokeWidth": 2,
+      "fontSize": 20,
+      "position": {
+        "x": 1180,
+        "y": 850
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "physical",
+      "to": "telemetry",
+      "label": "",
+      "color": "#1971c2",
+      "strokeWidth": 3
+    },
+    {
+      "id": "e2",
+      "from": "telemetry",
+      "to": "data",
+      "label": "",
+      "color": "#0b7285",
+      "strokeWidth": 3
+    },
+    {
+      "id": "e3",
+      "from": "data",
+      "to": "semantic",
+      "label": "",
+      "color": "#087f5b",
+      "strokeWidth": 3
+    },
+    {
+      "id": "e4",
+      "from": "semantic",
+      "to": "model",
+      "label": "",
+      "color": "#5f3dc4",
+      "strokeWidth": 3
+    },
+    {
+      "id": "e5",
+      "from": "model",
+      "to": "state",
+      "label": "",
+      "color": "#2b8a3e",
+      "strokeWidth": 3
+    },
+    {
+      "id": "e6",
+      "from": "state",
+      "to": "scenario",
+      "label": "",
+      "color": "#2b8a3e",
+      "strokeWidth": 3
+    },
+    {
+      "id": "e7",
+      "from": "scenario",
+      "to": "apps",
+      "label": "",
+      "color": "#c2255c",
+      "strokeWidth": 3
+    },
+    {
+      "id": "e8",
+      "from": "apps",
+      "to": "decision",
+      "label": "",
+      "color": "#c2255c",
+      "strokeWidth": 3
+    },
+    {
+      "id": "e9",
+      "from": "decision",
+      "to": "feedback",
+      "label": "",
+      "color": "#d9480f",
+      "strokeWidth": 3
+    },
+    {
+      "id": "e10",
+      "from": "feedback",
+      "to": "physical",
+      "label": "",
+      "style": "dashed",
+      "color": "#d9480f",
+      "strokeWidth": 3
+    },
+    {
+      "id": "e11",
+      "from": "governance",
+      "to": "data",
+      "label": "",
+      "style": "dashed",
+      "color": "#495057",
+      "strokeWidth": 2
+    },
+    {
+      "id": "e12",
+      "from": "governance",
+      "to": "semantic",
+      "label": "",
+      "style": "dashed",
+      "color": "#495057",
+      "strokeWidth": 2
+    },
+    {
+      "id": "e13",
+      "from": "fidelity",
+      "to": "state",
+      "label": "",
+      "style": "dashed",
+      "color": "#f08c00",
+      "strokeWidth": 2
+    },
+    {
+      "id": "e14",
+      "from": "fidelity",
+      "to": "model",
+      "label": "",
+      "style": "dashed",
+      "color": "#f08c00",
+      "strokeWidth": 2
+    }
+  ],
+  "groups": [
+    {
+      "id": "g1",
+      "name": "1. 现实与数据采集",
+      "nodes": [
+        "physical",
+        "telemetry",
+        "data"
+      ],
+      "backgroundColor": "#e7f5ff",
+      "level": 0
+    },
+    {
+      "id": "g2",
+      "name": "2. 孪生建模与推演",
+      "nodes": [
+        "semantic",
+        "model",
+        "state",
+        "scenario"
+      ],
+      "backgroundColor": "#f3f0ff",
+      "level": 1
+    },
+    {
+      "id": "g3",
+      "name": "3. 运营决策闭环",
+      "nodes": [
+        "apps",
+        "decision",
+        "feedback"
+      ],
+      "backgroundColor": "#fff0f6",
+      "level": 2
+    },
+    {
+      "id": "g4",
+      "name": "4. 横切能力",
+      "nodes": [
+        "governance",
+        "fidelity"
+      ],
+      "backgroundColor": "#f8f9fa",
+      "level": 3
+    }
+  ],
+  "metadata": {
+    "scene": "digital-twin-content-map-ordered",
+    "complexity": "medium",
+    "source": "layout repair after user visual feedback",
+    "summary": [
+      "数字孪生的核心不是三维展示，而是围绕真实资产建立数据、语义、模型和决策闭环。",
+      "最小可行闭环是：真实对象、实时数据、数据底座、语义资产模型、孪生模型、当前孪生态、场景推演、应用决策、反馈现场。",
+      "规模化关键是治理底座与孪生可信度。"
+    ]
+  }
+}
