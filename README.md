@@ -10,7 +10,7 @@
 把自然对话变成可编辑的 Excalidraw 画布  
 Turn natural conversation into editable Excalidraw canvases
 
-[![Version](https://img.shields.io/badge/version-v0.0.2-2f6feb)](#版本历史)
+[![Version](https://img.shields.io/badge/version-v0.0.1-2f6feb)](#版本历史)
 [![License](https://img.shields.io/badge/license-MIT-1f883d)](./LICENSE)
 [![Type](https://img.shields.io/badge/type-AI%20Agent%20Skill-8250df)](#项目表头)
 [![Language](https://img.shields.io/badge/language-ZH%20primary%20%7C%20EN-f59e0b)](#项目表头)
@@ -41,7 +41,7 @@ Turn natural conversation into editable Excalidraw canvases
 | 字段 | 内容 |
 | --- | --- |
 | 名称 | `more-chat-excalidraw` |
-| 版本 | `v0.0.2` |
+| 版本 | `v0.0.1` |
 | 类型 | AI Agent Skill / 图表生成技能 |
 | 场景 | 流程图 / 架构图 / 时序图 / 思维导图 / ER 图 / 泳道图 / 层级图 / 关系图 / 对比图 / 时间线图 / 知识图谱 |
 | 本地运行 | macOS / Windows / Linux，Node.js 18+，Python 3 |
@@ -81,7 +81,7 @@ python3 scripts/ir_to_excalidraw.py --example thermal-runaway --output examples/
 node scripts/render_preview.js examples/thermal-runaway.excalidraw --format both
 ```
 
-该案例不是普通流程图，而是“电芯热失控：触发—机理—防护”研究画布：中文主叙事、英文手绘注记、便签/批注框、红绿蓝语义箭头、虚线机理链、曲线汇聚与发散箭头共同表达分析关系。
+该案例不是普通流程图，而是“电芯热失控：触发—机理—防护”研究画布：中文明确使用本地 Excalidraw 已有的 `Long Cang`（龙藏体），英文使用 Virgil；配合便签/批注框、红绿蓝语义箭头、虚线机理链、曲线汇聚与发散箭头共同表达分析关系。IR 节点可用 `font: long-cang|ma-shan-zheng|liu-jian-mao-cao` 选择 `localhost:5001` 内置字体，也可用顶层 `cjkFontFamily` / `cjkFontFallbacks` 覆盖回退顺序；字体文件不会被重复复制或分发。
 
 ### 2. 白底极简工程架构示例
 
@@ -254,8 +254,7 @@ bash scripts/test_e2e.sh
 
 | 版本 | 日期 | 要点 |
 | --- | --- | --- |
-| v0.0.2 | 2026-08-09 | 新增可选视觉提炼契约、事实到元素来源映射、视觉家族限制和 strict 视觉回归；未声明契约的旧 IR 保持兼容。 |
-| v0.0.1 | 2026-08-08 | 初始版本：自然对话生成 Excalidraw 画布（模板系统 + IR 引擎 + 实时预览 + 内嵌编辑器 + 动画 + Mermaid + 知识图谱 + Graphviz 布局 + 增量编辑 + MCP 协议） |
+| v0.0.1 | 2026-08-08 | 初始开发版：自然对话生成 Excalidraw 画布；持续补充手绘双语分析板、显式中文手写字体、视觉提炼契约、Library、工程案例与 strict 视觉回归，版本号保持不变。 |
 
 详细变更见 [CHANGELOG.md](CHANGELOG.md)。
 

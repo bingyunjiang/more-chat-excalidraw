@@ -97,7 +97,7 @@
 
 ## Excalidraw 手绘分析板
 
-`thermal-runaway-ir.json` 描述电芯热失控的触发源、失控机理和防护策略，使用双语多行便签、hand/mono 字体层级、彩色曲线箭头、虚线机理链和手绘分组框。运行 `python3 scripts/ir_to_excalidraw.py --example thermal-runaway --output examples/thermal-runaway.excalidraw --validate` 可确定性重建。
+`thermal-runaway-ir.json` 描述电芯热失控的触发源、失控机理和防护策略，使用双语多行便签、中文 `Long Cang`（龙藏体）+ 英文 Virgil 字体层级、彩色曲线箭头、虚线机理链和手绘分组框。Long Cang、Ma Shan Zheng、Liu Jian Mao Cao 直接复用 `localhost:5001` 已有的 Excalidraw 字体资产；服务不可用时回退本机手写字体。运行 `python3 scripts/ir_to_excalidraw.py --example thermal-runaway --output examples/thermal-runaway.excalidraw --validate` 可确定性重建。
 
 ## 内置 Library
 

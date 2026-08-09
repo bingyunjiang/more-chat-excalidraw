@@ -73,7 +73,14 @@ THEMES = {
     "sketch": {
         "strokeColor": "#2b2b2b", "bg": "#ffffff", "lineColor": "#868e96",
         "roughness": 2, "strokeWidth": 3, "textColor": "#374151",
-        "titleColor": "#1e40af", "frameText": "#1971c2", "fontFamily": 1,
+        # Current local Excalidraw registers Long Cang as fontFamily 12.
+        # English-only annotations are kept on Virgil by _text_el().
+        "titleColor": "#1e40af", "frameText": "#1971c2", "fontFamily": 12,
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+            "Ma Shan Zheng", "Liu Jian Mao Cao", "Hannotate SC",
+            "HanziPen SC", "Wawati SC", "Kaiti SC", "PingFang SC",
+        ],
     },
     "blueprint": {
         "strokeColor": "#e8f4ff", "bg": "#1e3a5f", "lineColor": "#64b5f6",
@@ -93,6 +100,9 @@ FONT_FAMILY_MAP = {
     "hand": 1, "virgil": 1,
     "sans": 2, "helvetica": 2,
     "mono": 3, "cascadia": 3,
+    "ma shan zheng": 11, "ma-shan-zheng": 11, "mashanzheng": 11,
+    "long cang": 12, "long-cang": 12, "longcang": 12,
+    "liu jian mao cao": 13, "liu-jian-mao-cao": 13, "liujianmaocao": 13,
 }
 
 
@@ -128,13 +138,21 @@ def _text_el(el_id, x, y, text, theme, fontSize=18, w=None, h=None, color=None, 
         w = max(40, int(estimate_text_width(text, fontSize) + 20))
     if h is None:
         h = fontSize + 8
+    font_family = theme.get("fontFamily", 1)
+    if theme.get("cjkFontFamily") and not any(ord(ch) >= 0x2E80 for ch in str(text)):
+        font_family = 1
     el = _base_el(el_id, "text", x, y, w, h, theme, {
         "strokeColor": color or theme["textColor"],
         "backgroundColor": "transparent",
-        "text": text, "fontSize": fontSize, "fontFamily": theme.get("fontFamily", 1),
+        "text": text, "fontSize": fontSize, "fontFamily": font_family,
         "textAlign": "center", "verticalAlign": "middle",
         "containerId": container_id, "originalText": text, "lineHeight": 1.25,
     })
+    if theme.get("cjkFontFamily"):
+        el["customData"] = {
+            "cjkFontFamily": theme["cjkFontFamily"],
+            "cjkFontFallbacks": theme.get("cjkFontFallbacks", []),
+        }
     return el
 
 
@@ -483,9 +501,20 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
     """IR dict → .excalidraw dict"""
     template = template_override or ir.get("template", "flowchart")
     theme_key = ir.get("theme", "default")
-    theme = THEMES.get(theme_key, THEMES["default"])
+    theme = dict(THEMES.get(theme_key, THEMES["default"]))
     direction = ir.get("direction")
     metadata = ir.get("metadata", {})
+    cjk_font_family = ir.get("cjkFontFamily", metadata.get("cjkFontFamily", theme.get("cjkFontFamily")))
+    cjk_font_fallbacks = ir.get(
+        "cjkFontFallbacks", metadata.get("cjkFontFallbacks", theme.get("cjkFontFallbacks", []))
+    )
+    if isinstance(cjk_font_fallbacks, str):
+        cjk_font_fallbacks = [cjk_font_fallbacks]
+    elif not isinstance(cjk_font_fallbacks, list):
+        cjk_font_fallbacks = []
+    if cjk_font_family:
+        theme["cjkFontFamily"] = str(cjk_font_family)
+        theme["cjkFontFallbacks"] = [str(name) for name in cjk_font_fallbacks]
     ir_nodes = ir.get("nodes", [])
     ir_edges = ir.get("edges", [])
     ir_groups = ir.get("groups", [])
@@ -1027,6 +1056,9 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             "gridSize": 20,
         },
     }
+    if cjk_font_family:
+        result["appState"]["cjkFontFamily"] = str(cjk_font_family)
+        result["appState"]["cjkFontFallbacks"] = [str(name) for name in cjk_font_fallbacks]
     if ir.get("visual_contract") is not None:
         result["visual_contract"] = ir["visual_contract"]
 

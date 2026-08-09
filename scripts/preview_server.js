@@ -39,6 +39,31 @@ const { renderSvgFromScene } = require("./lib/svg_render");
 
 const DEFAULT_PORT = 6060;
 const POLL_INTERVAL_MS = 1500;
+const CJK_FONT_UPSTREAM = {
+  "/cjk-font/LongCang.woff2": "/fonts/LongCang/LongCang-Regular.woff2",
+  "/cjk-font/MaShanZheng.woff2": "/fonts/MaShanZheng/MaShanZheng-Regular.woff2",
+  "/cjk-font/LiuJianMaoCao.woff2": "/fonts/LiuJianMaoCao/LiuJianMaoCao-Regular.woff2",
+};
+
+function proxyCjkFont(pathname, res) {
+  const upstreamPath = CJK_FONT_UPSTREAM[pathname];
+  if (!upstreamPath) return false;
+  const upstream = http.get(`http://localhost:5001${upstreamPath}`, (fontRes) => {
+    if (fontRes.statusCode !== 200) {
+      res.writeHead(404);
+      res.end("font unavailable");
+      fontRes.resume();
+      return;
+    }
+    res.writeHead(200, { "Content-Type": "font/woff2", "Cache-Control": "public, max-age=3600" });
+    fontRes.pipe(res);
+  });
+  upstream.on("error", () => {
+    if (!res.headersSent) res.writeHead(404);
+    res.end("local Excalidraw font service unavailable");
+  });
+  return true;
+}
 
 // In-memory store of the latest diagram (same pattern as mcp-excalidraw).
 let current = { elements: [], appState: {}, timestamp: 0 };
@@ -202,6 +227,24 @@ const EDITOR_PAGE = `<!DOCTYPE html>
       const resp = await fetch("/api/current-diagram", { cache: "no-store" });
       if (resp.ok) scene = await resp.json();
     } catch (e) { /* start empty */ }
+
+    // Excalidraw's Virgil font has no Chinese glyphs.  When a generated scene
+    // declares a CJK handwriting stack, register its first installed local font
+    // as Virgil's CJK-only face so the editable canvas matches exported previews.
+    const cjkPrimary = scene.appState && scene.appState.cjkFontFamily;
+    const cjkFallbacks = (scene.appState && scene.appState.cjkFontFallbacks) || [];
+    if (cjkPrimary) {
+      const names = [...new Set([cjkPrimary, ...cjkFallbacks])]
+        .map((name) => String(name).replace(/["\\]/g, ""));
+      const assets = {"Long Cang":"LongCang.woff2","Ma Shan Zheng":"MaShanZheng.woff2","Liu Jian Mao Cao":"LiuJianMaoCao.woff2"};
+      const face = document.createElement("style");
+      face.dataset.cjkHandwriting = "true";
+      face.textContent = '@font-face{font-family:"Virgil";src:' +
+        names.flatMap((name) => [assets[name] ? 'url("/cjk-font/' + assets[name] + '") format("woff2")' : null, 'local("' + name + '")']).filter(Boolean).join(",") +
+        ';unicode-range:U+2E80-2FFF,U+3000-303F,U+31C0-31EF,U+3400-4DBF,U+4E00-9FFF,U+F900-FAFF,U+FF00-FFEF;}';
+      document.head.appendChild(face);
+      await document.fonts.load('16px "Virgil"', "中文手绘");
+    }
 
     window.ExcalidrawEditor.mount(mount, scene, async (next) => {
       // Throttle auto-save: persist to server on each change is expensive;
@@ -370,6 +413,8 @@ function createServer() {
   return http.createServer(async (req, res) => {
     const url = new URL(req.url, "http://127.0.0.1");
     const pathname = url.pathname;
+
+    if (req.method === "GET" && proxyCjkFont(pathname, res)) return;
 
     if (req.method === "OPTIONS") {
       res.writeHead(200, { "Access-Control-Allow-Origin": "*" });

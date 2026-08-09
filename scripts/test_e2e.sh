@@ -410,8 +410,8 @@ if len(frames) != 3 or len(arrows) != 8:
     raise SystemExit("hand-drawn board structure incomplete")
 if not shapes or any(el.get("roughness", 0) < 2 for el in shapes):
     raise SystemExit("sketch shapes lost hand-drawn roughness")
-if not {1, 3}.issubset({el.get("fontFamily") for el in texts}):
-    raise SystemExit("hand/mono bilingual font hierarchy missing")
+if not {1, 12}.issubset({el.get("fontFamily") for el in texts}):
+    raise SystemExit("Long Cang Chinese / Virgil English font hierarchy missing")
 if not any("\n" in el.get("text", "") for el in texts):
     raise SystemExit("bilingual multiline text boxes missing")
 if len({el.get("strokeColor") for el in arrows}) < 3:
@@ -420,8 +420,22 @@ if not any(el.get("strokeStyle") == "dashed" for el in arrows):
     raise SystemExit("dashed mechanism arrow missing")
 if not any(el.get("roundness") for el in arrows if len(el.get("points", [])) > 2):
     raise SystemExit("curved hand-drawn arrow missing")
+if scene.get("appState", {}).get("cjkFontFamily") != "Long Cang":
+    raise SystemExit("explicit Chinese handwriting font missing")
+if not all(el.get("customData", {}).get("cjkFontFamily") == "Long Cang" for el in texts):
+    raise SystemExit("Chinese handwriting metadata is not preserved on text elements")
 PY
 then log_pass "hand-drawn board preserves bilingual boxes and expressive arrows"; else log_fail "hand-drawn visual contract"; fi
+HAND_FONT_OUT="/tmp/e2e-hand-font"
+mkdir -p "$HAND_FONT_OUT"
+if node "$PROJECT_DIR/scripts/render_preview.js" /tmp/e2e-hand-a.excalidraw "$HAND_FONT_OUT" \
+    --format svg --no-server >/dev/null 2>&1 && \
+  grep -q 'Long Cang' "$HAND_FONT_OUT/e2e-hand-a.svg" && \
+  grep -q 'font-family="Virgil' "$HAND_FONT_OUT/e2e-hand-a.svg"; then
+  log_pass "SVG renderer splits Chinese handwriting and English Virgil fonts"
+else
+  log_fail "CJK handwriting font render regression"
+fi
 if python3 "$PROJECT_DIR/scripts/validate_builtin_libraries.py" >/dev/null 2>&1; then
   log_pass "built-in library manifest and SHA-256"
 else

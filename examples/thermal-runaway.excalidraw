@@ -188,6 +188,16 @@
       "originalText": "内部短路\nINTERNAL SHORT",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -275,6 +285,16 @@
       "originalText": "过充电\nOVERCHARGE",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -362,6 +382,16 @@
       "originalText": "外部加热\nEXTERNAL HEAT",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -449,6 +479,16 @@
       "originalText": "SEI 膜分解\nSEI DECOMPOSITION",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -562,6 +602,16 @@
       "originalText": "电芯热失控\nTHERMAL RUNAWAY",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -649,6 +699,16 @@
       "originalText": "放热链式反应\nEXOTHERMIC CHAIN",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -736,6 +796,16 @@
       "originalText": "多源早期预警\nEARLY WARNING",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -823,6 +893,16 @@
       "originalText": "热阻隔与定向排气\nTHERMAL BARRIER",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -910,6 +990,16 @@
       "originalText": "液冷快速抑制\nLIQUID COOLING",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -1076,6 +1166,16 @@
       "originalText": "trigger",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -1238,6 +1338,16 @@
       "originalText": "onset",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -1338,6 +1448,16 @@
       "originalText": "propagation",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -1442,6 +1562,16 @@
       "originalText": "detect",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -1546,6 +1676,16 @@
       "originalText": "isolate",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -1650,6 +1790,16 @@
       "originalText": "suppress",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 5,
           "duration": 400,
@@ -1685,13 +1835,23 @@
       "locked": false,
       "text": "电芯热失控手绘分析板  ·  THERMAL RUNAWAY MAP",
       "fontSize": 24,
-      "fontFamily": 1,
+      "fontFamily": 12,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": null,
       "originalText": "电芯热失控手绘分析板  ·  THERMAL RUNAWAY MAP",
       "lineHeight": 1.25,
       "customData": {
+        "cjkFontFamily": "Long Cang",
+        "cjkFontFallbacks": [
+          "Ma Shan Zheng",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ],
         "animate": {
           "order": 1,
           "duration": 400,
@@ -1703,6 +1863,16 @@
   "files": {},
   "appState": {
     "viewBackgroundColor": "#ffffff",
-    "gridSize": 20
+    "gridSize": 20,
+    "cjkFontFamily": "Long Cang",
+    "cjkFontFallbacks": [
+      "Ma Shan Zheng",
+      "Liu Jian Mao Cao",
+      "Hannotate SC",
+      "HanziPen SC",
+      "Wawati SC",
+      "Kaiti SC",
+      "PingFang SC"
+    ]
   }
 }

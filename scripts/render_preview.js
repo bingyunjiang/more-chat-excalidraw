@@ -24,6 +24,34 @@ const http = require("http");
 
 const DEFAULT_BUNDLE = path.join(__dirname, "render-bundle");
 const REQUIRED_BUNDLE_FILES = ["index.html", "render-entry.js", "render-bundle.js"];
+const CJK_FONT_UPSTREAM = {
+  "/__cjk-font/LongCang.woff2": "/fonts/LongCang/LongCang-Regular.woff2",
+  "/__cjk-font/MaShanZheng.woff2": "/fonts/MaShanZheng/MaShanZheng-Regular.woff2",
+  "/__cjk-font/LiuJianMaoCao.woff2": "/fonts/LiuJianMaoCao/LiuJianMaoCao-Regular.woff2",
+};
+
+function proxyCjkFont(urlPath, res) {
+  const upstreamPath = CJK_FONT_UPSTREAM[urlPath];
+  if (!upstreamPath) return false;
+  const upstream = http.get(`http://localhost:5001${upstreamPath}`, (fontRes) => {
+    if (fontRes.statusCode !== 200) {
+      res.writeHead(404);
+      res.end("font unavailable");
+      fontRes.resume();
+      return;
+    }
+    res.writeHead(200, {
+      "Content-Type": "font/woff2",
+      "Cache-Control": "public, max-age=3600",
+    });
+    fontRes.pipe(res);
+  });
+  upstream.on("error", () => {
+    if (!res.headersSent) res.writeHead(404);
+    res.end("local Excalidraw font service unavailable");
+  });
+  return true;
+}
 
 function parseArgs(argv) {
   const args = argv.slice(2);
@@ -154,6 +182,7 @@ function createServer(dir) {
       res.end("bad url");
       return;
     }
+    if (proxyCjkFont(urlPath, res)) return;
     const file = path.normalize(path.join(dir, urlPath));
     if (!file.startsWith(dir)) {
       res.writeHead(403);

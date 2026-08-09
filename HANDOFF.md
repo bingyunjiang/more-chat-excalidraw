@@ -82,7 +82,7 @@ node scripts/mcp_server.mjs   # 工具: generate_diagram / validate_diagram / pu
 
 - 已完成：web 依赖声明与 build:all、CI 构建、MCP 实际调用、默认确定性、Library 两阶段布局、跨平台 opener 安全调用。
 - 已完成：Library 代表性 `--visual` 校验与本地缓存 SHA-256 清单。
-- 已在当前 macOS 环境完成 `npm ci`、web bundle 构建与 44 项 e2e；尚未在真实 Windows/Linux 桌面实机验证浏览器/服务启动。
+- 已在当前 macOS 环境完成 `npm ci`、web bundle 构建与 45 项 e2e；尚未在真实 Windows/Linux 桌面实机验证浏览器/服务启动。
 
 ## 已知问题与后续
 

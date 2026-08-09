@@ -18,6 +18,8 @@
   "title": "用户注册流程",
   "template": "flowchart",
   "theme": "default",
+  "cjkFontFamily": "Long Cang",
+  "cjkFontFallbacks": ["Ma Shan Zheng", "Liu Jian Mao Cao", "Hannotate SC"],
   "direction": "vertical",
   "nodes": [],
   "edges": [],
@@ -33,6 +35,8 @@
 | `title` | string | 否 | 图表标题（显示在画布顶部） |
 | `template` | string | 是 | 模板 key：flowchart/architecture/sequence/mindmap/swimlane/erd/hierarchy/relationship/comparison/timeline |
 | `theme` | string | 否 | default/sketch/blueprint/minimal，默认 default |
+| `cjkFontFamily` | string | 否 | 中文渲染首选字体；`sketch` 默认使用本地 Excalidraw 提供的 `Long Cang` |
+| `cjkFontFallbacks` | string[] | 否 | 中文字体回退顺序；支持 `Ma Shan Zheng`、`Liu Jian Mao Cao` 及本机字体，字体文件不随 skill 分发 |
 | `direction` | string | 否 | 布局方向：vertical/horizontal/tree/layered/free/table/swimlane |
 | `nodes` | array | 是 | 节点列表（见下） |
 | `edges` | array | 否 | 边列表（见下） |

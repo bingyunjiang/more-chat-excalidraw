@@ -4,15 +4,15 @@
   "template": "relationship",
   "theme": "sketch",
   "nodes": [
-    {"id":"tr01","label":"内部短路\nINTERNAL SHORT","type":"note","style":"#ffe3e3","font":"hand","strokeColor":"#e03131","strokeWidth":2,"position":{"x":100,"y":170}},
-    {"id":"tr02","label":"过充电\nOVERCHARGE","type":"note","style":"#ffe3e3","font":"hand","strokeColor":"#e03131","strokeWidth":2,"position":{"x":100,"y":350}},
-    {"id":"tr03","label":"外部加热\nEXTERNAL HEAT","type":"note","style":"#ffe3e3","font":"hand","strokeColor":"#e03131","strokeWidth":2,"position":{"x":100,"y":530}},
-    {"id":"tr04","label":"SEI 膜分解\nSEI DECOMPOSITION","type":"callout","style":"#fff3bf","font":"mono","fontSize":17,"strokeColor":"#f08c00","strokeStyle":"dashed","strokeWidth":2,"position":{"x":540,"y":160}},
-    {"id":"tr05","label":"电芯热失控\nTHERMAL RUNAWAY","type":"topic","style":"#ffc9c9","font":"hand","fontSize":25,"strokeColor":"#c92a2a","strokeWidth":4,"position":{"x":520,"y":340}},
-    {"id":"tr06","label":"放热链式反应\nEXOTHERMIC CHAIN","type":"callout","style":"#ffe8cc","font":"mono","fontSize":17,"strokeColor":"#e8590c","strokeStyle":"dashed","strokeWidth":2,"position":{"x":540,"y":540}},
-    {"id":"tr07","label":"多源早期预警\nEARLY WARNING","type":"note","style":"#d3f9d8","font":"hand","strokeColor":"#2b8a3e","strokeWidth":2,"position":{"x":1020,"y":170}},
-    {"id":"tr08","label":"热阻隔与定向排气\nTHERMAL BARRIER","type":"note","style":"#dbe4ff","font":"hand","strokeColor":"#1971c2","strokeWidth":2,"position":{"x":1020,"y":350}},
-    {"id":"tr09","label":"液冷快速抑制\nLIQUID COOLING","type":"note","style":"#d3f9d8","font":"hand","strokeColor":"#2b8a3e","strokeWidth":2,"position":{"x":1020,"y":530}}
+    {"id":"tr01","label":"内部短路\nINTERNAL SHORT","type":"note","style":"#ffe3e3","font":"long-cang","strokeColor":"#e03131","strokeWidth":2,"position":{"x":100,"y":170}},
+    {"id":"tr02","label":"过充电\nOVERCHARGE","type":"note","style":"#ffe3e3","font":"long-cang","strokeColor":"#e03131","strokeWidth":2,"position":{"x":100,"y":350}},
+    {"id":"tr03","label":"外部加热\nEXTERNAL HEAT","type":"note","style":"#ffe3e3","font":"long-cang","strokeColor":"#e03131","strokeWidth":2,"position":{"x":100,"y":530}},
+    {"id":"tr04","label":"SEI 膜分解\nSEI DECOMPOSITION","type":"callout","style":"#fff3bf","font":"long-cang","fontSize":17,"strokeColor":"#f08c00","strokeStyle":"dashed","strokeWidth":2,"position":{"x":540,"y":160}},
+    {"id":"tr05","label":"电芯热失控\nTHERMAL RUNAWAY","type":"topic","style":"#ffc9c9","font":"long-cang","fontSize":25,"strokeColor":"#c92a2a","strokeWidth":4,"position":{"x":520,"y":340}},
+    {"id":"tr06","label":"放热链式反应\nEXOTHERMIC CHAIN","type":"callout","style":"#ffe8cc","font":"long-cang","fontSize":17,"strokeColor":"#e8590c","strokeStyle":"dashed","strokeWidth":2,"position":{"x":540,"y":540}},
+    {"id":"tr07","label":"多源早期预警\nEARLY WARNING","type":"note","style":"#d3f9d8","font":"long-cang","strokeColor":"#2b8a3e","strokeWidth":2,"position":{"x":1020,"y":170}},
+    {"id":"tr08","label":"热阻隔与定向排气\nTHERMAL BARRIER","type":"note","style":"#dbe4ff","font":"long-cang","strokeColor":"#1971c2","strokeWidth":2,"position":{"x":1020,"y":350}},
+    {"id":"tr09","label":"液冷快速抑制\nLIQUID COOLING","type":"note","style":"#d3f9d8","font":"long-cang","strokeColor":"#2b8a3e","strokeWidth":2,"position":{"x":1020,"y":530}}
   ],
   "edges": [
     {"id":"tre01","from":"tr01","to":"tr05","curve":true,"curveOffset":34,"color":"#e03131","strokeWidth":2},

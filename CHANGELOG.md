@@ -2,17 +2,13 @@
 
 本项目的所有显著变更。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [0.0.2] - 2026-08-09
-
-### Added
-
-- 新增可选 `visual_contract`：每张画布声明 3–6 条决定性事实、来源引用、目标 IR 节点/边和受控视觉家族。
-- 生成元素写入 `semanticRole`、`visualFactIds`、`visualSources`、`visualFamily` 与提案状态；strict 视觉校验拒绝无来源图形、悬空目标和未声明家族。
-- 新增来源锁定 fixture、确定性转换和负向回归；未声明契约的旧 IR 不进入新质量门。
-
 ## [0.0.1] - 2026-08-08
 
 ### Changed (unreleased)
+
+- `sketch` 主题对齐本地 Excalidraw 的 Long Cang（12）、Ma Shan Zheng（11）、Liu Jian Mao Cao（13）中文手写字体，英文继续使用 Virgil；SVG/PNG/PDF 复用 `localhost:5001` 字体资产，服务不可用时回退本机字体。
+- 新增可选 `visual_contract`：每张画布声明 3–6 条决定性事实、来源引用、目标 IR 节点/边和受控视觉家族；strict 视觉校验拒绝无来源图形、悬空目标和未声明家族。
+- 生成元素写入 `semanticRole`、`visualFactIds`、`visualSources`、`visualFamily` 与提案状态；新增来源锁定 fixture、确定性转换和负向回归，未声明契约的旧 IR 保持兼容。
 
 - 新增 `thermal-runaway` 手绘双语研究分析板；IR 支持 `note/callout`、多行文字自动尺寸、hand/sans/mono 字体层级，以及曲线、颜色、粗细、虚线和箭头端点控制。
 

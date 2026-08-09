@@ -13,6 +13,41 @@
 
 const CJK_RE = /[\u2E80-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF]/;
 
+function cssFontStack(data, el, text) {
+  if (CJK_RE.test(String(text))) {
+    const custom = el?.customData || {};
+    const state = data.appState || {};
+    const primary = state.cjkFontFamily || custom.cjkFontFamily;
+    const fallbacks = state.cjkFontFallbacks || custom.cjkFontFallbacks || [];
+    if (primary) {
+      return [...new Set([primary, ...fallbacks])]
+        .map((name) => `&quot;${escapeXml(name)}&quot;`)
+        .concat("sans-serif")
+        .join(", ");
+    }
+  }
+  if (el?.fontFamily === 3) return "&quot;Cascadia Code&quot;, monospace";
+  if (el?.fontFamily === 2) return "Helvetica, Arial, sans-serif";
+  return "Virgil, &quot;Comic Sans MS&quot;, cursive";
+}
+
+function textWithScriptRuns(data, el, text) {
+  const value = String(text);
+  if (!CJK_RE.test(value) || [...value].every((char) => CJK_RE.test(char))) {
+    return escapeXml(value);
+  }
+  const runs = [];
+  for (const char of value) {
+    const cjk = CJK_RE.test(char);
+    const previous = runs[runs.length - 1];
+    if (previous && previous.cjk === cjk) previous.text += char;
+    else runs.push({ cjk, text: char });
+  }
+  return runs.map((run) =>
+    `<tspan font-family="${cssFontStack(data, el, run.cjk ? "中" : "A")}">${escapeXml(run.text)}</tspan>`
+  ).join("");
+}
+
 function estimateTextWidth(text, fontSize) {
   let width = 0;
   for (const ch of text) {
@@ -141,8 +176,8 @@ function renderSvgFromScene(data, opts = {}) {
     );
     if (el.name) {
       parts.push(
-        `<text x="${el.x + 8}" y="${el.y + 18}" font-size="16" font-family="sans-serif" ` +
-          `fill="#1971c2">${escapeXml(el.name)}</text>`
+        `<text x="${el.x + 8}" y="${el.y + 18}" font-size="16" font-family="${cssFontStack(data, el, el.name)}" ` +
+          `fill="#1971c2">${textWithScriptRuns(data, el, el.name)}</text>`
       );
     }
   }
@@ -214,8 +249,8 @@ function renderSvgFromScene(data, opts = {}) {
               : el.x;
         parts.push(
           `<text x="${cx}" y="${startY + idx * lineH}" text-anchor="${anchor}" ` +
-            `dominant-baseline="central" font-size="${fontSize}" font-family="sans-serif" ` +
-            `fill="${el.strokeColor || "#1e1e1e"}">${escapeXml(line)}</text>`
+            `dominant-baseline="central" font-size="${fontSize}" font-family="${cssFontStack(data, el, line)}" ` +
+            `fill="${el.strokeColor || "#1e1e1e"}">${textWithScriptRuns(data, el, line)}</text>`
         );
       });
     } else if ((el.type === "arrow" || el.type === "line") && Array.isArray(el.points)) {
