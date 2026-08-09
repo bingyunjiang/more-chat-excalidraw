@@ -366,3 +366,6 @@
 | robonuggets/excalidraw-skill | 74★ | 自纠错与视觉验证（Phase 6.2） |
 | shannhk/improved-excaldrawing | 5★ | 认知负荷验证、WCAG 可访问性（Phase 6.2） |
 | al1y/mcp-excalidraw | 15★ | 实时 Web 预览 MCP 服务器（Phase 4.0 已实现） |
+# Sketch follow-up
+
+Future work: browser-level font snapshots and native Excalidraw interaction tests. Current deliverable remains v0.0.1 and does not change Library/MCP/web assets.

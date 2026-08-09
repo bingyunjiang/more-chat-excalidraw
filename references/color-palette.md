@@ -160,3 +160,6 @@ Excalidraw 默认风格，手绘感适中，彩色填充。
 ---
 
 > 参考来源：coleam00/excalidraw-diagram-skill（4339★）的语义色板、axtonliu/obsidian-visual-skills（3278★）的分层背景、drawmode（16★）的 4 套主题
+# Sketch preset palettes
+
+Sketch presets use restrained project-owned palettes: warm notebook neutrals, cool research blue, diagnostic burgundy, causal olive, and review ochre. These are semantic accents, not a copy of any external whiteboard palette.

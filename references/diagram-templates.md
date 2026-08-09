@@ -1785,3 +1785,6 @@
 - 层级图：同级节点水平间距 80–120px，上下层垂直间距 80–100px
 - 对比图：分隔线居中，左右两栏宽度一致，行高 30–35px
 - 时间线图：时间轴用粗线（strokeWidth: 3），事件标注在轴上方，日期在轴下方
+# Sketch template behavior
+
+Under `theme=sketch`, relationship uses semantic curves and a center/topic emphasis; flowchart uses note-like cards and dashed feedback; swimlane uses stage frames and validation/return loops; architecture adds review, risk and dependency annotations while preserving native/library fallback.

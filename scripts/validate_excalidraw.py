@@ -51,7 +51,7 @@ def _rects_overlap(a, b):
     return ox * oy
 
 
-def _visual_checks(elements, warnings, visual_contract=None):
+def _visual_checks(elements, warnings, visual_contract=None, sketch=False):
     """Layout quality heuristics: overlaps, dangling arrows, density."""
     # Skip connector elements and tiny markers when computing overlaps
     shapes = []
@@ -101,6 +101,38 @@ def _visual_checks(elements, warnings, visual_contract=None):
             warnings.append(
                 f"visual: arrow {el.get('id')!r} is not bound to any node (dangling)"
             )
+
+    # Sketch readability contract: labels stay legible and bilingual text is
+    # split into separate lines/fonts by the generator.
+    for el in elements:
+        if not isinstance(el, dict) or el.get("type") != "text":
+            continue
+        text = str(el.get("text", ""))
+        if sketch and any(ord(ch) >= 0x2E80 for ch in text) and el.get("fontFamily") in (1, 2, 3):
+            warnings.append(f"visual: CJK text {el.get('id')!r} uses a non-CJK font family")
+        if sketch and not any(ord(ch) >= 0x2E80 for ch in text) and el.get("fontFamily") == 11:
+            warnings.append(f"visual: English text {el.get('id')!r} uses Ma Shan Zheng")
+        if sketch and str(el.get("id", "")).startswith("elbl-") and float(el.get("fontSize", 0) or 0) < 32:
+            warnings.append(f"visual: edge label {el.get('id')!r} is below 32px")
+        if el.get("containerId") and el.get("width", 0) < 24:
+            warnings.append(f"visual: text {el.get('id')!r} has insufficient node padding")
+
+    # Title safety zone: titles should not touch the top canvas edge.
+    for el in elements:
+        if isinstance(el, dict) and el.get("type") == "text" and str(el.get("id", "")).startswith("title-"):
+            if sketch and float(el.get("y", 0) or 0) < 10:
+                warnings.append(f"visual: title {el.get('id')!r} is inside the top safety zone")
+
+    titles = [el for el in elements if isinstance(el, dict) and el.get("type") == "text" and str(el.get("id", "")).startswith("title-")]
+    edge_labels = [el for el in elements if isinstance(el, dict) and el.get("type") == "text" and str(el.get("id", "")).startswith("elbl-")]
+    for title in titles:
+        tb = _bbox(title)
+        if not tb:
+            continue
+        for label in edge_labels:
+            lb = _bbox(label)
+            if lb and _rects_overlap(tb, lb) > 0:
+                warnings.append(f"visual: title {title.get('id')!r} overlaps edge label {label.get('id')!r}")
 
     # Layout density: minimum spacing between containers
     for i in range(len(containers)):
@@ -335,7 +367,9 @@ def validate_file(filepath, strict=False, visual=False):
                 )
 
     if visual:
-        _visual_checks(elements, warnings, data.get("visual_contract"))
+        app_state = data.get("appState") or {}
+        sketch = bool(app_state.get("sketchStyle") or app_state.get("sketchTemplate") or app_state.get("cjkFontFamily"))
+        _visual_checks(elements, warnings, data.get("visual_contract"), sketch=sketch)
 
     return errors, warnings, stats
 

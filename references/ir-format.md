@@ -128,6 +128,8 @@
 | `curveOffset` | number | 否 | 曲线控制点偏移，默认 36 |
 | `color` | string | 否 | 箭头语义颜色 |
 | `labelColor` | string | 否 | 箭头标签颜色，默认跟随箭头 |
+| `labelFontSize` | number | 否 | 箭头标签字号；`sketch` 默认 32，普通主题默认 13 |
+| `labelOffset` | number | 否 | 箭头标签离线条的偏移距离；用于避免标签压在线上 |
 | `strokeWidth` | number | 否 | 箭头粗细 |
 | `startArrowhead` | string/null | 否 | 起点样式，如 arrow/dot/bar/triangle |
 | `endArrowhead` | string/null | 否 | 终点样式，默认 arrow |
@@ -234,3 +236,6 @@
 - **Mermaid 导入**：Mermaid 源码 → 解析 → IR（metadata 保留原始源码）
 - **Markdown 导入**：文档标题/列表 → IR 层级结构
 - **已有画布**：.excalidraw 元素 → 反解 IR（增量编辑基础）
+# Sketch extensions
+
+Top-level `sketchStyle` (or `preset`) selects one of the five self-authored sketch presets. `theme: "sketch"` remains the compatibility switch. Edge fields `feedback` and `dependency` add template semantics; labels in sketch default to 32px.

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>more-chat-excalidraw 风格与模板地图</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f6f7fb;
+      color: #1f2937;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", sans-serif;
+    }
+    main { width: 1600px; min-height: 1450px; padding: 58px 64px 70px; }
+    header { display: flex; align-items: end; justify-content: space-between; margin-bottom: 34px; }
+    h1 { margin: 0; font-size: 48px; letter-spacing: -1.5px; }
+    .subtitle { margin-top: 10px; color: #6b7280; font-size: 21px; }
+    .count { color: #2563eb; font-weight: 700; font-size: 25px; }
+    section { margin-top: 40px; }
+    h2 { margin: 0 0 18px; font-size: 28px; }
+    .grid { display: grid; gap: 18px; }
+    .themes { grid-template-columns: repeat(4, 1fr); }
+    .templates { grid-template-columns: repeat(5, 1fr); }
+    .card {
+      background: white;
+      border: 1px solid #dfe3eb;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(31,41,55,.06);
+    }
+    .card .meta { padding: 15px 18px 14px; border-bottom: 1px solid #e5e7eb; }
+    .name { font-size: 20px; font-weight: 750; }
+    .key { float: right; color: #6b7280; font: 15px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .desc { margin-top: 5px; color: #6b7280; font-size: 14px; line-height: 1.45; min-height: 40px; }
+    .preview { height: 240px; padding: 12px; display: flex; align-items: center; justify-content: center; background: #fff; }
+    .themes .preview { height: 250px; }
+    .preview img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+    .blueprint-preview { background: #1e3a5f; }
+    footer { margin-top: 30px; color: #6b7280; font-size: 17px; line-height: 1.6; }
+    code { background: #eef2ff; color: #3730a3; border-radius: 6px; padding: 2px 6px; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Excalidraw 风格与模板地图</h1>
+      <div class="subtitle">more-chat-excalidraw · 当前脚本实测生成</div>
+    </div>
+    <div class="count">4 themes × 10 templates</div>
+  </header>
+
+  <section>
+    <h2>视觉主题 · Themes</h2>
+    <div class="grid themes">
+      <article class="card">
+        <div class="meta"><span class="name">默认</span><span class="key">default</span><div class="desc">适中手绘感，彩色语义填充；通用首选。</div></div>
+        <div class="preview"><img src="themes/flowchart-default.svg"></div>
+      </article>
+      <article class="card">
+        <div class="meta"><span class="name">手绘</span><span class="key">sketch</span><div class="desc">粗描边、高 roughness；适合概念图和分析板。</div></div>
+        <div class="preview"><img src="themes/flowchart-sketch.svg"></div>
+      </article>
+      <article class="card">
+        <div class="meta"><span class="name">蓝图</span><span class="key">blueprint</span><div class="desc">深蓝底、浅色线；适合技术架构与设计图。</div></div>
+        <div class="preview blueprint-preview"><img src="themes/flowchart-blueprint.svg"></div>
+      </article>
+      <article class="card">
+        <div class="meta"><span class="name">极简</span><span class="key">minimal</span><div class="desc">零 roughness、细线稿；当前仍保留语义填色。</div></div>
+        <div class="preview"><img src="themes/flowchart-minimal.svg"></div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>图表模板 · Templates</h2>
+    <div class="grid templates">
+      <article class="card"><div class="meta"><span class="name">流程图</span><span class="key">flowchart</span><div class="desc">步骤、判断、顺序与分支</div></div><div class="preview"><img src="templates/flowchart.svg"></div></article>
+      <article class="card"><div class="meta"><span class="name">架构图</span><span class="key">architecture</span><div class="desc">系统组件、分层与调用关系</div></div><div class="preview"><img src="templates/architecture.svg"></div></article>
+      <article class="card"><div class="meta"><span class="name">时序图</span><span class="key">sequence</span><div class="desc">角色生命线与消息先后</div></div><div class="preview"><img src="templates/sequence.svg"></div></article>
+      <article class="card"><div class="meta"><span class="name">思维导图</span><span class="key">mindmap</span><div class="desc">中心主题与多级分支</div></div><div class="preview"><img src="templates/mindmap.svg"></div></article>
+      <article class="card"><div class="meta"><span class="name">泳道图</span><span class="key">swimlane</span><div class="desc">角色职责与跨部门流程</div></div><div class="preview"><img src="templates/swimlane.svg"></div></article>
+      <article class="card"><div class="meta"><span class="name">ER 图</span><span class="key">erd</span><div class="desc">实体、关系与基数</div></div><div class="preview"><img src="templates/erd.svg"></div></article>
+      <article class="card"><div class="meta"><span class="name">层级图</span><span class="key">hierarchy</span><div class="desc">组织、分类与逐层拆解</div></div><div class="preview"><img src="templates/hierarchy.svg"></div></article>
+      <article class="card"><div class="meta"><span class="name">关系图</span><span class="key">relationship</span><div class="desc">依赖、影响与网络关系</div></div><div class="preview"><img src="templates/relationship.svg"></div></article>
+      <article class="card"><div class="meta"><span class="name">对比图</span><span class="key">comparison</span><div class="desc">方案、观点与维度对照</div></div><div class="preview"><img src="templates/comparison.svg"></div></article>
+      <article class="card"><div class="meta"><span class="name">时间线</span><span class="key">timeline</span><div class="desc">事件发展、里程碑与进度</div></div><div class="preview"><img src="templates/timeline.svg"></div></article>
+    </div>
+  </section>
+
+  <footer>
+    模板决定“信息结构”，主题决定“视觉皮肤”，两者可以自由组合。架构图还可追加 <code>--icons</code> 或 <code>--library</code>，替换为技术图标或 Excalidraw Library 组件。注：minimal 的文档目标是纯黑白，但当前转换器输出仍保留语义填色；上图按实际输出展示。
+  </footer>
+</main>
+</body>
+</html>

@@ -16,7 +16,8 @@ Graphviz（自动布局）、本地 Excalidraw 应用（打开画布）。
 ## Workflow
 
 1. **理解意图**：确定图表类型（流程图、架构图、时序图、思维导图、ER 图、泳道图、层级图、关系图、对比图、时间线图等）、节点、连线关系和要强调的内容。可用 `python3 scripts/template_selector.py --recommend "<意图>"` 获得模板推荐。类型与布局规范见 [references/diagram-templates.md](references/diagram-templates.md)。
-2. **生成结构化文案（IR）**：把用户意图整理为 IR 中间格式（见 [references/ir-format.md](references/ir-format.md)），包含 nodes/edges/groups/template/theme。IR 独立于 Excalidraw，便于后续迭代与版本化。需要视觉追溯时可声明 [visual-distillation-contract.md](references/visual-distillation-contract.md) 中的 `visual_contract`。
+2. **主动共同选型**：若用户没有明确 template/theme/sketchStyle，先根据内容给出 template + sketchStyle 推荐，并集中询问一次是否接受或切换（最多 1–2 个问题）；用户已明确或说“你直接选”时跳过追问，并用一句话说明选择理由。CLI 始终保持非交互，可由 Agent 负责对话。
+3. **生成结构化文案（IR）**：把用户意图整理为 IR 中间格式（见 [references/ir-format.md](references/ir-format.md)），包含 nodes/edges/groups/template/theme/sketchStyle。IR 独立于 Excalidraw，便于后续迭代与版本化。需要视觉追溯时可声明 [visual-distillation-contract.md](references/visual-distillation-contract.md) 中的 `visual_contract`。
 3. **IR → `.excalidraw` JSON**：运行 `python3 scripts/ir_to_excalidraw.py <ir.json> --output output/<topic>.excalidraw` 自动完成布局、元素生成、箭头绑定与配色。也可手工按 [references/excalidraw-schema.md](references/excalidraw-schema.md) 与元素模板生成。默认输出到当前工作区，文件名建议 `output/<topic>-YYYYMMDD-HHMM.excalidraw`。
 4. **校验**：运行 `python3 scripts/validate_excalidraw.py <file>`，修复所有 error 后再交付。
 5. **实时预览**：启动 `node scripts/preview_server.js [<file>] [--open]`（默认端口 6060，预览页会轮询 API 实时刷新，模式参考 al1y/mcp-excalidraw）。之后每次生成或修改 `.excalidraw`，用 `node scripts/push_preview.js <file>` 推送，已打开的预览页约 1.5 秒内自动更新。交付前先看预览，检查元素是否重叠、文字是否溢出、连线是否绑定正确；发现问题直接修正后重新推送。需要浏览器内编辑时访问 `http://localhost:6060/editor`（完整 Excalidraw 编辑器，编辑后点"保存到服务器"写回文件）；需要分步讲解动画时访问 `http://localhost:6060/animate`（按 customData.animate 顺序逐帧播放）。
@@ -34,7 +35,7 @@ Graphviz（自动布局）、本地 Excalidraw 应用（打开画布）。
 - 交付前必须实际查看 PNG 或 SVG；不得仅凭 JSON 校验宣称视觉完成。检查画布比例、文字溢出、回路穿越节点、阶段对齐以及导出是否混入调试页眉/大面积空白。
 - 箭头 `width/height` 必须匹配 `points` 的真实几何范围；多段正交线不得使用会被恢复为大弧线的圆角配置。
 - 当用户要求突出 Excalidraw 风格时，优先使用关系图、概念图或研究分析板，而不是退化成普通流程图。组合 `note/callout/topic`、双语多行文字、分组框和语义箭头。
-- 节点可用 `font: hand|sans|mono|long-cang|ma-shan-zheng|liu-jian-mao-cao` 建立字体层级。`sketch` 主题必须显式分流字体：中文默认使用本地 Excalidraw（`http://localhost:5001/`）提供的 `Long Cang`（fontFamily 12），可切换 `Ma Shan Zheng`（11）或 `Liu Jian Mao Cao`（13）；英文注记继续使用 Virgil。IR 顶层 `cjkFontFamily` / `cjkFontFallbacks` 可覆盖渲染字体栈。字体仅引用用户已有的本地 Excalidraw 资产、不随 skill 重复分发；服务不可用时回退本机手写字体。交付前必须目检 PNG，确认中文不是系统无衬线回退。边可用 `curve`、`curveOffset`、`color`、`strokeWidth`、`style: dashed`、`startArrowhead/endArrowhead` 表达因果、反馈和证据关系。
+- 节点可用 `font: hand|sans|mono|long-cang|ma-shan-zheng|liu-jian-mao-cao` 建立字体层级。`sketch` 主题必须显式分流字体：中文默认使用本地 Excalidraw（`http://localhost:5001/`）提供的 `Ma Shan Zheng`（fontFamily 11，更醒目），可切换 `Long Cang`（12）或 `Liu Jian Mao Cao`（13）；英文注记继续使用 Virgil。IR 顶层 `cjkFontFamily` / `cjkFontFallbacks` 可覆盖渲染字体栈。含中文文本不得被通用 `font: hand|sans|mono` 覆盖回英文/等宽字体；只有显式中文字体名才切换中文字体。字体仅引用用户已有的本地 Excalidraw 资产、不随 skill 重复分发；服务不可用时回退本机手写字体。交付前必须目检 PNG，确认中文不是系统无衬线回退。边可用 `curve`、`curveOffset`、`color`、`strokeWidth`、`style: dashed`、`startArrowhead/endArrowhead` 表达因果、反馈和证据关系；手绘主题边标签默认 32px，并可用 `labelFontSize` / `labelOffset` 调整，避免 trigger/detect 一类注记小到不可读或压在线上。
 
 ## Resources
 
@@ -77,4 +78,6 @@ node scripts/check_web_lock.mjs
 - `visual-patterns.md`：常见关系模式模板（扇出、汇聚、时间线、分组、请求-响应、流水线、星型、矩阵、循环），每种模式提供 DSL 描述与 JSON 骨架。
 - `animation-template.md`：动画关键帧模板，支持 `customData.animate` 字段，定义 7 级动画顺序规则，可拖入 excalidraw-animate 生成动画。
 - `ir-format.md`：IR 中间格式定义——独立于 Excalidraw 的图表语义表示，是文案引擎与 JSON 生成器之间的标准接口（19 种节点类型、边/分组/模板专用字段、转换规则）。
+- `sketch-style-catalog.md`、`handdrawn-visual-rules.md`：sketch preset 目录与 render→look→targeted fix 验收规则。
+- 本地编辑器边界：localhost:5001 可能自动 fit 到顶部并被浮动工具栏覆盖；正式验收以 PNG/SVG 为准，必要时在编辑器内手动平移画布。
 - `visual-distillation-contract.md`：可选视觉蒸馏契约，定义决定性事实、来源映射、边界、布局信号、视觉家族及 proposed/confirmed 状态。

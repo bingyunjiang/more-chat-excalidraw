@@ -110,3 +110,8 @@ adb9da1 feat: M5 template system
 8202947 feat: Phase 1 - sandbox fallback
 cd4cdbb feat: initial commit
 ```
+# Current sketch handoff
+
+Sketch presets and case outputs are generated and strict-validated. Re-run `bash scripts/test_e2e.sh` after any renderer/font environment change; browser font availability remains an environment boundary.
+
+The localhost:5001 build may ignore scene `scrollY` and invisible viewport spacers during auto-fit, so editor toolbar overlap is not automatically preventable; use PNG/SVG for formal visual acceptance or pan manually.

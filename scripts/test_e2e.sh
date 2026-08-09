@@ -410,20 +410,47 @@ if len(frames) != 3 or len(arrows) != 8:
     raise SystemExit("hand-drawn board structure incomplete")
 if not shapes or any(el.get("roughness", 0) < 2 for el in shapes):
     raise SystemExit("sketch shapes lost hand-drawn roughness")
-if not {1, 12}.issubset({el.get("fontFamily") for el in texts}):
-    raise SystemExit("Long Cang Chinese / Virgil English font hierarchy missing")
-if not any("\n" in el.get("text", "") for el in texts):
-    raise SystemExit("bilingual multiline text boxes missing")
+if not {1, 11}.issubset({el.get("fontFamily") for el in texts}):
+    raise SystemExit("Ma Shan Zheng Chinese / Virgil English font hierarchy missing")
+if any(el.get("fontFamily") != 11 for el in texts if any(ord(ch) >= 0x2E80 for ch in el.get("text", ""))):
+    raise SystemExit("Chinese handwriting text was overridden by generic font")
+if not any(str(el.get("id", "")).endswith("-cjk") for el in texts) or not any(str(el.get("id", "")).endswith("-en") for el in texts):
+    raise SystemExit("bilingual text boxes were not split into Chinese handwriting and English Virgil lines")
 if len({el.get("strokeColor") for el in arrows}) < 3:
     raise SystemExit("semantic arrow colors missing")
 if not any(el.get("strokeStyle") == "dashed" for el in arrows):
     raise SystemExit("dashed mechanism arrow missing")
+edge_labels = [el for el in texts if str(el.get("id", "")).startswith("elbl-")]
+if not edge_labels or min(float(el.get("fontSize") or 0) for el in edge_labels) < 32:
+    raise SystemExit("hand-drawn edge labels are too small")
 if not any(el.get("roundness") for el in arrows if len(el.get("points", [])) > 2):
     raise SystemExit("curved hand-drawn arrow missing")
-if scene.get("appState", {}).get("cjkFontFamily") != "Long Cang":
+if scene.get("appState", {}).get("cjkFontFamily") != "Ma Shan Zheng":
     raise SystemExit("explicit Chinese handwriting font missing")
-if not all(el.get("customData", {}).get("cjkFontFamily") == "Long Cang" for el in texts):
+if not all(el.get("customData", {}).get("cjkFontFamily") == "Ma Shan Zheng" for el in texts):
     raise SystemExit("Chinese handwriting metadata is not preserved on text elements")
+by_id = {el.get("id"): el for el in elements}
+def border_distance(point, box):
+    x, y = point
+    left, top = box["x"], box["y"]
+    right, bottom = left + box.get("width", 0), top + box.get("height", 0)
+    if left <= x <= right and top <= y <= bottom:
+        return min(abs(x - left), abs(x - right), abs(y - top), abs(y - bottom))
+    dx = max(left - x, 0, x - right)
+    dy = max(top - y, 0, y - bottom)
+    return (dx * dx + dy * dy) ** 0.5
+for arrow in arrows:
+    start_id = arrow.get("startBinding", {}).get("elementId")
+    end_id = arrow.get("endBinding", {}).get("elementId")
+    if start_id not in by_id or end_id not in by_id:
+        raise SystemExit(f"arrow binding target missing: {arrow.get('id')}")
+    points = arrow.get("points") or []
+    if len(points) < 2:
+        raise SystemExit(f"arrow points missing: {arrow.get('id')}")
+    start = (arrow["x"] + points[0][0], arrow["y"] + points[0][1])
+    end = (arrow["x"] + points[-1][0], arrow["y"] + points[-1][1])
+    if border_distance(start, by_id[start_id]) > 2 or border_distance(end, by_id[end_id]) > 2:
+        raise SystemExit(f"arrow endpoint is not on node boundary: {arrow.get('id')}")
 PY
 then log_pass "hand-drawn board preserves bilingual boxes and expressive arrows"; else log_fail "hand-drawn visual contract"; fi
 HAND_FONT_OUT="/tmp/e2e-hand-font"
@@ -612,6 +639,62 @@ then
   log_pass "visual contract rejects dangling targets and duplicate families"
 else
   log_fail "visual contract rejection coverage"
+fi
+
+echo "=== Test 15: Sketch recommendation and preset ==="
+if python3 "$PROJECT_DIR/scripts/template_selector.py" --recommend "画一张图" > /tmp/e2e-sketch-recommend.json \
+  && python3 - <<'PY'
+import json
+d=json.load(open('/tmp/e2e-sketch-recommend.json'))['recommendation']
+assert d['requires_confirmation'] is True and d['template'] and d['sketchStyle']
+PY
+then
+  log_pass "ambiguous intent requests one confirmation"
+else
+  log_fail "ambiguous intent recommendation"
+fi
+if python3 "$PROJECT_DIR/scripts/template_selector.py" --recommend "flowchart, 你直接选" > /tmp/e2e-sketch-direct.json \
+  && python3 - <<'PY'
+import json
+assert json.load(open('/tmp/e2e-sketch-direct.json'))['recommendation']['requires_confirmation'] is False
+PY
+then
+  log_pass "direct selection skips confirmation"
+else
+  log_fail "direct selection confirmation gate"
+fi
+if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example thermal-runaway --output /tmp/e2e-sketch-preset.excalidraw >/dev/null \
+  && python3 - <<'PY'
+import json
+d=json.load(open('/tmp/e2e-sketch-preset.excalidraw'))
+assert d['appState']['sketchStyle'] == 'engineering-notebook'
+assert d['appState']['sketchTemplate'] == 'relationship'
+PY
+then
+  log_pass "sketch preset metadata and relationship template"
+else
+  log_fail "sketch preset metadata"
+fi
+if python3 - <<'PY'
+import importlib.util, json
+spec=importlib.util.spec_from_file_location('m','scripts/ir_to_excalidraw.py'); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+base={'nodes':[{'id':'a','label':'节点\nNODE','type':'process'},{'id':'b','label':'结束','type':'end'}],'edges':[{'id':'e','from':'a','to':'b','label':'next'}]}
+for t in ('relationship','flowchart','swimlane','architecture'):
+ d=dict(base, template=t, theme='sketch', groups=[])
+ if t=='relationship': d['edges']=[dict(base['edges'][0])]
+ if t=='flowchart': d['edges']=[dict(base['edges'][0], feedback=True)]
+ if t in ('swimlane','architecture'): d['groups']=[{'id':'g','name':'Stage','nodes':['a','b'],'level':0}]
+ out=m.convert(d)
+ assert any(e.get('customData',{}).get('sketchTemplateRole') for e in out['elements'] if e['type']=='arrow') or t=='relationship'
+for p in m.SKETCH_STYLES:
+ d=dict(base, template='flowchart', theme='sketch', sketchStyle=p)
+ a=m.convert(d); b=m.convert(d)
+ assert a==b and a['appState']['sketchStyle']==p
+PY
+then
+  log_pass "four sketch templates and five presets are deterministic"
+else
+  log_fail "sketch template/preset coverage"
 fi
 
 # --- Summary ---

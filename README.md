@@ -261,3 +261,8 @@ bash scripts/test_e2e.sh
 ## 许可
 
 MIT
+# Sketch 选型交互
+
+当用户只说“画一张图”时，Agent 先运行推荐并集中确认一次：`template=relationship` + `sketchStyle=mechanism-map`，用户可接受或切换。用户已说“画一个 flowchart”或“你直接选”时不追问；CLI 始终非交互。
+
+IR 示例：`{"template":"relationship","theme":"sketch","sketchStyle":"root-cause"}`。

@@ -195,6 +195,14 @@ THEMES = {
     }
 }
 
+SKETCH_STYLES = {
+    "engineering-notebook": {"formality": "balanced", "vibe": "field notes", "use": "工程流程与记录"},
+    "research-board": {"formality": "balanced", "vibe": "quiet analytical", "use": "研究分析与证据链"},
+    "root-cause": {"formality": "restrained", "vibe": "diagnostic", "use": "根因、故障与收敛诊断"},
+    "mechanism-map": {"formality": "balanced", "vibe": "causal", "use": "机理、因果与关系分析"},
+    "review-markup": {"formality": "striking", "vibe": "annotated critique", "use": "架构评审与风险批注"},
+}
+
 # 场景 → 模板映射
 SCENE_MAP = {
     "finite-element-analysis": ["flowchart", "swimlane"],
@@ -297,6 +305,7 @@ def get_template_info(template_name):
 def recommend(intent_text):
     """根据用户意图推荐最佳模板"""
     intent_lower = intent_text.lower()
+    match_counts = {}
     
     # 提取关键词
     all_keywords = []
@@ -308,7 +317,6 @@ def recommend(intent_text):
     # 按关键词匹配数排序
     if all_keywords:
         # 统计每个模板的匹配次数
-        match_counts = {}
         for key, alias in all_keywords:
             match_counts[key] = match_counts.get(key, 0) + 1
         sorted_matches = sorted(match_counts.items(), key=lambda x: -x[1])
@@ -326,6 +334,17 @@ def recommend(intent_text):
             alternatives = ["mindmap", "architecture"]
     
     # 构建结果
+    explicit_template = any(k in intent_lower for k in TEMPLATES)
+    explicit_style = any(k.replace("-", " ") in intent_lower or k in intent_lower for k in SKETCH_STYLES)
+    direct_select = any(k in intent_lower for k in ("你直接选", "直接选", "不用问", "随便"))
+    if primary in ("relationship", "erd", "mindmap"):
+        style = "mechanism-map" if primary == "relationship" else "research-board"
+    elif primary == "architecture":
+        style = "review-markup"
+    elif primary == "swimlane":
+        style = "engineering-notebook"
+    else:
+        style = "research-board"
     result = {
         "primary": {
             "key": primary,
@@ -342,8 +361,16 @@ def recommend(intent_text):
             for alt in alternatives[:3]
         ],
         "available_themes": list(THEMES.keys()),
+        "sketch_styles": SKETCH_STYLES,
+        "recommendation": {
+            "template": primary,
+            "sketchStyle": style,
+            "rationale": f"{TEMPLATES[primary]['name']}适合当前叙事；{style}突出其证据与结构。",
+            "requires_confirmation": not explicit_template and not explicit_style and not direct_select,
+        },
         "parameters": {
-            "theme": "default",
+            "theme": "sketch" if not explicit_template or explicit_style or "手绘" in intent_lower else "default",
+            "sketchStyle": style,
             "layout_direction": TEMPLATES[primary].get("layout", "vertical"),
             "spacing": TEMPLATES[primary].get("spacing", {"vertical": 80, "horizontal": 120})
         }

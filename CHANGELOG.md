@@ -41,3 +41,6 @@
 - **MCP 协议**：`mcp_server.mjs` 暴露 generate_diagram / validate_diagram / push_preview / list_templates 四个工具
 - **测试**：e2e suite 覆盖生成、校验、渲染、预览、编辑器、保存、多画布、动画、Mermaid、知识图谱、Graphviz、增量编辑与 MCP
 - **CI**：GitHub Actions（validate + smoke + e2e）
+# v0.0.1 sketch system update
+
+- Added five self-authored sketch presets, four template behaviors, active selection recommendation, visual rules, and two engineering case studies. Version remains v0.0.1.

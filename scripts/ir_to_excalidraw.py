@@ -73,14 +73,15 @@ THEMES = {
     "sketch": {
         "strokeColor": "#2b2b2b", "bg": "#ffffff", "lineColor": "#868e96",
         "roughness": 2, "strokeWidth": 3, "textColor": "#374151",
-        # Current local Excalidraw registers Long Cang as fontFamily 12.
+        # Current local Excalidraw registers Ma Shan Zheng as fontFamily 11.
         # English-only annotations are kept on Virgil by _text_el().
-        "titleColor": "#1e40af", "frameText": "#1971c2", "fontFamily": 12,
-        "cjkFontFamily": "Long Cang",
+        "titleColor": "#1e40af", "frameText": "#1971c2", "fontFamily": 11,
+        "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
-            "Ma Shan Zheng", "Liu Jian Mao Cao", "Hannotate SC",
+            "Long Cang", "Liu Jian Mao Cao", "Hannotate SC",
             "HanziPen SC", "Wawati SC", "Kaiti SC", "PingFang SC",
         ],
+        "edgeLabelFontSize": 32, "edgeLabelOffset": 24,
     },
     "blueprint": {
         "strokeColor": "#e8f4ff", "bg": "#1e3a5f", "lineColor": "#64b5f6",
@@ -94,6 +95,32 @@ THEMES = {
     },
 }
 
+# Small, intentionally opinionated sketch presets.  Presets change the visual
+# grammar (not just a colour swap) while keeping the legacy ``theme=sketch``
+# contract and deterministic output intact.
+SKETCH_STYLES = {
+    "engineering-notebook": {
+        "strokeColor": "#34302b", "lineColor": "#6b6258", "titleColor": "#7c2d12",
+        "roughness": 2, "strokeWidth": 3, "accent": "#f59f00", "spacing": 1.15,
+    },
+    "research-board": {
+        "strokeColor": "#263238", "lineColor": "#546e7a", "titleColor": "#155e75",
+        "roughness": 2, "strokeWidth": 2, "accent": "#0e7490", "spacing": 1.25,
+    },
+    "root-cause": {
+        "strokeColor": "#3b2525", "lineColor": "#9f1239", "titleColor": "#9f1239",
+        "roughness": 2, "strokeWidth": 3, "accent": "#e11d48", "spacing": 1.2,
+    },
+    "mechanism-map": {
+        "strokeColor": "#2f3a2f", "lineColor": "#3f6212", "titleColor": "#3f6212",
+        "roughness": 2, "strokeWidth": 3, "accent": "#65a30d", "spacing": 1.3,
+    },
+    "review-markup": {
+        "strokeColor": "#292524", "lineColor": "#57534e", "titleColor": "#b45309",
+        "roughness": 2, "strokeWidth": 2, "accent": "#d97706", "spacing": 1.1,
+    },
+}
+
 LAYER_BG = ["#dbe4ff", "#e5dbff", "#d3f9d8", "#ffe8cc", "#fcc2d7"]
 LAYER_FRAME_TEXT = ["#1971c2", "#6741d9", "#2f9e44", "#e8590c", "#c2255c"]
 FONT_FAMILY_MAP = {
@@ -104,6 +131,21 @@ FONT_FAMILY_MAP = {
     "long cang": 12, "long-cang": 12, "longcang": 12,
     "liu jian mao cao": 13, "liu-jian-mao-cao": 13, "liujianmaocao": 13,
 }
+
+
+def _has_cjk(text):
+    return any(ord(ch) >= 0x2E80 for ch in str(text))
+
+
+def _bilingual_lines(label):
+    lines = [line for line in str(label).splitlines() if line.strip()]
+    if len(lines) < 2:
+        return None
+    if not any(_has_cjk(line) for line in lines):
+        return None
+    if not any(not _has_cjk(line) for line in lines):
+        return None
+    return lines
 
 
 # ─── 基础元素构造 ─────────────────────────────────────────────────────────
@@ -139,7 +181,7 @@ def _text_el(el_id, x, y, text, theme, fontSize=18, w=None, h=None, color=None, 
     if h is None:
         h = fontSize + 8
     font_family = theme.get("fontFamily", 1)
-    if theme.get("cjkFontFamily") and not any(ord(ch) >= 0x2E80 for ch in str(text)):
+    if theme.get("cjkFontFamily") and not _has_cjk(text):
         font_family = 1
     el = _base_el(el_id, "text", x, y, w, h, theme, {
         "strokeColor": color or theme["textColor"],
@@ -199,6 +241,35 @@ def _text_color_for_fill(fill, fallback):
         return fallback
 
 
+def _node_center(x, y, style):
+    return x + style["w"] / 2, y + style["h"] / 2
+
+
+def _boundary_point(x, y, style, toward_x, toward_y):
+    """Point where the center→target ray leaves a node bbox."""
+    cx, cy = _node_center(x, y, style)
+    dx, dy = toward_x - cx, toward_y - cy
+    if abs(dx) < 1e-9 and abs(dy) < 1e-9:
+        return cx, cy
+    half_w = max(float(style["w"]) / 2, 1)
+    half_h = max(float(style["h"]) / 2, 1)
+    scale = min(
+        half_w / abs(dx) if abs(dx) > 1e-9 else float("inf"),
+        half_h / abs(dy) if abs(dy) > 1e-9 else float("inf"),
+    )
+    return cx + dx * scale, cy + dy * scale
+
+
+def _edge_boundary_points(fx, fy, st_from, tx, ty, st_to):
+    """Return visual start/end points on the two node boundaries."""
+    fcx, fcy = _node_center(fx, fy, st_from)
+    tcx, tcy = _node_center(tx, ty, st_to)
+    return (
+        _boundary_point(fx, fy, st_from, tcx, tcy),
+        _boundary_point(tx, ty, st_to, fcx, fcy),
+    )
+
+
 def _arrow_el(
     el_id, x, y, points, theme, from_id, to_id, style="solid",
     bidirectional=False, curved=False, color=None, stroke_width=None,
@@ -216,8 +287,8 @@ def _arrow_el(
         "roundness": {"type": 2} if len(points) == 2 or curved else None,
         "strokeWidth": stroke_width or theme["strokeWidth"],
         "points": points,
-        "startBinding": {"elementId": from_id, "focus": 0.5, "gap": 8},
-        "endBinding": {"elementId": to_id, "focus": 0.5, "gap": 8},
+        "startBinding": {"elementId": from_id, "focus": 0, "gap": 4},
+        "endBinding": {"elementId": to_id, "focus": 0, "gap": 4},
         "startArrowhead": start_arrowhead or ("arrow" if bidirectional else None),
         "endArrowhead": end_arrowhead,
     })
@@ -502,6 +573,10 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
     template = template_override or ir.get("template", "flowchart")
     theme_key = ir.get("theme", "default")
     theme = dict(THEMES.get(theme_key, THEMES["default"]))
+    sketch_style = ir.get("sketchStyle", ir.get("preset"))
+    if theme_key == "sketch" and sketch_style in SKETCH_STYLES:
+        theme.update(SKETCH_STYLES[sketch_style])
+        theme["sketchStyle"] = sketch_style
     direction = ir.get("direction")
     metadata = ir.get("metadata", {})
     cjk_font_family = ir.get("cjkFontFamily", metadata.get("cjkFontFamily", theme.get("cjkFontFamily")))
@@ -518,6 +593,10 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
     ir_nodes = ir.get("nodes", [])
     ir_edges = ir.get("edges", [])
     ir_groups = ir.get("groups", [])
+
+    # Make sketch templates structurally distinct and deterministic.  The
+    # flags are consumed below when routing edges and styling cards.
+    sketch_template = theme_key == "sketch"
 
     # 1. 解析节点样式
     node_styles = {}
@@ -543,6 +622,18 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             line_count = max(1, len(str(node.get("label", "")).splitlines()))
             required_h = label_font * 1.25 * line_count + 28
             style["h"] = max(style["h"], min(180, required_h))
+        if sketch_template:
+                # Handwritten cards have a little more breathing room and a
+                # restrained paper tint; semantic fills remain user-overridable.
+            style["w"] = int(style["w"] * theme.get("spacing", 1.0))
+            style["h"] = int(style["h"] * theme.get("spacing", 1.0))
+            if not node.get("style"):
+                if template == "relationship" and node.get("type") in ("topic", "note", "callout"):
+                    style["fill"] = "#fff7ed" if node.get("type") != "topic" else "#ffedd5"
+                elif template == "flowchart" and node.get("type") in ("process", "note", "callout"):
+                    style["fill"] = "#fef3c7"
+                elif template == "architecture" and node.get("type") in ("component", "service"):
+                    style["fill"] = "#e0f2fe"
         node_styles[nid] = style
 
     # Library components have their own geometry. Resolve their bounding boxes
@@ -606,6 +697,11 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
         positions = _layout_table(ir_nodes, node_styles, metadata)
     elif positions is None:
         positions = _layout_vertical(ir_nodes, node_styles)
+
+    # Reserve a generous title safety band for sketch architecture boards;
+    # review labels otherwise sit too close to the two-line heading.
+    if sketch_template and template == "architecture" and ir.get("title"):
+        positions = {nid: (x, y + 70) for nid, (x, y) in positions.items()}
 
     # 手动位置覆盖
     for node in ir_nodes:
@@ -799,22 +895,51 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             # 节点文字（容器内绑定）
             label = node.get("label", "")
             font_size = float(node.get("fontSize") or (16 if shape == "diamond" else 18))
-            line_count = max(1, len(str(label).splitlines()))
-            text_h = max(24, font_size * 1.25 * line_count)
             tw = max(40, w - 40)
             tx = x + (w - tw) / 2
-            ty = y + (h - text_h) / 2
             text_color = node.get("textColor") or _text_color_for_fill(st["fill"], theme["textColor"])
             if shape == "ellipse" and st["fill"] in (SEMANTIC_FILL["input"], SEMANTIC_FILL["storage"]):
                 text_color = "#1e3a5f" if theme_key == "default" else theme["textColor"]
-            text_el = _text_el(
-                f"txt-{nid}", tx, ty, label, theme, fontSize=font_size,
-                w=tw, h=text_h, color=text_color, container_id=nid,
-            )
-            requested_font = node.get("fontFamily") or node.get("font")
-            if requested_font is not None:
-                text_el["fontFamily"] = FONT_FAMILY_MAP.get(str(requested_font).lower(), requested_font)
-            elements.append(text_el)
+            split_lines = _bilingual_lines(label) if theme.get("cjkFontFamily") else None
+            if split_lines:
+                line_gap = max(2, font_size * 0.18)
+                line_specs = []
+                for line in split_lines:
+                    line_font = font_size + 2 if _has_cjk(line) else font_size
+                    line_h = max(18, line_font * 1.22)
+                    line_specs.append((line, line_font, line_h))
+                text_h = sum(spec[2] for spec in line_specs) + line_gap * (len(line_specs) - 1)
+                cursor_y = y + (h - text_h) / 2
+                bound = []
+                for idx, (line, line_font, line_h) in enumerate(line_specs):
+                    line_has_cjk = _has_cjk(line)
+                    suffix = "cjk" if line_has_cjk else "en"
+                    tid = f"txt-{nid}-{suffix}" if idx < 2 else f"txt-{nid}-{idx}"
+                    line_el = _text_el(
+                        tid, tx, cursor_y, line, theme, fontSize=line_font,
+                        w=tw, h=line_h, color=text_color,
+                        container_id=nid if line_has_cjk else None,
+                    )
+                    elements.append(line_el)
+                    if line_has_cjk:
+                        bound.append({"id": tid, "type": "text"})
+                    cursor_y += line_h + line_gap
+                el["boundElements"] = bound
+            else:
+                line_count = max(1, len(str(label).splitlines()))
+                text_h = max(24, font_size * 1.25 * line_count)
+                ty = y + (h - text_h) / 2
+                text_el = _text_el(
+                    f"txt-{nid}", tx, ty, label, theme, fontSize=font_size,
+                    w=tw, h=text_h, color=text_color, container_id=nid,
+                )
+                requested_font = node.get("fontFamily") or node.get("font")
+                if requested_font is not None:
+                    requested_key = str(requested_font).lower()
+                    requested_family = FONT_FAMILY_MAP.get(requested_key, requested_font)
+                    if not (theme.get("cjkFontFamily") and _has_cjk(label) and requested_family in (1, 2, 3)):
+                        text_el["fontFamily"] = requested_family
+                elements.append(text_el)
 
     # 4.3 对比图：从 metadata.comparison 生成表格元素
     if template == "comparison":
@@ -891,12 +1016,19 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
         tx2, ty2 = positions[to]
         st_from = node_styles[frm]
         st_to = node_styles[to]
-        # Layered diagrams use orthogonal routes through the whitespace between
-        # rows; a deterministic lane offset separates fan-out edges.
-        ax = fx + st_from["w"] / 2
-        ay = fy + st_from["h"]
-        dx = tx2 + st_to["w"] / 2 - ax
-        dy = ty2 - ay
+        if sketch_template and template == "relationship" and "curve" not in edge:
+            edge = dict(edge)
+            edge["curve"] = True
+            edge["curveOffset"] = 28 + (sum(ord(c) for c in str(eid)) % 3) * 10
+        if sketch_template and template == "flowchart" and edge.get("feedback"):
+            edge = dict(edge)
+            edge.setdefault("style", "dashed")
+        # Start/end on node boundaries.  Earlier versions started at center or
+        # fixed bottom/side points and let Excalidraw re-bind the arrow, which
+        # made heads/tails drift or cross through cards in the native editor.
+        (ax, ay), (end_x, end_y) = _edge_boundary_points(fx, fy, st_from, tx2, ty2, st_to)
+        dx = end_x - ax
+        dy = end_y - ay
         pts = [[0, 0], [dx, dy]]
         preferred_label_segment = None
         same_lane = abs((fy + st_from["h"] / 2) - (ty2 + st_to["h"] / 2)) < 30
@@ -935,20 +1067,21 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             preferred_label_segment = 1
         elif template in ("architecture", "swimlane") and abs(dy) > 20:
             lane = ((sum(ord(c) for c in str(eid)) % 5) - 2) * 12
-            mid_y = (ay + ty2) / 2 + lane
-            pts = [[0, 0], [0, mid_y - ay], [tx2 + st_to["w"] / 2 - ax, mid_y - ay], [dx, dy]]
+            mid_y = (ay + end_y) / 2 + lane
+            pts = [[0, 0], [0, mid_y - ay], [end_x - ax, mid_y - ay], [dx, dy]]
         if (direction == "horizontal" or (abs(dy) < 30 and dx != 0)) and not (
             template == "swimlane" and same_lane and tx2 < fx
         ):
-            ax = fx + st_from["w"]
-            ay = fy + st_from["h"] / 2
-            dx = tx2 - ax
-            dy = ty2 + st_to["h"] / 2 - ay
+            (ax, ay), (end_x, end_y) = _edge_boundary_points(fx, fy, st_from, tx2, ty2, st_to)
+            dx = end_x - ax
+            dy = end_y - ay
             pts = [[0, 0], [dx, dy]]
         if edge.get("curve") and len(pts) == 2:
             curve_offset = float(edge.get("curveOffset", 36))
             direction_sign = -1 if sum(ord(c) for c in str(eid)) % 2 else 1
-            pts = [[0, 0], [dx / 2, dy / 2 + curve_offset * direction_sign], [dx, dy]]
+            length = max((dx * dx + dy * dy) ** 0.5, 1)
+            nx, ny = -dy / length, dx / length
+            pts = [[0, 0], [dx / 2 + nx * curve_offset * direction_sign, dy / 2 + ny * curve_offset * direction_sign], [dx, dy]]
         arrow_id = f"arrow-{eid}"
         el = _arrow_el(
             arrow_id, ax, ay, pts, theme,
@@ -959,6 +1092,15 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             start_arrowhead=edge.get("startArrowhead"),
             end_arrowhead=edge.get("endArrowhead", "arrow"),
         )
+        if sketch_template:
+            role = {
+                "relationship": "semantic-curve",
+                "flowchart": "feedback-loop" if edge.get("feedback") else "critical-path",
+                "swimlane": "validation-loop" if edge.get("feedback") else "stage-handoff",
+                "architecture": "dependency" if edge.get("dependency") else "review-link",
+            }.get(template)
+            if role:
+                el["customData"] = {"sketchTemplateRole": role, "sketchStyle": sketch_style or "engineering-notebook"}
         elements.append(el)
         # 箭头反向绑定：起点/终点节点的 boundElements 追加该箭头
         for nid in (frm, to):
@@ -970,7 +1112,9 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
                     break
         # 边标签
         if edge.get("label"):
-            label_w = max(60, int(estimate_text_width(edge["label"], 13) + 18))
+            label_font = float(edge.get("labelFontSize") or theme.get("edgeLabelFontSize", 13))
+            label_h = max(20, label_font * 1.35)
+            label_w = max(60, int(estimate_text_width(edge["label"], label_font) + label_font * 1.4))
             # Put the label on the longest routed segment. This keeps labels
             # attached to detours instead of floating across unrelated nodes.
             segments = list(zip(pts, pts[1:]))
@@ -981,29 +1125,60 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
                     segments,
                     key=lambda pair: abs(pair[1][0] - pair[0][0]) + abs(pair[1][1] - pair[0][1]),
                 )
-            lx = ax + (p1[0] + p2[0]) / 2 - label_w / 2
-            ly = ay + (p1[1] + p2[1]) / 2 - 14
+            seg_dx, seg_dy = p2[0] - p1[0], p2[1] - p1[1]
+            seg_len = max((seg_dx * seg_dx + seg_dy * seg_dy) ** 0.5, 1)
+            nx, ny = -seg_dy / seg_len, seg_dx / seg_len
+            # Prefer labels above mostly horizontal arrows; otherwise use a
+            # deterministic side so neighboring labels do not pile up.
+            if abs(seg_dx) >= abs(seg_dy):
+                if ny > 0:
+                    nx, ny = -nx, -ny
+            elif (sum(ord(c) for c in str(eid)) % 2) and nx > 0:
+                nx, ny = -nx, -ny
+            elif not (sum(ord(c) for c in str(eid)) % 2) and nx < 0:
+                nx, ny = -nx, -ny
+            label_offset = float(edge.get("labelOffset") or theme.get("edgeLabelOffset", 10))
+            if sketch_template and template == "relationship":
+                label_offset = max(label_offset, 55)
+            mx = ax + (p1[0] + p2[0]) / 2 + nx * label_offset
+            my = ay + (p1[1] + p2[1]) / 2 + ny * label_offset
+            lx = mx - label_w / 2
+            ly = my - label_h / 2
             elements.append(_text_el(
                 f"elbl-{eid}", lx, ly, edge["label"], theme,
-                fontSize=13, w=label_w, h=20,
+                fontSize=label_font, w=label_w, h=label_h,
                 color=edge.get("labelColor") or edge.get("color") or theme["lineColor"],
             ))
 
     # 6. 标题
     if ir.get("title"):
+        title = str(ir["title"])
         min_x = min((positions[nid][0] for nid in positions), default=40)
         max_x = max(
             (positions[nid][0] + node_styles.get(nid, {"w": 0})["w"] for nid in positions),
             default=440,
         )
         min_y = min((positions[nid][1] for nid in positions), default=60)
-        title_w = max(400, int(estimate_text_width(ir["title"], 24) + 40))
-        title_x = min_x + (max_x - min_x - title_w) / 2
-        title_y = max(10, min_y - 90)
-        elements.append(_text_el(
-            "title-0", title_x, title_y, ir["title"], theme,
-            fontSize=24, w=title_w, h=30, color=theme["titleColor"],
-        ))
+        title_y = max(10, min_y - (125 if theme.get("cjkFontFamily") else 90))
+        if theme.get("cjkFontFamily") and "·" in title and _has_cjk(title):
+            cjk_title, english_title = [part.strip() for part in title.split("·", 1)]
+            title_w = max(420, int(max(estimate_text_width(cjk_title, 24), estimate_text_width(english_title, 24)) + 80))
+            title_x = min_x + (max_x - min_x - title_w) / 2
+            elements.append(_text_el(
+                "title-0-cjk", title_x, title_y, cjk_title, theme,
+                fontSize=24, w=title_w, h=30, color=theme["titleColor"],
+            ))
+            elements.append(_text_el(
+                "title-0-en", title_x, title_y + 28, english_title, theme,
+                fontSize=22, w=title_w, h=28, color=theme["titleColor"],
+            ))
+        else:
+            title_w = max(400, int(estimate_text_width(title, 24) + 40))
+            title_x = min_x + (max_x - min_x - title_w) / 2
+            elements.append(_text_el(
+                "title-0", title_x, title_y, title, theme,
+                fontSize=24, w=title_w, h=30, color=theme["titleColor"],
+            ))
 
     # 6.5 云架构图标注入（C.7，借鉴 excalidraw-icons-mcp）
     # 架构图节点按 label 匹配技术名，叠加 image 元素 + files 资源
@@ -1056,6 +1231,9 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             "gridSize": 20,
         },
     }
+    if theme_key == "sketch":
+        result["appState"]["sketchStyle"] = sketch_style or "engineering-notebook"
+        result["appState"]["sketchTemplate"] = template
     if cjk_font_family:
         result["appState"]["cjkFontFamily"] = str(cjk_font_family)
         result["appState"]["cjkFontFallbacks"] = [str(name) for name in cjk_font_fallbacks]
@@ -1066,7 +1244,7 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
     # 标题(1) → 框架(2) → 主要节点(3) → 连线(4) → 细节文字(5)
     for el in elements:
         etype = el["type"]
-        if etype == "text" and el.get("id") == "title-0":
+        if etype == "text" and str(el.get("id", "")).startswith("title-0"):
             el["customData"] = {**(el.get("customData") or {}), "animate": {"order": 1, "duration": 400, "type": "fade-in"}}
         elif etype == "frame":
             el["customData"] = {**(el.get("customData") or {}), "animate": {"order": 2, "duration": 400, "type": "fade-in"}}
@@ -1091,15 +1269,15 @@ EXAMPLES = {
         "template": "relationship",
         "theme": "sketch",
         "nodes": [
-            {"id": "tr01", "label": "内部短路\nINTERNAL SHORT", "type": "note", "style": "#ffe3e3", "font": "hand", "strokeColor": "#e03131", "strokeWidth": 2, "position": {"x": 100, "y": 170}},
-            {"id": "tr02", "label": "过充电\nOVERCHARGE", "type": "note", "style": "#ffe3e3", "font": "hand", "strokeColor": "#e03131", "strokeWidth": 2, "position": {"x": 100, "y": 350}},
-            {"id": "tr03", "label": "外部加热\nEXTERNAL HEAT", "type": "note", "style": "#ffe3e3", "font": "hand", "strokeColor": "#e03131", "strokeWidth": 2, "position": {"x": 100, "y": 530}},
-            {"id": "tr04", "label": "SEI 膜分解\nSEI DECOMPOSITION", "type": "callout", "style": "#fff3bf", "font": "mono", "fontSize": 17, "strokeColor": "#f08c00", "strokeStyle": "dashed", "strokeWidth": 2, "position": {"x": 540, "y": 160}},
-            {"id": "tr05", "label": "电芯热失控\nTHERMAL RUNAWAY", "type": "topic", "style": "#ffc9c9", "font": "hand", "fontSize": 25, "strokeColor": "#c92a2a", "strokeWidth": 4, "position": {"x": 520, "y": 340}},
-            {"id": "tr06", "label": "放热链式反应\nEXOTHERMIC CHAIN", "type": "callout", "style": "#ffe8cc", "font": "mono", "fontSize": 17, "strokeColor": "#e8590c", "strokeStyle": "dashed", "strokeWidth": 2, "position": {"x": 540, "y": 540}},
-            {"id": "tr07", "label": "多源早期预警\nEARLY WARNING", "type": "note", "style": "#d3f9d8", "font": "hand", "strokeColor": "#2b8a3e", "strokeWidth": 2, "position": {"x": 1020, "y": 170}},
-            {"id": "tr08", "label": "热阻隔与定向排气\nTHERMAL BARRIER", "type": "note", "style": "#dbe4ff", "font": "hand", "strokeColor": "#1971c2", "strokeWidth": 2, "position": {"x": 1020, "y": 350}},
-            {"id": "tr09", "label": "液冷快速抑制\nLIQUID COOLING", "type": "note", "style": "#d3f9d8", "font": "hand", "strokeColor": "#2b8a3e", "strokeWidth": 2, "position": {"x": 1020, "y": 530}},
+            {"id": "tr01", "label": "内部短路\nINTERNAL SHORT", "type": "note", "style": "#ffe3e3", "font": "hand", "strokeColor": "#e03131", "strokeWidth": 2, "position": {"x": 100, "y": 250}},
+            {"id": "tr02", "label": "过充电\nOVERCHARGE", "type": "note", "style": "#ffe3e3", "font": "hand", "strokeColor": "#e03131", "strokeWidth": 2, "position": {"x": 100, "y": 430}},
+            {"id": "tr03", "label": "外部加热\nEXTERNAL HEAT", "type": "note", "style": "#ffe3e3", "font": "hand", "strokeColor": "#e03131", "strokeWidth": 2, "position": {"x": 100, "y": 610}},
+            {"id": "tr04", "label": "SEI 膜分解\nSEI DECOMPOSITION", "type": "callout", "style": "#fff3bf", "font": "mono", "fontSize": 17, "strokeColor": "#f08c00", "strokeStyle": "dashed", "strokeWidth": 2, "position": {"x": 540, "y": 240}},
+            {"id": "tr05", "label": "电芯热失控\nTHERMAL RUNAWAY", "type": "topic", "style": "#ffc9c9", "font": "hand", "fontSize": 25, "strokeColor": "#c92a2a", "strokeWidth": 4, "position": {"x": 520, "y": 420}},
+            {"id": "tr06", "label": "放热链式反应\nEXOTHERMIC CHAIN", "type": "callout", "style": "#ffe8cc", "font": "mono", "fontSize": 17, "strokeColor": "#e8590c", "strokeStyle": "dashed", "strokeWidth": 2, "position": {"x": 540, "y": 620}},
+            {"id": "tr07", "label": "多源早期预警\nEARLY WARNING", "type": "note", "style": "#d3f9d8", "font": "hand", "strokeColor": "#2b8a3e", "strokeWidth": 2, "position": {"x": 1020, "y": 250}},
+            {"id": "tr08", "label": "热阻隔与定向排气\nTHERMAL BARRIER", "type": "note", "style": "#dbe4ff", "font": "hand", "strokeColor": "#1971c2", "strokeWidth": 2, "position": {"x": 1020, "y": 430}},
+            {"id": "tr09", "label": "液冷快速抑制\nLIQUID COOLING", "type": "note", "style": "#d3f9d8", "font": "hand", "strokeColor": "#2b8a3e", "strokeWidth": 2, "position": {"x": 1020, "y": 610}},
         ],
         "edges": [
             {"id": "tre01", "from": "tr01", "to": "tr05", "curve": True, "curveOffset": 34, "color": "#e03131", "strokeWidth": 2},
