@@ -6,13 +6,14 @@
 
 ### Changed (unreleased)
 
-- `sketch` 主题对齐本地 Excalidraw 的 Long Cang（12）、Ma Shan Zheng（11）、Liu Jian Mao Cao（13）中文手写字体，英文继续使用 Virgil；SVG/PNG/PDF 复用 `localhost:5001` 字体资产，服务不可用时回退本机字体。
+- 修复 42 个当前交付场景中 273 条遗留箭头的 `width/height` 与 `points` 范围不一致；静态模板构造同步修正，并新增 `validate_excalidraw.py --fix-arrow-geometry` 确定性迁移入口和回归测试。历史恢复备份保持不动。
+- 全部 10 种模板和 4 套主题统一采用中文手写字体策略：默认 Ma Shan Zheng（11），可切换 Long Cang（12）或 Liu Jian Mao Cao（13）；default/sketch 的纯英文保留 Virgil，minimal/blueprint 的纯英文保留 Helvetica。生成器、内置 Library 标签、静态模板预览和 strict 视觉校验使用同一规则。
 - 新增可选 `visual_contract`：每张画布声明 3–6 条决定性事实、来源引用、目标 IR 节点/边和受控视觉家族；strict 视觉校验拒绝无来源图形、悬空目标和未声明家族。
 - 生成元素写入 `semanticRole`、`visualFactIds`、`visualSources`、`visualFamily` 与提案状态；新增来源锁定 fixture、确定性转换和负向回归，未声明契约的旧 IR 保持兼容。
 
 - 新增 `thermal-runaway` 手绘双语研究分析板；IR 支持 `note/callout`、多行文字自动尺寸、hand/sans/mono 字体层级，以及曲线、颜色、粗细、虚线和箭头端点控制。
 
-- 新增电池包热管理多物理场仿真视觉基准案例（minimal 四列工程架构及 Excalidraw/PNG/SVG/PDF）；minimal/blueprint 改用无衬线字体，minimal 线条改为工程灰。
+- 新增电池包热管理多物理场仿真视觉基准案例（minimal 四列工程架构及 Excalidraw/PNG/SVG/PDF）；minimal/blueprint 的纯英文使用无衬线字体、中文使用手写体，minimal 线条改为工程灰。
 
 - 新增稳定 FEA 工程有限元流程示例（IR、Excalidraw、SVG/PNG/PDF）及工程关键词模板推荐；视觉复核后改为四阶段横向泳道、阶段居中、外侧返回回路和标签自适应宽度。
 
@@ -44,3 +45,4 @@
 # v0.0.1 sketch system update
 
 - Added five self-authored sketch presets, four template behaviors, active selection recommendation, visual rules, and two engineering case studies. Version remains v0.0.1.
+- Consolidated all 10 templates into four user-facing categories and added three-card interactive choices with best-fit/avoid guidance while retaining CLI and IR compatibility.

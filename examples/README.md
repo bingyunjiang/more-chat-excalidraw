@@ -93,11 +93,11 @@
 
 ## 白底极简工程架构示例
 
-`battery-thermal-ir.json` 描述电池包热管理多物理场仿真架构，使用四列分区、低饱和配色和无衬线字体。运行 `python3 scripts/ir_to_excalidraw.py --example battery-thermal --output examples/battery-thermal.excalidraw --validate` 可确定性重建。
+`battery-thermal-ir.json` 描述电池包热管理多物理场仿真架构，使用四列分区和低饱和配色；中文使用 Ma Shan Zheng 手写体，纯英文保留 minimal 主题的 Helvetica。运行 `python3 scripts/ir_to_excalidraw.py --example battery-thermal --output examples/battery-thermal.excalidraw --validate` 可确定性重建。
 
 ## Excalidraw 手绘分析板
 
-`thermal-runaway-ir.json` 描述电芯热失控的触发源、失控机理和防护策略，使用双语多行便签、中文 `Long Cang`（龙藏体）+ 英文 Virgil 字体层级、彩色曲线箭头、虚线机理链和手绘分组框。Long Cang、Ma Shan Zheng、Liu Jian Mao Cao 直接复用 `localhost:5001` 已有的 Excalidraw 字体资产；服务不可用时回退本机手写字体。运行 `python3 scripts/ir_to_excalidraw.py --example thermal-runaway --output examples/thermal-runaway.excalidraw --validate` 可确定性重建。
+`thermal-runaway-ir.json` 描述电芯热失控的触发源、失控机理和防护策略，使用双语多行便签、中文 Ma Shan Zheng + 英文 Virgil 字体层级、彩色曲线箭头、虚线机理链和手绘分组框。Long Cang、Ma Shan Zheng、Liu Jian Mao Cao 直接复用 `localhost:5001` 已有的 Excalidraw 字体资产；服务不可用时回退本机手写字体。运行 `python3 scripts/ir_to_excalidraw.py --example thermal-runaway --output examples/thermal-runaway.excalidraw --validate` 可确定性重建。
 
 ## 内置 Library
 

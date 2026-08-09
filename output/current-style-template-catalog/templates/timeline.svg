@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="520" height="300" viewBox="20 -10 520 300">
 <rect x="20" y="-10" width="520" height="300" fill="#ffffff"/>
 <defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#868e96"/></marker></defs>
-<text x="260" y="50" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#1e1e1e">项目里程碑</text>
+<text x="260" y="50" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="&quot;Ma Shan Zheng&quot;, &quot;Long Cang&quot;, &quot;Liu Jian Mao Cao&quot;, &quot;Hannotate SC&quot;, &quot;HanziPen SC&quot;, &quot;Wawati SC&quot;, &quot;Kaiti SC&quot;, &quot;PingFang SC&quot;, sans-serif" fill="#1e1e1e">项目里程碑</text>
 <path d="M60.0,100.0 L500.0,100.0" fill="none" stroke="#1e1e1e" stroke-width="3"/>
 <path d="M100.0,90.0 L100.0,110.0" fill="none" stroke="#1e1e1e" stroke-width="2"/>
 <ellipse cx="100" cy="90" rx="7" ry="7" fill="#a5d8ff" stroke="#1e1e1e" stroke-width="2"/>

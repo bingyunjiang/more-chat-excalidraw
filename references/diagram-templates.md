@@ -1,8 +1,10 @@
 # 图表模板与布局规范
 
-先选类型，再按对应布局生成。默认画布方向：节点按从上到下、从左到右排布，间距 60–80px；字体 20–28px。
+先选类型，再按对应布局生成。默认画布方向：节点按从上到下、从左到右排布，间距 60–80px；字体 20–28px。以下所有模板示例中的中文使用 Ma Shan Zheng（fontFamily 11）；纯英文由主题决定使用 Virgil 或 Helvetica。
 
 ## 模板选择
+
+交互时优先使用 [template-choice-guide.md](template-choice-guide.md) 的四类目录和候选卡；本文件保留各模板的生成细节。不要一次向用户展示全部 10 个模板。
 
 | 用户意图 | 模板 | 核心结构 |
 |---|---|---|
@@ -68,7 +70,7 @@
       "roundness": null, "seed": 3, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "处理步骤", "fontSize": 24, "fontFamily": 1,
+      "text": "处理步骤", "fontSize": 24, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "proc-1", "originalText": "处理步骤",
       "lineHeight": 1.25
@@ -178,7 +180,7 @@
       "roundness": null, "seed": 14, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "Web 前端", "fontSize": 20, "fontFamily": 1,
+      "text": "Web 前端", "fontSize": 20, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "web-1", "originalText": "Web 前端", "lineHeight": 1.25
     },
@@ -202,7 +204,7 @@
       "roundness": null, "seed": 16, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "API 网关", "fontSize": 20, "fontFamily": 1,
+      "text": "API 网关", "fontSize": 20, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "api-1", "originalText": "API 网关", "lineHeight": 1.25
     },
@@ -226,7 +228,7 @@
       "roundness": null, "seed": 18, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "订单服务", "fontSize": 20, "fontFamily": 1,
+      "text": "订单服务", "fontSize": 20, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "svc-1", "originalText": "订单服务", "lineHeight": 1.25
     },
@@ -317,7 +319,7 @@
       "roundness": null, "seed": 31, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "用户", "fontSize": 18, "fontFamily": 1,
+      "text": "用户", "fontSize": 18, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "actor-1", "originalText": "用户", "lineHeight": 1.25
     },
@@ -341,7 +343,7 @@
       "roundness": null, "seed": 33, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "服务端", "fontSize": 18, "fontFamily": 1,
+      "text": "服务端", "fontSize": 18, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "actor-2", "originalText": "服务端", "lineHeight": 1.25
     },
@@ -365,7 +367,7 @@
       "roundness": null, "seed": 35, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "数据库", "fontSize": 18, "fontFamily": 1,
+      "text": "数据库", "fontSize": 18, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "actor-3", "originalText": "数据库", "lineHeight": 1.25
     },
@@ -424,7 +426,7 @@
       "roundness": null, "seed": 40, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "1. 发送请求", "fontSize": 16, "fontFamily": 1,
+      "text": "1. 发送请求", "fontSize": 16, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "middle",
       "containerId": null, "originalText": "1. 发送请求", "lineHeight": 1.25
     },
@@ -450,7 +452,7 @@
       "roundness": null, "seed": 42, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "2. 查询数据", "fontSize": 16, "fontFamily": 1,
+      "text": "2. 查询数据", "fontSize": 16, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "middle",
       "containerId": null, "originalText": "2. 查询数据", "lineHeight": 1.25
     },
@@ -476,7 +478,7 @@
       "roundness": null, "seed": 44, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "3. 返回结果", "fontSize": 16, "fontFamily": 1,
+      "text": "3. 返回结果", "fontSize": 16, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "middle",
       "containerId": null, "originalText": "3. 返回结果", "lineHeight": 1.25
     }
@@ -517,7 +519,7 @@
       "roundness": null, "seed": 51, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "中心主题", "fontSize": 22, "fontFamily": 1,
+      "text": "中心主题", "fontSize": 22, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "center", "originalText": "中心主题", "lineHeight": 1.25
     },
@@ -541,7 +543,7 @@
       "roundness": null, "seed": 53, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "分支 1", "fontSize": 18, "fontFamily": 1,
+      "text": "分支 1", "fontSize": 18, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "branch-1", "originalText": "分支 1", "lineHeight": 1.25
     },
@@ -565,7 +567,7 @@
       "roundness": null, "seed": 55, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "分支 2", "fontSize": 18, "fontFamily": 1,
+      "text": "分支 2", "fontSize": 18, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "branch-2", "originalText": "分支 2", "lineHeight": 1.25
     },
@@ -589,7 +591,7 @@
       "roundness": null, "seed": 57, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "分支 3", "fontSize": 18, "fontFamily": 1,
+      "text": "分支 3", "fontSize": 18, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "branch-3", "originalText": "分支 3", "lineHeight": 1.25
     },
@@ -641,7 +643,7 @@
       "roundness": null, "seed": 61, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "  └ 子项 1", "fontSize": 14, "fontFamily": 1,
+      "text": "  └ 子项 1", "fontSize": 14, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "top",
       "containerId": null, "originalText": "  └ 子项 1", "lineHeight": 1.25
     },
@@ -654,7 +656,7 @@
       "roundness": null, "seed": 62, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "  └ 子项 2", "fontSize": 14, "fontFamily": 1,
+      "text": "  └ 子项 2", "fontSize": 14, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "top",
       "containerId": null, "originalText": "  └ 子项 2", "lineHeight": 1.25
     }
@@ -704,7 +706,7 @@
       "roundness": null, "seed": 72, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "前端团队", "fontSize": 16, "fontFamily": 1,
+      "text": "前端团队", "fontSize": 16, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "top",
       "containerId": null, "originalText": "前端团队", "lineHeight": 1.25
     },
@@ -717,7 +719,7 @@
       "roundness": null, "seed": 73, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "后端团队", "fontSize": 16, "fontFamily": 1,
+      "text": "后端团队", "fontSize": 16, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "top",
       "containerId": null, "originalText": "后端团队", "lineHeight": 1.25
     },
@@ -741,7 +743,7 @@
       "roundness": null, "seed": 75, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "设计页面", "fontSize": 16, "fontFamily": 1,
+      "text": "设计页面", "fontSize": 16, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "step-sw-1", "originalText": "设计页面", "lineHeight": 1.25
     },
@@ -765,7 +767,7 @@
       "roundness": null, "seed": 77, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "发版测试", "fontSize": 16, "fontFamily": 1,
+      "text": "发版测试", "fontSize": 16, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "step-sw-2", "originalText": "发版测试", "lineHeight": 1.25
     },
@@ -789,7 +791,7 @@
       "roundness": null, "seed": 79, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "开发 API", "fontSize": 16, "fontFamily": 1,
+      "text": "开发 API", "fontSize": 16, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "step-sw-3", "originalText": "开发 API", "lineHeight": 1.25
     },
@@ -856,7 +858,7 @@
       "roundness": null, "seed": 91, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "用户", "fontSize": 20, "fontFamily": 1,
+      "text": "用户", "fontSize": 20, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "entity-1", "originalText": "用户", "lineHeight": 1.25
     },
@@ -869,7 +871,7 @@
       "roundness": null, "seed": 92, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "PK 用户ID | 姓名", "fontSize": 12, "fontFamily": 1,
+      "text": "PK 用户ID | 姓名", "fontSize": 12, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "top",
       "containerId": null, "originalText": "PK 用户ID | 姓名", "lineHeight": 1.25
     },
@@ -893,7 +895,7 @@
       "roundness": null, "seed": 94, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "订单", "fontSize": 20, "fontFamily": 1,
+      "text": "订单", "fontSize": 20, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "entity-2", "originalText": "订单", "lineHeight": 1.25
     },
@@ -906,7 +908,7 @@
       "roundness": null, "seed": 95, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "PK 订单ID | 用户ID(FK)", "fontSize": 12, "fontFamily": 1,
+      "text": "PK 订单ID | 用户ID(FK)", "fontSize": 12, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "top",
       "containerId": null, "originalText": "PK 订单ID | 用户ID(FK)", "lineHeight": 1.25
     },
@@ -930,7 +932,7 @@
       "roundness": null, "seed": 97, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "拥有", "fontSize": 16, "fontFamily": 1,
+      "text": "拥有", "fontSize": 16, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "rel-1", "originalText": "拥有", "lineHeight": 1.25
     },
@@ -1025,7 +1027,7 @@
       "roundness": null, "seed": 111, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "根节点", "fontSize": 18, "fontFamily": 1,
+      "text": "根节点", "fontSize": 18, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "hi-root", "originalText": "根节点", "lineHeight": 1.25
     },
@@ -1049,7 +1051,7 @@
       "roundness": null, "seed": 113, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "子节点 A", "fontSize": 16, "fontFamily": 1,
+      "text": "子节点 A", "fontSize": 16, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "hi-l1-1", "originalText": "子节点 A", "lineHeight": 1.25
     },
@@ -1073,7 +1075,7 @@
       "roundness": null, "seed": 115, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "子节点 B", "fontSize": 16, "fontFamily": 1,
+      "text": "子节点 B", "fontSize": 16, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "hi-l1-2", "originalText": "子节点 B", "lineHeight": 1.25
     },
@@ -1097,7 +1099,7 @@
       "roundness": null, "seed": 117, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "子节点 C", "fontSize": 16, "fontFamily": 1,
+      "text": "子节点 C", "fontSize": 16, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "hi-l1-3", "originalText": "子节点 C", "lineHeight": 1.25
     },
@@ -1110,7 +1112,7 @@
       "roundness": null, "seed": 118, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "  └ 叶节点 1", "fontSize": 13, "fontFamily": 1,
+      "text": "  └ 叶节点 1", "fontSize": 13, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "top",
       "containerId": null, "originalText": "  └ 叶节点 1", "lineHeight": 1.25
     },
@@ -1123,7 +1125,7 @@
       "roundness": null, "seed": 119, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "  └ 叶节点 2", "fontSize": 13, "fontFamily": 1,
+      "text": "  └ 叶节点 2", "fontSize": 13, "fontFamily": 11,
       "textAlign": "left", "verticalAlign": "top",
       "containerId": null, "originalText": "  └ 叶节点 2", "lineHeight": 1.25
     },
@@ -1203,7 +1205,7 @@
       "roundness": null, "seed": 131, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "服务 A", "fontSize": 16, "fontFamily": 1,
+      "text": "服务 A", "fontSize": 16, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "rel-node-1", "originalText": "服务 A", "lineHeight": 1.25
     },
@@ -1227,7 +1229,7 @@
       "roundness": null, "seed": 133, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "服务 B", "fontSize": 16, "fontFamily": 1,
+      "text": "服务 B", "fontSize": 16, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "rel-node-2", "originalText": "服务 B", "lineHeight": 1.25
     },
@@ -1251,7 +1253,7 @@
       "roundness": null, "seed": 135, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "服务 C", "fontSize": 16, "fontFamily": 1,
+      "text": "服务 C", "fontSize": 16, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "rel-node-3", "originalText": "服务 C", "lineHeight": 1.25
     },
@@ -1277,7 +1279,7 @@
       "roundness": null, "seed": 137, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "REST 调用", "fontSize": 12, "fontFamily": 1,
+      "text": "REST 调用", "fontSize": 12, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": null, "originalText": "REST 调用", "lineHeight": 1.25
     },
@@ -1303,7 +1305,7 @@
       "roundness": null, "seed": 139, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "消息队列", "fontSize": 12, "fontFamily": 1,
+      "text": "消息队列", "fontSize": 12, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": null, "originalText": "消息队列", "lineHeight": 1.25
     },
@@ -1359,7 +1361,7 @@
       "roundness": null, "seed": 150, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "方案对比：A vs B", "fontSize": 22, "fontFamily": 1,
+      "text": "方案对比：A vs B", "fontSize": 22, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "top",
       "containerId": null, "originalText": "方案对比：A vs B", "lineHeight": 1.25
     },
@@ -1383,7 +1385,7 @@
       "roundness": null, "seed": 152, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "方案 A", "fontSize": 18, "fontFamily": 1,
+      "text": "方案 A", "fontSize": 18, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "header-a", "originalText": "方案 A", "lineHeight": 1.25
     },
@@ -1407,7 +1409,7 @@
       "roundness": null, "seed": 154, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "方案 B", "fontSize": 18, "fontFamily": 1,
+      "text": "方案 B", "fontSize": 18, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": "header-b", "originalText": "方案 B", "lineHeight": 1.25
     },
@@ -1420,7 +1422,7 @@
       "roundness": null, "seed": 155, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "性能", "fontSize": 16, "fontFamily": 1,
+      "text": "性能", "fontSize": 16, "fontFamily": 11,
       "textAlign": "right", "verticalAlign": "middle",
       "containerId": null, "originalText": "性能", "lineHeight": 1.25
     },
@@ -1433,7 +1435,7 @@
       "roundness": null, "seed": 156, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "⭐⭐⭐⭐ 高吞吐", "fontSize": 14, "fontFamily": 1,
+      "text": "⭐⭐⭐⭐ 高吞吐", "fontSize": 14, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": null, "originalText": "⭐⭐⭐⭐ 高吞吐", "lineHeight": 1.25
     },
@@ -1446,7 +1448,7 @@
       "roundness": null, "seed": 157, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "⭐⭐⭐ 中等", "fontSize": 14, "fontFamily": 1,
+      "text": "⭐⭐⭐ 中等", "fontSize": 14, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": null, "originalText": "⭐⭐⭐ 中等", "lineHeight": 1.25
     },
@@ -1459,7 +1461,7 @@
       "roundness": null, "seed": 158, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "成本", "fontSize": 16, "fontFamily": 1,
+      "text": "成本", "fontSize": 16, "fontFamily": 11,
       "textAlign": "right", "verticalAlign": "middle",
       "containerId": null, "originalText": "成本", "lineHeight": 1.25
     },
@@ -1472,7 +1474,7 @@
       "roundness": null, "seed": 159, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "💰💰 中等", "fontSize": 14, "fontFamily": 1,
+      "text": "💰💰 中等", "fontSize": 14, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": null, "originalText": "💰💰 中等", "lineHeight": 1.25
     },
@@ -1485,7 +1487,7 @@
       "roundness": null, "seed": 160, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "💰💰💰 较高", "fontSize": 14, "fontFamily": 1,
+      "text": "💰💰💰 较高", "fontSize": 14, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": null, "originalText": "💰💰💰 较高", "lineHeight": 1.25
     },
@@ -1498,7 +1500,7 @@
       "roundness": null, "seed": 161, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "学习曲线", "fontSize": 16, "fontFamily": 1,
+      "text": "学习曲线", "fontSize": 16, "fontFamily": 11,
       "textAlign": "right", "verticalAlign": "middle",
       "containerId": null, "originalText": "学习曲线", "lineHeight": 1.25
     },
@@ -1511,7 +1513,7 @@
       "roundness": null, "seed": 162, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "⭐ 简单", "fontSize": 14, "fontFamily": 1,
+      "text": "⭐ 简单", "fontSize": 14, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": null, "originalText": "⭐ 简单", "lineHeight": 1.25
     },
@@ -1524,7 +1526,7 @@
       "roundness": null, "seed": 163, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "⭐⭐⭐ 中等", "fontSize": 14, "fontFamily": 1,
+      "text": "⭐⭐⭐ 中等", "fontSize": 14, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "middle",
       "containerId": null, "originalText": "⭐⭐⭐ 中等", "lineHeight": 1.25
     },
@@ -1565,7 +1567,7 @@
       "roundness": null, "seed": 170, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "项目里程碑", "fontSize": 22, "fontFamily": 1,
+      "text": "项目里程碑", "fontSize": 22, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "top",
       "containerId": null, "originalText": "项目里程碑", "lineHeight": 1.25
     },
@@ -1686,7 +1688,7 @@
       "roundness": null, "seed": 181, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "需求\n分析", "fontSize": 14, "fontFamily": 1,
+      "text": "需求\n分析", "fontSize": 14, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "top",
       "containerId": null, "originalText": "需求分析", "lineHeight": 1.25
     },
@@ -1712,7 +1714,7 @@
       "roundness": null, "seed": 183, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "原型\n设计", "fontSize": 14, "fontFamily": 1,
+      "text": "原型\n设计", "fontSize": 14, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "top",
       "containerId": null, "originalText": "原型设计", "lineHeight": 1.25
     },
@@ -1738,7 +1740,7 @@
       "roundness": null, "seed": 185, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "开发\n迭代", "fontSize": 14, "fontFamily": 1,
+      "text": "开发\n迭代", "fontSize": 14, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "top",
       "containerId": null, "originalText": "开发迭代", "lineHeight": 1.25
     },
@@ -1764,7 +1766,7 @@
       "roundness": null, "seed": 187, "version": 1, "versionNonce": 0,
       "isDeleted": false, "boundElements": null, "updated": 1,
       "link": null, "locked": false,
-      "text": "上线\n发布", "fontSize": 14, "fontFamily": 1,
+      "text": "上线\n发布", "fontSize": 14, "fontFamily": 11,
       "textAlign": "center", "verticalAlign": "top",
       "containerId": null, "originalText": "上线发布", "lineHeight": 1.25
     }

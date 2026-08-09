@@ -88,6 +88,7 @@
 - JSON 可解析；`type` 为 `excalidraw`，`version` 为 2
 - `elements` 存在且为数组
 - 每个元素具备 `id/type/x/y`；`width/height` 为数字
+- 箭头 `width/height` 等于本地 `points` 的横纵范围；旧文件可用 `validate_excalidraw.py --fix-arrow-geometry` 自动规范
 - `id` 全局唯一
 - `boundElements[].id`、`containerId`、`frameId`、`startBinding.elementId`、`endBinding.elementId` 引用的元素存在
 - 文本元素必须有非空 `text` 字段

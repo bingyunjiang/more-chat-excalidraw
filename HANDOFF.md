@@ -76,13 +76,15 @@ node scripts/mcp_server.mjs   # 工具: generate_diagram / validate_diagram / pu
 ## 本轮已完成与仍待验证
 
 - 新增 `thermal-runaway` 手绘双语分析板及四格式产物；中文、英文手绘注记、便签框、彩色曲线箭头和虚线机理链已目检。
-- 新增 `battery-thermal` 白底极简工程架构视觉基准及四格式产物；四列布局、无衬线字体和洁净裁切已目检。
+- 新增 `battery-thermal` 白底极简工程架构视觉基准及四格式产物；四列布局、中文手写体/英文 Helvetica 分流和洁净裁切已目检。
+- 全部 10 种模板 × 4 套主题现执行统一字体策略：中文默认 Ma Shan Zheng（11），纯英文保留主题原生字体；静态模板预览和 Library 标签同步覆盖。
+- 已修复 42 个当前场景的 273 条遗留箭头几何字段；53 个非 neato 当前场景 strict visual 全通过，neato 测试图仅保留布局拥挤提示、箭头 warning 为 0。
 - 新增 `fea` 工程有限元流程示例及四格式产物；经 PNG 目检优化为四阶段横向泳道，严格视觉、洁净裁切与确定性已验证。
 - 核心 Library 已 self-authored MIT 内置；第三方缓存仅作可选覆盖且 needs_verification。
 
 - 已完成：web 依赖声明与 build:all、CI 构建、MCP 实际调用、默认确定性、Library 两阶段布局、跨平台 opener 安全调用。
 - 已完成：Library 代表性 `--visual` 校验与本地缓存 SHA-256 清单。
-- 已在当前 macOS 环境完成 `npm ci`、web bundle 构建与 45 项 e2e；尚未在真实 Windows/Linux 桌面实机验证浏览器/服务启动。
+- 已在当前 macOS 环境完成 `npm ci`、web bundle 构建与 56 项 e2e（0 warning / 0 fail）；尚未在真实 Windows/Linux 桌面实机验证浏览器/服务启动。
 
 ## 已知问题与后续
 
@@ -113,5 +115,7 @@ cd4cdbb feat: initial commit
 # Current sketch handoff
 
 Sketch presets and case outputs are generated and strict-validated. Re-run `bash scripts/test_e2e.sh` after any renderer/font environment change; browser font availability remains an environment boundary.
+
+The 10 templates are consolidated into four user-facing categories. `template_selector.py --choices "<intent>"` now returns one recommendation plus at most two distinct alternatives; template-only requests enter `select_style`, style-only requests enter `select_template`, and only fully explicit/direct-select requests skip confirmation. The legacy `--list/--info/--params/--recommend` surfaces remain compatible.
 
 The localhost:5001 build may ignore scene `scrollY` and invisible viewport spacers during auto-fit, so editor toolbar overlap is not automatically preventable; use PNG/SVG for formal visual acceptance or pan manually.

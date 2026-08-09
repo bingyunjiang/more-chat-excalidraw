@@ -112,6 +112,13 @@ const THEMES = {
   minimal: { name: '极简', roughness: 0, strokeWidth: 1, strokeColor: '#000000' }
 };
 
+const CJK_FONT_FAMILY = 'Ma Shan Zheng';
+const CJK_FONT_FALLBACKS = [
+  'Long Cang', 'Liu Jian Mao Cao', 'Hannotate SC',
+  'HanziPen SC', 'Wawati SC', 'Kaiti SC', 'PingFang SC',
+];
+const hasCjk = (value) => /[\u2E80-\u9FFF\uF900-\uFAFF]/u.test(String(value));
+
 function listTemplates(format) {
   if (format === 'json') {
     console.log(JSON.stringify({ templates: TEMPLATES, themes: THEMES }, null, 2));
@@ -157,11 +164,18 @@ function buildTemplateScene(name) {
     ...extra,
   });
   const txt = (id, x, y, text, containerId = null, fontSize = 18, w = 100, h = 24) => mk(id, 'text', x, y, w, h, {
-    text, fontSize, fontFamily: 1, textAlign: 'center', verticalAlign: 'middle',
+    text, fontSize, fontFamily: hasCjk(text) ? 11 : 1, textAlign: 'center', verticalAlign: 'middle',
     containerId, originalText: text, lineHeight: 1.25,
+    customData: {
+      cjkFontFamily: CJK_FONT_FAMILY,
+      cjkFontFallbacks: CJK_FONT_FALLBACKS,
+    },
   });
   const arrow = (id, x, y, pts, startId, endId) => ({
-    id, type: 'arrow', x, y, width: 0, height: 0, angle: 0,
+    id, type: 'arrow', x, y,
+    width: Math.max(...pts.map((point) => point[0])) - Math.min(...pts.map((point) => point[0])),
+    height: Math.max(...pts.map((point) => point[1])) - Math.min(...pts.map((point) => point[1])),
+    angle: 0,
     strokeColor: '#868e96', backgroundColor: 'transparent',
     fillStyle: 'solid', strokeWidth: 2, strokeStyle: 'solid',
     roughness: 1, opacity: 100, groupIds: [], frameId: null,
@@ -374,7 +388,14 @@ function previewTemplate(name, outDir) {
     if (svgRenderer) {
       const scene = buildTemplateScene(key);
       const { svg } = svgRenderer.renderSvgFromScene(
-        { type: 'excalidraw', version: 2, elements: scene.elements, appState: { viewBackgroundColor: '#ffffff' } },
+        {
+          type: 'excalidraw', version: 2, elements: scene.elements,
+          appState: {
+            viewBackgroundColor: '#ffffff',
+            cjkFontFamily: CJK_FONT_FAMILY,
+            cjkFontFallbacks: CJK_FONT_FALLBACKS,
+          },
+        },
         { padding: 40 }
       );
       const targetDir = outDir || 'output/template-previews';
@@ -398,15 +419,19 @@ function getTemplateSection(name) {
   return sections[name] || '?';
 }
 
-const args = process.argv.slice(2);
-const format = args.includes('--json') ? 'json' : 'text';
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  const format = args.includes('--json') ? 'json' : 'text';
 
-if (args.includes('--preview')) {
-  const idx = args.indexOf('--preview');
-  const target = idx + 1 < args.length && !args[idx + 1].startsWith('--') ? args[idx + 1] : null;
-  const outIdx = args.indexOf('--out');
-  const outDir = outIdx >= 0 && outIdx + 1 < args.length ? args[outIdx + 1] : null;
-  previewTemplate(target || '--all', outDir);
-} else {
-  listTemplates(format);
+  if (args.includes('--preview')) {
+    const idx = args.indexOf('--preview');
+    const target = idx + 1 < args.length && !args[idx + 1].startsWith('--') ? args[idx + 1] : null;
+    const outIdx = args.indexOf('--out');
+    const outDir = outIdx >= 0 && outIdx + 1 < args.length ? args[outIdx + 1] : null;
+    previewTemplate(target || '--all', outDir);
+  } else {
+    listTemplates(format);
+  }
 }
+
+module.exports = { TEMPLATES, THEMES, buildTemplateScene };

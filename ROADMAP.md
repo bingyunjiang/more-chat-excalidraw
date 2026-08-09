@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-09（v0.0.1，发布收口）
 
-本轮新增工程有限元（FEA）示例；核心 Library 组件已 self-authored MIT 内置；第三方缓存仅作为可选覆盖且需自行核验许可。
+本轮新增工程有限元（FEA）示例；核心 Library 组件已 self-authored MIT 内置；第三方缓存仅作为可选覆盖且需自行核验许可。10 种模板 × 4 套主题已统一中文手写字体策略，并覆盖生成器、Library 标签、静态预览和回归校验；当前交付场景的遗留箭头几何 warning 已清零。
 
 ## 项目目标（v3）
 
@@ -319,7 +319,7 @@
 | M3：可交付 | README + HANDOFF + 增强校验 | — | ✅ 完成 |
 | M4：实时预览 | 实时预览服务器（轮询 API） | D（基础版） | ✅ 完成 |
 | M5：模板系统 | 全部 8 个参考文件 + 交互选择脚本 + SVG 预览 | B | ✅ 完成 |
-| M6：文案引擎 | 意图分类 + 文案生成 + IR 中间格式 | A | ✅ 完成（template_selector --recommend + ir-format.md + mermaid/文本导入通道） |
+| M6：文案引擎 | 意图分类 + 文案生成 + IR 中间格式 | A | ✅ 完成（10 模板四类目录、三选一交互、template/style 分步确认、IR 与 Mermaid/文本导入通道） |
 | M7：JSON 生成 | IR→Excalidraw + 自动布局 + 自纠错 | C | ✅ 完成（ir_to_excalidraw.py + Graphviz + merge + --visual 质量门） |
 | M8：完整预览 | 内嵌编辑器 + 双向同步 + 多画布 + PDF 导出 | D（完整版） | ✅ 完成 |
 | M9：创新功能 | 动画 + Mermaid + 自纠错 + 知识图谱 + Graphviz + MCP + 图标库 | A/B/C/D 创新 | ✅ 核心能力完成，平台边界已记录 |

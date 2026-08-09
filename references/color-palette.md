@@ -2,6 +2,8 @@
 
 > 用于 Excalidraw 图表生成时自动应用颜色方案。所有颜色值按语义组织，支持 4 套一键切换主题。
 
+字体与颜色主题解耦：四套主题、十种模板中的中文统一默认使用 Ma Shan Zheng（fontFamily 11），可显式切换 Long Cang（12）或 Liu Jian Mao Cao（13）；default/sketch 的纯英文使用 Virgil，minimal/blueprint 的纯英文使用 Helvetica。
+
 ## 1. 语义色板
 
 同一图内只用一套色板，按语义选择填充色和文字色。

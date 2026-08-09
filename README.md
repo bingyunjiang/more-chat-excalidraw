@@ -81,7 +81,7 @@ python3 scripts/ir_to_excalidraw.py --example thermal-runaway --output examples/
 node scripts/render_preview.js examples/thermal-runaway.excalidraw --format both
 ```
 
-该案例不是普通流程图，而是“电芯热失控：触发—机理—防护”研究画布：中文明确使用本地 Excalidraw 已有的 `Long Cang`（龙藏体），英文使用 Virgil；配合便签/批注框、红绿蓝语义箭头、虚线机理链、曲线汇聚与发散箭头共同表达分析关系。IR 节点可用 `font: long-cang|ma-shan-zheng|liu-jian-mao-cao` 选择 `localhost:5001` 内置字体，也可用顶层 `cjkFontFamily` / `cjkFontFallbacks` 覆盖回退顺序；字体文件不会被重复复制或分发。
+该案例不是普通流程图，而是“电芯热失控：触发—机理—防护”研究画布：中文使用本地 Excalidraw 已有的 `Ma Shan Zheng`，英文使用 Virgil；配合便签/批注框、红绿蓝语义箭头、虚线机理链、曲线汇聚与发散箭头共同表达分析关系。全局规则适用于全部 10 种模板和 4 套主题：中文默认 Ma Shan Zheng（11），可用 `font: long-cang|ma-shan-zheng|liu-jian-mao-cao` 或顶层 `cjkFontFamily` 切换；default/sketch 的英文保留 Virgil，minimal/blueprint 的英文保留 Helvetica。字体文件不会被重复复制或分发。
 
 ### 2. 白底极简工程架构示例
 
@@ -90,7 +90,7 @@ python3 scripts/ir_to_excalidraw.py --example battery-thermal --output examples/
 node scripts/render_preview.js examples/battery-thermal.excalidraw --format both
 ```
 
-该案例展示电池包热管理多物理场仿真架构，采用工况与边界、多物理场模型、试验校核、设计决策四列布局；极简主题使用无衬线字体、低饱和分区和克制连线。
+该案例展示电池包热管理多物理场仿真架构，采用工况与边界、多物理场模型、试验校核、设计决策四列布局；极简主题的中文仍使用手写体，纯英文使用 Helvetica，并配合低饱和分区和克制连线。
 
 ### 3. 工程有限元流程示例
 
@@ -207,7 +207,7 @@ node scripts/check_web_lock.mjs
 
 CI 会真实执行依赖安装、editor/render bundle 构建、MCP 工具调用与 e2e suite。Playwright、Graphviz、本地 Excalidraw 和端口服务均是可选环境能力；沙箱可能阻止端口、浏览器或 web root 写入，此时保留 SVG fallback 并明确报告环境受阻。生成默认字节级可复现；`EXCALIDRAW_UPDATED` 可显式控制更新时间。`--library` 默认使用内置 self-authored MIT 组件、无需下载；自定义或第三方 Library 仅可通过 `--library-dir` 显式覆盖。
 
-需要把视觉警告当作质量门时使用 `python3 scripts/validate_excalidraw.py <file> --visual --fail-on-warning`；默认模式仍兼容仅报告 warning。
+需要把视觉警告当作质量门时使用 `python3 scripts/validate_excalidraw.py <file> --visual --fail-on-warning`；默认模式仍兼容仅报告 warning。旧场景若报告箭头几何范围不一致，可先运行 `python3 scripts/validate_excalidraw.py <file> --fix-arrow-geometry`，该操作只根据 `points` 确定性修正箭头 `width/height`，不移动端点。
 
 ## 快速开始
 
@@ -261,8 +261,22 @@ bash scripts/test_e2e.sh
 ## 许可
 
 MIT
-# Sketch 选型交互
+# 模板与风格交互选择
 
-当用户只说“画一张图”时，Agent 先运行推荐并集中确认一次：`template=relationship` + `sketchStyle=mechanism-map`，用户可接受或切换。用户已说“画一个 flowchart”或“你直接选”时不追问；CLI 始终非交互。
+现有 10 个模板已汇整为四类：流程与协作、系统与结构、交互与时间、分析与思考。Agent 不向用户倾倒完整内部清单，而是根据内容展示 1 个推荐项和最多 2 个差异明显的备选项。
+
+```bash
+# 查看四类模板目录
+python3 scripts/template_selector.py --guide
+
+# 生成可直接展示给用户的选择菜单
+python3 scripts/template_selector.py --choices "分析有限元不收敛原因"
+```
+
+交互示例：
+
+> 我推荐“关系分析板 + root-cause”，因为内容重点是不收敛根因和返工闭环。你可以选：1）关系分析板，2）步骤流程，3）角色泳道；也可以回复“你直接选”。
+
+只明确“流程图”时，Agent 仅让用户选择手绘气质；只明确 `root-cause` 时，仅让用户选择模板。模板与风格两者均明确，或用户说“你直接选”时不重复追问。CLI 始终非交互。完整目录见 [模板选择指南](references/template-choice-guide.md)。
 
 IR 示例：`{"template":"relationship","theme":"sketch","sketchStyle":"root-cause"}`。

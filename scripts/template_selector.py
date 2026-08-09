@@ -4,10 +4,12 @@
 
 用法：
   python3 scripts/template_selector.py                     # 列出所有模板
-  python3 scripts/template_selector.py --list               # 列出所有模板（JSON 格式）
+  python3 scripts/template_selector.py --list               # 按四类列出所有模板
+  python3 scripts/template_selector.py --guide --json        # 机器可读选择目录
   python3 scripts/template_selector.py --recommend "画一个微服务架构图"  # 根据意图推荐
+  python3 scripts/template_selector.py --choices "分析不收敛原因"        # 用户选择菜单
   python3 scripts/template_selector.py --info flowchart     # 查看模板详情
-  python3 scripts/template_selector.py --params flowchart --theme blueprint  # 带参数选择
+  python3 scripts/template_selector.py --params flowchart --theme sketch --sketch-style engineering-notebook
 """
 
 import json
@@ -196,11 +198,135 @@ THEMES = {
 }
 
 SKETCH_STYLES = {
-    "engineering-notebook": {"formality": "balanced", "vibe": "field notes", "use": "工程流程与记录"},
-    "research-board": {"formality": "balanced", "vibe": "quiet analytical", "use": "研究分析与证据链"},
-    "root-cause": {"formality": "restrained", "vibe": "diagnostic", "use": "根因、故障与收敛诊断"},
-    "mechanism-map": {"formality": "balanced", "vibe": "causal", "use": "机理、因果与关系分析"},
-    "review-markup": {"formality": "striking", "vibe": "annotated critique", "use": "架构评审与风险批注"},
+    "engineering-notebook": {"label": "工程笔记", "aliases": ["工程笔记"], "formality": "balanced", "vibe": "field notes", "use": "工程流程与记录"},
+    "research-board": {"label": "研究分析板", "aliases": ["研究分析", "研究板"], "formality": "balanced", "vibe": "quiet analytical", "use": "研究分析与证据链"},
+    "root-cause": {"label": "根因诊断", "aliases": ["根因风格", "诊断风格"], "formality": "restrained", "vibe": "diagnostic", "use": "根因、故障与收敛诊断"},
+    "mechanism-map": {"label": "机理图谱", "aliases": ["机理风格", "因果风格"], "formality": "balanced", "vibe": "causal", "use": "机理、因果与关系分析"},
+    "review-markup": {"label": "评审批注", "aliases": ["评审风格", "批注风格"], "formality": "striking", "vibe": "annotated critique", "use": "架构评审与风险批注"},
+}
+
+# 面向用户的模板选择信息。TEMPLATES 保持生成层兼容；此处只负责把
+# “10 个技术 key”整理成用户容易比较的四组选择卡。
+TEMPLATE_CATEGORIES = {
+    "process": {
+        "name": "流程与协作",
+        "question": "要突出连续步骤，还是角色之间的交接？",
+        "templates": ["flowchart", "swimlane"],
+    },
+    "system": {
+        "name": "系统与结构",
+        "question": "要展示组件调用、数据实体，还是上下级结构？",
+        "templates": ["architecture", "erd", "hierarchy"],
+    },
+    "interaction": {
+        "name": "交互与时间",
+        "question": "要展示消息先后，还是事件沿时间推进？",
+        "templates": ["sequence", "timeline"],
+    },
+    "analysis": {
+        "name": "分析与思考",
+        "question": "要解释因果关系、发散知识，还是比较方案？",
+        "templates": ["relationship", "mindmap", "comparison"],
+    },
+}
+
+TEMPLATE_GUIDE = {
+    "flowchart": {
+        "label": "步骤流程",
+        "category": "process",
+        "best_for": "有明确先后、判断和返工的操作流程",
+        "avoid_when": "重点是多角色交接或复杂因果网络",
+        "styles": ["engineering-notebook", "research-board"],
+    },
+    "swimlane": {
+        "label": "角色泳道",
+        "category": "process",
+        "best_for": "跨部门、跨角色或分阶段的职责交接",
+        "avoid_when": "只有单一路径且不关心责任主体",
+        "styles": ["engineering-notebook", "review-markup"],
+    },
+    "architecture": {
+        "label": "系统架构",
+        "category": "system",
+        "best_for": "组件、分层、依赖、部署和数据流",
+        "avoid_when": "重点是单次调用的严格时间顺序",
+        "styles": ["review-markup", "research-board"],
+    },
+    "erd": {
+        "label": "数据实体",
+        "category": "system",
+        "best_for": "数据库实体、字段关系和基数",
+        "avoid_when": "重点是服务调用或业务步骤",
+        "styles": ["research-board", "engineering-notebook"],
+    },
+    "hierarchy": {
+        "label": "层级拆解",
+        "category": "system",
+        "best_for": "组织、分类、系统分解和树形结构",
+        "avoid_when": "节点之间是多对多影响而非上下级",
+        "styles": ["research-board", "engineering-notebook"],
+    },
+    "sequence": {
+        "label": "消息时序",
+        "category": "interaction",
+        "best_for": "角色之间按时间发生的请求、响应和消息",
+        "avoid_when": "只关心静态组件关系，不关心先后顺序",
+        "styles": ["engineering-notebook", "research-board"],
+    },
+    "timeline": {
+        "label": "事件时间线",
+        "category": "interaction",
+        "best_for": "里程碑、历史演进、路线图和项目进度",
+        "avoid_when": "事件没有清晰时间轴",
+        "styles": ["research-board", "engineering-notebook"],
+    },
+    "relationship": {
+        "label": "关系分析板",
+        "category": "analysis",
+        "best_for": "因果、机理、根因、影响链和依赖网络",
+        "avoid_when": "必须严格按步骤执行或按角色分工",
+        "styles": ["mechanism-map", "root-cause", "research-board"],
+    },
+    "mindmap": {
+        "label": "主题脑图",
+        "category": "analysis",
+        "best_for": "头脑风暴、知识梳理和主题发散",
+        "avoid_when": "需要严格表达方向、职责或时间",
+        "styles": ["research-board", "mechanism-map"],
+    },
+    "comparison": {
+        "label": "方案对比",
+        "category": "analysis",
+        "best_for": "方案、观点、指标和优缺点对照",
+        "avoid_when": "内容主要是连续步骤或依赖网络",
+        "styles": ["research-board", "review-markup"],
+    },
+}
+
+INTENT_SIGNALS = {
+    "flowchart": [r"步骤", r"操作流程", r"审批流程", r"处理流程", r"算法流程", r"怎么做"],
+    "swimlane": [r"跨部门", r"跨团队", r"角色分工", r"职责", r"交接", r"仿真流程"],
+    "architecture": [r"系统架构", r"技术架构", r"组件", r"模块", r"部署", r"服务依赖", r"数据流"],
+    "erd": [r"\bERD?\b", r"实体关系", r"数据模型", r"表结构", r"数据库设计"],
+    "hierarchy": [r"层级", r"组织架构", r"分类体系", r"系统分解", r"树形"],
+    "sequence": [r"时序", r"调用顺序", r"消息交互", r"请求响应", r"协议交互"],
+    "timeline": [r"时间线", r"时间轴", r"里程碑", r"演进", r"路线图", r"roadmap"],
+    "relationship": [r"根因", r"机理", r"因果", r"不收敛", r"故障", r"失效", r"诊断", r"影响链", r"热失控"],
+    "mindmap": [r"思维导图", r"脑图", r"头脑风暴", r"知识梳理", r"主题发散"],
+    "comparison": [r"对比", r"比较", r"对照", r"优缺点", r"方案选择", r"选型"],
+}
+
+EXPLICIT_TEMPLATE_TERMS = {
+    "flowchart": ["flowchart", "流程图"],
+    "swimlane": ["swimlane", "泳道图"],
+    "architecture": ["architecture", "架构图"],
+    "erd": ["erd", "er 图", "er图"],
+    "hierarchy": ["hierarchy", "层级图"],
+    "sequence": ["sequence", "时序图", "顺序图"],
+    "timeline": ["timeline", "时间线图", "时间轴图"],
+    "relationship": ["relationship", "关系图", "关系分析板"],
+    "mindmap": ["mindmap", "mind map", "思维导图"],
+    "comparison": ["comparison", "对比图"],
 }
 
 # 场景 → 模板映射
@@ -243,14 +369,162 @@ SCENE_MAP = {
 }
 
 
+def _category_for(template_key):
+    guide = TEMPLATE_GUIDE[template_key]
+    category_key = guide["category"]
+    return category_key, TEMPLATE_CATEGORIES[category_key]
+
+
+def _style_for_template(template_key, intent_lower):
+    if template_key == "relationship":
+        if any(term in intent_lower for term in ("根因", "不收敛", "故障", "失效", "诊断")):
+            return "root-cause"
+        return "mechanism-map"
+    if template_key == "architecture" and any(term in intent_lower for term in ("评审", "风险", "整改", "审计")):
+        return "review-markup"
+    if template_key in ("flowchart", "swimlane", "sequence"):
+        return "engineering-notebook"
+    return TEMPLATE_GUIDE[template_key]["styles"][0]
+
+
+def _score_templates(intent_lower):
+    scores = {key: 0 for key in TEMPLATES}
+    matched = {key: [] for key in TEMPLATES}
+    for key, tmpl in TEMPLATES.items():
+        for alias in tmpl["aliases"]:
+            alias_lower = alias.lower()
+            if alias_lower in intent_lower:
+                # Longer phrases carry more intent than generic one-character terms.
+                weight = 3 if len(alias_lower) >= 4 else 2 if len(alias_lower) >= 2 else 1
+                scores[key] += weight
+                matched[key].append(alias)
+        for pattern in INTENT_SIGNALS.get(key, []):
+            if re.search(pattern, intent_lower, re.IGNORECASE):
+                scores[key] += 5
+                matched[key].append(pattern)
+    return scores, matched
+
+
+def _fallback_alternatives(primary, ranked_keys):
+    result = [key for key in ranked_keys if key != primary]
+    category_key, category = _category_for(primary)
+    for key in category["templates"]:
+        if key != primary and key not in result:
+            result.append(key)
+    adjacent = {
+        "flowchart": ["swimlane", "relationship"],
+        "swimlane": ["flowchart", "architecture"],
+        "architecture": ["relationship", "sequence"],
+        "erd": ["architecture", "hierarchy"],
+        "hierarchy": ["mindmap", "architecture"],
+        "sequence": ["architecture", "flowchart"],
+        "timeline": ["flowchart", "relationship"],
+        "relationship": ["flowchart", "mindmap"],
+        "mindmap": ["relationship", "hierarchy"],
+        "comparison": ["flowchart", "relationship"],
+    }
+    for key in adjacent[primary]:
+        if key not in result:
+            result.append(key)
+    return result[:2]
+
+
+def _choice_card(template_key, intent_lower, reason, recommended=False, style_override=None):
+    guide = TEMPLATE_GUIDE[template_key]
+    category_key, category = _category_for(template_key)
+    style = style_override or _style_for_template(template_key, intent_lower)
+    return {
+        "id": template_key,
+        "label": guide["label"],
+        "template": template_key,
+        "category": {"key": category_key, "name": category["name"]},
+        "sketchStyle": style,
+        "style_label": SKETCH_STYLES[style]["label"],
+        "why": reason,
+        "best_for": guide["best_for"],
+        "avoid_when": guide["avoid_when"],
+        "structure": TEMPLATES[template_key]["core_structure"],
+        "recommended": recommended,
+    }
+
+
+def _find_explicit_template(intent_lower):
+    for key, terms in EXPLICIT_TEMPLATE_TERMS.items():
+        if any(term in intent_lower for term in terms):
+            return key
+    return None
+
+
+def _find_explicit_style(intent_lower):
+    for key, style in SKETCH_STYLES.items():
+        terms = [key, key.replace("-", " "), style["label"], *style.get("aliases", [])]
+        if any(term.lower() in intent_lower for term in terms):
+            return key
+    return None
+
+
+def catalog_payload():
+    categories = []
+    for category_key, category in TEMPLATE_CATEGORIES.items():
+        categories.append({
+            "key": category_key,
+            "name": category["name"],
+            "question": category["question"],
+            "templates": [
+                {
+                    "key": key,
+                    "label": TEMPLATE_GUIDE[key]["label"],
+                    "name": TEMPLATES[key]["name"],
+                    "best_for": TEMPLATE_GUIDE[key]["best_for"],
+                    "avoid_when": TEMPLATE_GUIDE[key]["avoid_when"],
+                    "recommended_styles": TEMPLATE_GUIDE[key]["styles"],
+                }
+                for key in category["templates"]
+            ],
+        })
+    return {"categories": categories, "template_count": len(TEMPLATES), "sketch_styles": SKETCH_STYLES}
+
+
+def format_catalog():
+    lines = ["Excalidraw 模板选择指南（10 个模板 / 4 类）"]
+    for category in catalog_payload()["categories"]:
+        lines.append(f"\n{category['name']}｜{category['question']}")
+        for item in category["templates"]:
+            lines.append(f"  - {item['label']} [{item['key']}]：{item['best_for']}")
+    lines.append("\n选择时只向用户展示推荐项和最多 2 个备选项。")
+    return "\n".join(lines)
+
+
+def format_choices(intent_text):
+    result = json.loads(recommend(intent_text))
+    interaction = result["interaction"]
+    if interaction["mode"] in ("auto", "ready"):
+        return interaction["prompt"]
+    lines = [interaction["prompt"]]
+    for index, card in enumerate(interaction["options"], 1):
+        mark = "（推荐）" if card["recommended"] else ""
+        detail = card["why"] if interaction["mode"] == "select_style" else card["best_for"]
+        lines.append(
+            f"{index}. {card['label']}{mark}｜{card['style_label']}（{card['sketchStyle']}）：{detail}"
+        )
+    lines.append(interaction["reply_hint"] + "。")
+    return "\n".join(lines)
+
+
 def list_templates(format="text"):
     """列出所有可用模板"""
     if format == "json":
         data = {}
         for key, tmpl in TEMPLATES.items():
+            guide = TEMPLATE_GUIDE[key]
             data[key] = {
                 "name": tmpl["name"],
+                "label": guide["label"],
+                "category": guide["category"],
                 "description": tmpl["description"],
+                "best_for": guide["best_for"],
+                "avoid_when": guide["avoid_when"],
+                "recommended_styles": guide["styles"],
                 "scenes": tmpl["scenes"],
                 "complexity": tmpl["complexity"],
                 "layout": tmpl["layout"],
@@ -258,22 +532,12 @@ def list_templates(format="text"):
                 "max_nodes": tmpl["max_nodes"]
             }
         data["_themes"] = {k: {"name": v["name"], "description": v["description"]} for k, v in THEMES.items()}
+        data["_categories"] = catalog_payload()["categories"]
         return json.dumps(data, ensure_ascii=False, indent=2)
     else:
-        lines = []
-        lines.append("=" * 70)
-        lines.append("Excalidraw 模板列表")
-        lines.append("=" * 70)
-        for key, tmpl in TEMPLATES.items():
-            lines.append(f"\n  [{key:15s}] {tmpl['name']}")
-            lines.append(f"  {'':15s}  {tmpl['description']}")
-            lines.append(f"  {'':15s}  布局: {tmpl['layout']:10s} 复杂度: {tmpl['complexity']:10s} 最大节点: {tmpl['max_nodes']}")
-            lines.append(f"  {'':15s}  场景: {', '.join(tmpl['scenes'][:3])}")
-        lines.append("\n" + "=" * 70)
-        lines.append("可用主题:")
+        lines = [format_catalog(), "\n可用主题:"]
         for key, theme in THEMES.items():
             lines.append(f"  [{key:12s}] {theme['name']} - {theme['description']}")
-        lines.append("=" * 70)
         return "\n".join(lines)
 
 
@@ -284,10 +548,17 @@ def get_template_info(template_name):
         return json.dumps({"error": f"未找到模板: {template_name}"}, ensure_ascii=False, indent=2)
     
     tmpl = TEMPLATES[key]
+    guide = TEMPLATE_GUIDE[key]
+    category_key, category = _category_for(key)
     result = {
         "key": key,
         "name": tmpl["name"],
+        "label": guide["label"],
+        "category": {"key": category_key, "name": category["name"]},
         "description": tmpl["description"],
+        "best_for": guide["best_for"],
+        "avoid_when": guide["avoid_when"],
+        "recommended_styles": guide["styles"],
         "core_structure": tmpl["core_structure"],
         "layout": tmpl["layout"],
         "spacing": tmpl["spacing"],
@@ -305,57 +576,99 @@ def get_template_info(template_name):
 def recommend(intent_text):
     """根据用户意图推荐最佳模板"""
     intent_lower = intent_text.lower()
-    match_counts = {}
-    
-    # 提取关键词
-    all_keywords = []
-    for key, tmpl in TEMPLATES.items():
-        for alias in tmpl["aliases"]:
-            if alias.lower() in intent_lower:
-                all_keywords.append((key, alias))
-    
-    # 按关键词匹配数排序
-    if all_keywords:
-        # 统计每个模板的匹配次数
-        for key, alias in all_keywords:
-            match_counts[key] = match_counts.get(key, 0) + 1
-        sorted_matches = sorted(match_counts.items(), key=lambda x: -x[1])
-        primary = sorted_matches[0][0]
-        alternatives = [k for k, _ in sorted_matches[1:]]
+    explicit_template_key = _find_explicit_template(intent_lower)
+    explicit_style_key = _find_explicit_style(intent_lower)
+    scoring_text = intent_lower
+    if explicit_style_key:
+        style = SKETCH_STYLES[explicit_style_key]
+        for term in [explicit_style_key, explicit_style_key.replace("-", " "), style["label"], *style.get("aliases", [])]:
+            scoring_text = scoring_text.replace(term.lower(), " ")
+    scores, matched = _score_templates(scoring_text)
+    ranked = sorted(TEMPLATES, key=lambda key: (-scores[key], list(TEMPLATES).index(key)))
+    if explicit_template_key:
+        primary = explicit_template_key
+    elif scores[ranked[0]] > 0:
+        primary = ranked[0]
     else:
-        # 尝试场景匹配
-        for scene, templates in SCENE_MAP.items():
-            if scene in intent_lower:
-                primary = templates[0]
-                alternatives = templates[1:]
-                break
-        else:
-            primary = "flowchart"
-            alternatives = ["mindmap", "architecture"]
-    
-    # 构建结果
-    explicit_template = any(k in intent_lower for k in TEMPLATES)
-    explicit_style = any(k.replace("-", " ") in intent_lower or k in intent_lower for k in SKETCH_STYLES)
+        primary = "relationship"
+        ranked = ["relationship", "flowchart", "architecture"] + [
+            key for key in ranked if key not in ("relationship", "flowchart", "architecture")
+        ]
+    positive_ranked = [key for key in ranked if scores[key] > 0]
+    alternatives = _fallback_alternatives(primary, positive_ranked if positive_ranked else ranked)
+
     direct_select = any(k in intent_lower for k in ("你直接选", "直接选", "不用问", "随便"))
-    if primary in ("relationship", "erd", "mindmap"):
-        style = "mechanism-map" if primary == "relationship" else "research-board"
-    elif primary == "architecture":
-        style = "review-markup"
-    elif primary == "swimlane":
-        style = "engineering-notebook"
+    style = explicit_style_key or _style_for_template(primary, intent_lower)
+    primary_score = scores.get(primary, 0)
+    next_score = max((scores.get(key, 0) for key in alternatives), default=0)
+    confidence = "high" if primary_score >= 8 and primary_score - next_score >= 3 else "medium" if primary_score > 0 else "low"
+    matched_terms = [term for term in matched.get(primary, []) if not term.startswith("\\b")]
+    if explicit_template_key:
+        reason = f"用户已明确选择{TEMPLATE_GUIDE[primary]['label']}"
+    elif matched_terms:
+        reason = f"识别到“{'、'.join(matched_terms[:3])}”，更适合{TEMPLATE_GUIDE[primary]['label']}"
     else:
-        style = "research-board"
+        reason = f"信息不足，先用最能承载自由关系的{TEMPLATE_GUIDE[primary]['label']}"
+
+    if direct_select:
+        interaction_mode = "auto"
+        requires_confirmation = False
+        cards = [_choice_card(primary, intent_lower, reason, recommended=True, style_override=style)]
+        prompt = f"将采用“{cards[0]['label']} + {cards[0]['style_label']}”，{reason}。"
+    elif explicit_template_key and explicit_style_key:
+        interaction_mode = "ready"
+        requires_confirmation = False
+        cards = [_choice_card(primary, intent_lower, reason, recommended=True, style_override=style)]
+        prompt = f"模板与风格已确定：{cards[0]['label']} + {cards[0]['style_label']}。"
+    elif explicit_template_key:
+        interaction_mode = "select_style"
+        requires_confirmation = True
+        style_keys = [style] + [key for key in TEMPLATE_GUIDE[primary]["styles"] if key != style]
+        cards = [
+            _choice_card(
+                primary,
+                intent_lower,
+                SKETCH_STYLES[style_key]["use"],
+                recommended=index == 0,
+                style_override=style_key,
+            )
+            for index, style_key in enumerate(style_keys[:3])
+        ]
+        prompt = f"模板已确定为“{TEMPLATE_GUIDE[primary]['label']}”。我推荐“{cards[0]['style_label']}”，请选择手绘气质。"
+    else:
+        interaction_mode = "select_template" if explicit_style_key else "select_both"
+        requires_confirmation = True
+        cards = [
+            _choice_card(primary, intent_lower, reason, recommended=True, style_override=style),
+            *[
+                _choice_card(
+                    key,
+                    intent_lower,
+                    f"如果更关注{TEMPLATE_GUIDE[key]['best_for']}，可选此项",
+                    style_override=style if explicit_style_key else None,
+                )
+                for key in alternatives
+            ],
+        ][:3]
+        if explicit_style_key:
+            prompt = f"风格已确定为“{SKETCH_STYLES[style]['label']}”。我推荐“{cards[0]['label']}”，请选择叙事模板。"
+        else:
+            prompt = f"我推荐“{cards[0]['label']} + {cards[0]['style_label']}”，{reason}。请选择下面一种，或让我直接按推荐生成。"
     result = {
         "primary": {
             "key": primary,
             "name": TEMPLATES[primary]["name"],
+            "label": TEMPLATE_GUIDE[primary]["label"],
+            "category": TEMPLATE_GUIDE[primary]["category"],
             "description": TEMPLATES[primary]["description"],
-            "reason": f"匹配到 {match_counts.get(primary, 0)} 个关键词"
+            "reason": reason,
+            "confidence": confidence,
         },
         "alternatives": [
             {
                 "key": alt,
                 "name": TEMPLATES[alt]["name"],
+                "label": TEMPLATE_GUIDE[alt]["label"],
                 "description": TEMPLATES[alt]["description"]
             }
             for alt in alternatives[:3]
@@ -365,11 +678,23 @@ def recommend(intent_text):
         "recommendation": {
             "template": primary,
             "sketchStyle": style,
-            "rationale": f"{TEMPLATES[primary]['name']}适合当前叙事；{style}突出其证据与结构。",
-            "requires_confirmation": not explicit_template and not explicit_style and not direct_select,
+            "rationale": reason,
+            "confidence": confidence,
+            "requires_confirmation": requires_confirmation,
+        },
+        "interaction": {
+            "mode": interaction_mode,
+            "prompt": prompt,
+            "options": cards,
+            "max_options": 3,
+            "reply_hint": (
+                "回复序号、风格名，或“你直接选”"
+                if interaction_mode == "select_style"
+                else "回复序号、模板名，或“你直接选”"
+            ),
         },
         "parameters": {
-            "theme": "sketch" if not explicit_template or explicit_style or "手绘" in intent_lower else "default",
+            "theme": "sketch",
             "sketchStyle": style,
             "layout_direction": TEMPLATES[primary].get("layout", "vertical"),
             "spacing": TEMPLATES[primary].get("spacing", {"vertical": 80, "horizontal": 120})
@@ -401,6 +726,12 @@ def main():
     if cmd in ("--list", "-l"):
         format = "json" if "--json" in sys.argv else "text"
         print(list_templates(format))
+
+    elif cmd in ("--guide", "-g"):
+        if "--json" in sys.argv:
+            print(json.dumps(catalog_payload(), ensure_ascii=False, indent=2))
+        else:
+            print(format_catalog())
     
     elif cmd in ("--recommend", "-r"):
         if len(sys.argv) < 3:
@@ -408,6 +739,16 @@ def main():
             sys.exit(1)
         intent = " ".join(sys.argv[2:])
         print(recommend(intent))
+
+    elif cmd in ("--choices", "-c"):
+        if len(sys.argv) < 3:
+            print("用法: template_selector.py --choices \"分析有限元不收敛原因\"")
+            sys.exit(1)
+        intent = " ".join(arg for arg in sys.argv[2:] if arg != "--json")
+        if "--json" in sys.argv:
+            print(recommend(intent))
+        else:
+            print(format_choices(intent))
     
     elif cmd in ("--info", "-i"):
         if len(sys.argv) < 3:
@@ -418,7 +759,7 @@ def main():
     
     elif cmd in ("--params", "-p"):
         if len(sys.argv) < 3:
-            print("用法: template_selector.py --params flowchart --theme blueprint")
+            print("用法: template_selector.py --params flowchart --theme sketch --sketch-style engineering-notebook")
             sys.exit(1)
         template_name = sys.argv[2]
         key = _resolve_template_key(template_name)
@@ -430,10 +771,21 @@ def main():
             idx = sys.argv.index("--theme")
             if idx + 1 < len(sys.argv):
                 theme = sys.argv[idx + 1]
+        sketch_style = None
+        if "--sketch-style" in sys.argv:
+            idx = sys.argv.index("--sketch-style")
+            if idx + 1 < len(sys.argv):
+                sketch_style = sys.argv[idx + 1]
+                if sketch_style not in SKETCH_STYLES:
+                    print(f"未知 sketchStyle: {sketch_style}")
+                    sys.exit(1)
+        if theme == "sketch" and sketch_style is None:
+            sketch_style = TEMPLATE_GUIDE[key]["styles"][0]
         result = {
             "template": key,
             "name": TEMPLATES[key]["name"],
             "theme": theme,
+            "sketchStyle": sketch_style,
             "theme_info": THEMES.get(theme, THEMES["default"]),
             "layout": TEMPLATES[key]["layout"],
             "spacing": TEMPLATES[key]["spacing"]
@@ -445,9 +797,11 @@ def main():
         print("用法:")
         print("  template_selector.py                     # 列出所有模板")
         print("  template_selector.py --list [--json]     # 列出模板（JSON 格式）")
+        print("  template_selector.py --guide [--json]    # 分组选择指南")
         print("  template_selector.py --recommend <文本>  # 根据意图推荐")
+        print("  template_selector.py --choices <文本>    # 生成用户选择菜单")
         print("  template_selector.py --info <模板名>     # 查看模板详情")
-        print("  template_selector.py --params <模板名> [--theme <主题>]  # 带参数选择")
+        print("  template_selector.py --params <模板名> [--theme <主题>] [--sketch-style <风格>]")
         sys.exit(1)
 
 

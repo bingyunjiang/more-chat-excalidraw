@@ -10,6 +10,7 @@ Exit code 0 = OK; 1 = errors found. Warnings never fail unless --strict.
 import argparse
 import json
 import sys
+from pathlib import Path
 
 
 KNOWN_TYPES = {
@@ -29,6 +30,40 @@ TYPE_REQUIRED_FIELDS = {
     "image": ("fileId",),
     "frame": ("name",),
 }
+
+
+def normalize_arrow_geometry(data):
+    """Set arrow width/height to the exact extents of its local points."""
+    changed = []
+    for el in data.get("elements") or []:
+        if not isinstance(el, dict) or el.get("type") != "arrow":
+            continue
+        points = el.get("points")
+        if not isinstance(points, list) or len(points) < 2 or not all(
+            isinstance(point, list)
+            and len(point) == 2
+            and all(isinstance(value, (int, float)) and not isinstance(value, bool) for value in point)
+            for point in points
+        ):
+            continue
+        span_x = max(point[0] for point in points) - min(point[0] for point in points)
+        span_y = max(point[1] for point in points) - min(point[1] for point in points)
+        if abs(float(el.get("width", 0) or 0) - span_x) <= 0.01 and abs(float(el.get("height", 0) or 0) - span_y) <= 0.01:
+            continue
+        el["width"] = span_x
+        el["height"] = span_y
+        changed.append(el.get("id", ""))
+    return changed
+
+
+def fix_arrow_geometry_file(filepath):
+    """Normalize a scene in place; invalid JSON remains untouched for validation."""
+    path = Path(filepath)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    changed = normalize_arrow_geometry(data)
+    if changed:
+        path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return changed
 
 
 def _bbox(el):
@@ -51,7 +86,7 @@ def _rects_overlap(a, b):
     return ox * oy
 
 
-def _visual_checks(elements, warnings, visual_contract=None, sketch=False):
+def _visual_checks(elements, warnings, visual_contract=None, sketch=False, cjk_handwriting=False):
     """Layout quality heuristics: overlaps, dangling arrows, density."""
     # Skip connector elements and tiny markers when computing overlaps
     shapes = []
@@ -102,16 +137,16 @@ def _visual_checks(elements, warnings, visual_contract=None, sketch=False):
                 f"visual: arrow {el.get('id')!r} is not bound to any node (dangling)"
             )
 
-    # Sketch readability contract: labels stay legible and bilingual text is
-    # split into separate lines/fonts by the generator.
+    # Global font contract: every template/theme uses a registered CJK
+    # handwriting family for Chinese while keeping its own Latin font.
     for el in elements:
         if not isinstance(el, dict) or el.get("type") != "text":
             continue
         text = str(el.get("text", ""))
-        if sketch and any(ord(ch) >= 0x2E80 for ch in text) and el.get("fontFamily") in (1, 2, 3):
+        if cjk_handwriting and any(ord(ch) >= 0x2E80 for ch in text) and el.get("fontFamily") in (1, 2, 3):
             warnings.append(f"visual: CJK text {el.get('id')!r} uses a non-CJK font family")
-        if sketch and not any(ord(ch) >= 0x2E80 for ch in text) and el.get("fontFamily") == 11:
-            warnings.append(f"visual: English text {el.get('id')!r} uses Ma Shan Zheng")
+        if cjk_handwriting and not any(ord(ch) >= 0x2E80 for ch in text) and el.get("fontFamily") in (11, 12, 13):
+            warnings.append(f"visual: English text {el.get('id')!r} uses a CJK handwriting font")
         if sketch and str(el.get("id", "")).startswith("elbl-") and float(el.get("fontSize", 0) or 0) < 32:
             warnings.append(f"visual: edge label {el.get('id')!r} is below 32px")
         if el.get("containerId") and el.get("width", 0) < 24:
@@ -368,8 +403,15 @@ def validate_file(filepath, strict=False, visual=False):
 
     if visual:
         app_state = data.get("appState") or {}
-        sketch = bool(app_state.get("sketchStyle") or app_state.get("sketchTemplate") or app_state.get("cjkFontFamily"))
-        _visual_checks(elements, warnings, data.get("visual_contract"), sketch=sketch)
+        sketch = bool(app_state.get("sketchStyle") or app_state.get("sketchTemplate"))
+        cjk_handwriting = bool(app_state.get("cjkFontFamily"))
+        _visual_checks(
+            elements,
+            warnings,
+            data.get("visual_contract"),
+            sketch=sketch,
+            cjk_handwriting=cjk_handwriting,
+        )
 
     return errors, warnings, stats
 
@@ -381,7 +423,20 @@ def main():
     parser.add_argument("--fail-on-warning", action="store_true", help="Fail when any warning is emitted (alias for strict)")
     parser.add_argument("--visual", action="store_true", help="Run layout quality heuristics (overlap/dangling/density)")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
+    parser.add_argument(
+        "--fix-arrow-geometry",
+        action="store_true",
+        help="Normalize arrow width/height from points before validation",
+    )
     args = parser.parse_args()
+
+    fixed_arrows = []
+    if args.fix_arrow_geometry:
+        try:
+            fixed_arrows = fix_arrow_geometry_file(args.file)
+        except (OSError, json.JSONDecodeError, TypeError, ValueError):
+            # The normal validator below reports the actionable file/JSON error.
+            fixed_arrows = []
 
     strict = args.strict or args.fail_on_warning
     errors, warnings, stats = validate_file(args.file, strict, args.visual)
@@ -393,9 +448,12 @@ def main():
             "errors": errors,
             "warnings": warnings,
             "stats": stats,
+            "fixed_arrows": fixed_arrows,
         }
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
+        if fixed_arrows:
+            print(f"[FIXED] {len(fixed_arrows)} arrow geometries")
         for line in errors:
             print(f"[ERROR] {line}")
         for line in warnings:

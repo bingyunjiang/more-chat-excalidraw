@@ -63,35 +63,43 @@ TECH_TYPE_HINTS = {
     "cd": "component", "prometheus": "component", "grafana": "component",
 }
 
+# 中文字体策略：所有模板和主题统一使用已随本地编辑器注册的手写字体。
+# 英文仍使用各主题自己的 Virgil / Helvetica，以保持主题层级。
+CJK_HANDWRITING = {
+    "cjkFontFamily": "Ma Shan Zheng",
+    "cjkFontFamilyId": 11,
+    "cjkFontFallbacks": [
+        "Long Cang", "Liu Jian Mao Cao", "Hannotate SC",
+        "HanziPen SC", "Wawati SC", "Kaiti SC", "PingFang SC",
+    ],
+}
+
 # 主题（对应 color-palette.md）
 THEMES = {
     "default": {
         "strokeColor": "#1e1e1e", "bg": "#ffffff", "lineColor": "#868e96",
         "roughness": 1, "strokeWidth": 2, "textColor": "#374151",
         "titleColor": "#1e40af", "frameText": "#1971c2", "fontFamily": 1,
+        **CJK_HANDWRITING,
     },
     "sketch": {
         "strokeColor": "#2b2b2b", "bg": "#ffffff", "lineColor": "#868e96",
         "roughness": 2, "strokeWidth": 3, "textColor": "#374151",
-        # Current local Excalidraw registers Ma Shan Zheng as fontFamily 11.
-        # English-only annotations are kept on Virgil by _text_el().
-        "titleColor": "#1e40af", "frameText": "#1971c2", "fontFamily": 11,
-        "cjkFontFamily": "Ma Shan Zheng",
-        "cjkFontFallbacks": [
-            "Long Cang", "Liu Jian Mao Cao", "Hannotate SC",
-            "HanziPen SC", "Wawati SC", "Kaiti SC", "PingFang SC",
-        ],
+        "titleColor": "#1e40af", "frameText": "#1971c2", "fontFamily": 1,
+        **CJK_HANDWRITING,
         "edgeLabelFontSize": 32, "edgeLabelOffset": 24,
     },
     "blueprint": {
         "strokeColor": "#e8f4ff", "bg": "#1e3a5f", "lineColor": "#64b5f6",
         "roughness": 0, "strokeWidth": 1, "textColor": "#e8f4ff",
         "titleColor": "#e8f4ff", "frameText": "#e8f4ff", "fontFamily": 2,
+        **CJK_HANDWRITING,
     },
     "minimal": {
         "strokeColor": "#64748b", "bg": "#ffffff", "lineColor": "#64748b",
         "roughness": 0, "strokeWidth": 1, "textColor": "#1f2937",
         "titleColor": "#0f172a", "frameText": "#475569", "fontFamily": 2,
+        **CJK_HANDWRITING,
     },
 }
 
@@ -148,6 +156,21 @@ def _bilingual_lines(label):
     return lines
 
 
+def _apply_text_font(el, text, theme):
+    """Apply the global CJK-handwriting / theme-Latin font policy."""
+    if _has_cjk(text) and theme.get("cjkFontFamily"):
+        el["fontFamily"] = int(theme.get("cjkFontFamilyId", 11))
+    else:
+        el["fontFamily"] = int(theme.get("fontFamily", 1))
+    if theme.get("cjkFontFamily"):
+        el["customData"] = {
+            **(el.get("customData") or {}),
+            "cjkFontFamily": theme["cjkFontFamily"],
+            "cjkFontFallbacks": theme.get("cjkFontFallbacks", []),
+        }
+    return el
+
+
 # ─── 基础元素构造 ─────────────────────────────────────────────────────────
 def _base_el(el_id, etype, x, y, w, h, theme, extra=None):
     el = {
@@ -180,22 +203,14 @@ def _text_el(el_id, x, y, text, theme, fontSize=18, w=None, h=None, color=None, 
         w = max(40, int(estimate_text_width(text, fontSize) + 20))
     if h is None:
         h = fontSize + 8
-    font_family = theme.get("fontFamily", 1)
-    if theme.get("cjkFontFamily") and not _has_cjk(text):
-        font_family = 1
     el = _base_el(el_id, "text", x, y, w, h, theme, {
         "strokeColor": color or theme["textColor"],
         "backgroundColor": "transparent",
-        "text": text, "fontSize": fontSize, "fontFamily": font_family,
+        "text": text, "fontSize": fontSize, "fontFamily": theme.get("fontFamily", 1),
         "textAlign": "center", "verticalAlign": "middle",
         "containerId": container_id, "originalText": text, "lineHeight": 1.25,
     })
-    if theme.get("cjkFontFamily"):
-        el["customData"] = {
-            "cjkFontFamily": theme["cjkFontFamily"],
-            "cjkFontFallbacks": theme.get("cjkFontFallbacks", []),
-        }
-    return el
+    return _apply_text_font(el, text, theme)
 
 
 def estimate_text_width(text, font_size):
@@ -590,6 +605,7 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
     if cjk_font_family:
         theme["cjkFontFamily"] = str(cjk_font_family)
         theme["cjkFontFallbacks"] = [str(name) for name in cjk_font_fallbacks]
+        theme["cjkFontFamilyId"] = FONT_FAMILY_MAP.get(str(cjk_font_family).lower(), 11)
     ir_nodes = ir.get("nodes", [])
     ir_edges = ir.get("edges", [])
     ir_groups = ir.get("groups", [])
@@ -853,6 +869,7 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
                 lel["y"] = lib_bbox["y"] + (lib_bbox["height"] * (title_ratio if index == 0 else 0.68)) - lel["height"] / 2
                 lel["strokeColor"] = "#374151" if node.get("type") == "database" else _library_text_color(lib_els)
                 lel["customData"] = {**(lel.get("customData") or {}), "libraryNodeId": nid, "libraryTitle": index == 0}
+                _apply_text_font(lel, value, theme)
                 if index == 0:
                     label_seen = True
             # Some libraries (notably cylinder/database symbols) contain no
@@ -872,7 +889,11 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
                 )
                 overlay["groupIds"] = list(anchor_el.get("groupIds") or [])
                 overlay["frameId"] = frame_id
-                overlay["customData"] = {"libraryNodeId": nid, "libraryTitle": True}
+                overlay["customData"] = {
+                    **(overlay.get("customData") or {}),
+                    "libraryNodeId": nid,
+                    "libraryTitle": True,
+                }
                 lib_els.append(overlay)
                 anchor_el.setdefault("boundElements", []).append({"id": overlay["id"], "type": "text"})
             # 添加所有库组件元素

@@ -66,7 +66,7 @@
       "locked": false,
       "text": "用户层",
       "fontSize": 16,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": null,
@@ -77,7 +77,17 @@
           "order": 5,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     },
     {
@@ -143,7 +153,7 @@
       "locked": false,
       "text": "网关层",
       "fontSize": 16,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": null,
@@ -154,7 +164,17 @@
           "order": 5,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     },
     {
@@ -220,7 +240,7 @@
       "locked": false,
       "text": "应用层",
       "fontSize": 16,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": null,
@@ -231,7 +251,17 @@
           "order": 5,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     },
     {
@@ -297,7 +327,7 @@
       "locked": false,
       "text": "数据层",
       "fontSize": 16,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": null,
@@ -308,7 +338,17 @@
           "order": 5,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     },
     {
@@ -374,7 +414,7 @@
       "locked": false,
       "text": "基础设施",
       "fontSize": 16,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": null,
@@ -385,7 +425,17 @@
           "order": 5,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     },
     {
@@ -461,7 +511,7 @@
       "locked": false,
       "text": "Web 前端",
       "fontSize": 18,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "n1",
@@ -472,7 +522,17 @@
           "order": 5,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     },
     {
@@ -560,7 +620,7 @@
       "locked": false,
       "text": "API 网关",
       "fontSize": 18,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "n2",
@@ -571,7 +631,17 @@
           "order": 5,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     },
     {
@@ -659,7 +729,7 @@
       "locked": false,
       "text": "订单服务",
       "fontSize": 18,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "n3",
@@ -670,7 +740,17 @@
           "order": 5,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     },
     {
@@ -758,7 +838,7 @@
       "locked": false,
       "text": "支付服务",
       "fontSize": 18,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "n4",
@@ -769,7 +849,17 @@
           "order": 5,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     },
     {
@@ -853,7 +943,7 @@
       "locked": false,
       "text": "用户服务",
       "fontSize": 18,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "n5",
@@ -864,7 +954,17 @@
           "order": 5,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     },
     {
@@ -1314,7 +1414,7 @@
       "x": 450.7632,
       "y": 996.816,
       "width": 0,
-      "height": 0,
+      "height": 247.63200000000006,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1372,7 +1472,7 @@
       "x": 450.7632,
       "y": 809.184,
       "width": 0,
-      "height": 0,
+      "height": 247.58159999999998,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1429,8 +1529,8 @@
       "type": "arrow",
       "x": 450.7632,
       "y": 809.184,
-      "width": 0,
-      "height": 0,
+      "width": 272.98079999999993,
+      "height": 622.7808,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1487,8 +1587,8 @@
       "type": "arrow",
       "x": 450.7632,
       "y": 809.184,
-      "width": 0,
-      "height": 0,
+      "width": 272.99519999999995,
+      "height": 247.58159999999998,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1546,7 +1646,7 @@
       "x": 450.7632,
       "y": 621.6024,
       "width": 0,
-      "height": 0,
+      "height": 247.60319999999996,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1604,7 +1704,7 @@
       "x": 723.7439999999999,
       "y": 246.4032,
       "width": 0,
-      "height": 0,
+      "height": 247.6032,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1662,7 +1762,7 @@
       "x": 177.768,
       "y": 621.6024,
       "width": 0,
-      "height": 0,
+      "height": 247.60319999999996,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1719,8 +1819,8 @@
       "type": "arrow",
       "x": 450.7632,
       "y": 621.6024,
-      "width": 0,
-      "height": 0,
+      "width": 272.98079999999993,
+      "height": 247.60319999999996,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1778,7 +1878,7 @@
       "x": 723.7439999999999,
       "y": 433.99920000000003,
       "width": 0,
-      "height": 0,
+      "height": 247.59600000000003,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1835,8 +1935,8 @@
       "type": "arrow",
       "x": 177.768,
       "y": 809.184,
-      "width": 0,
-      "height": 0,
+      "width": 272.99519999999995,
+      "height": 247.58159999999998,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1893,8 +1993,8 @@
       "type": "arrow",
       "x": 177.768,
       "y": 809.184,
-      "width": 0,
-      "height": 0,
+      "width": 545.9759999999999,
+      "height": 622.7808,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -1952,7 +2052,7 @@
       "x": 177.768,
       "y": 809.184,
       "width": 0,
-      "height": 0,
+      "height": 247.58159999999998,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -2032,7 +2132,7 @@
       "locked": false,
       "text": "微服务架构（Library Components）",
       "fontSize": 24,
-      "fontFamily": 1,
+      "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": null,
@@ -2043,13 +2143,33 @@
           "order": 1,
           "duration": 400,
           "type": "fade-in"
-        }
+        },
+        "cjkFontFamily": "Ma Shan Zheng",
+        "cjkFontFallbacks": [
+          "Long Cang",
+          "Liu Jian Mao Cao",
+          "Hannotate SC",
+          "HanziPen SC",
+          "Wawati SC",
+          "Kaiti SC",
+          "PingFang SC"
+        ]
       }
     }
   ],
   "files": {},
   "appState": {
     "viewBackgroundColor": "#ffffff",
-    "gridSize": 20
+    "gridSize": 20,
+    "cjkFontFamily": "Ma Shan Zheng",
+    "cjkFontFallbacks": [
+      "Long Cang",
+      "Liu Jian Mao Cao",
+      "Hannotate SC",
+      "HanziPen SC",
+      "Wawati SC",
+      "Kaiti SC",
+      "PingFang SC"
+    ]
   }
 }

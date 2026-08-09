@@ -51,6 +51,20 @@ else
   log_fail "validate should reject bad file"
 fi
 
+ARROW_GEOMETRY_FILE="/tmp/test-arrow-geometry.excalidraw"
+cat > "$ARROW_GEOMETRY_FILE" <<'ARROWEOF'
+{"type":"excalidraw","version":2,"elements":[{"id":"a1","type":"arrow","x":10,"y":20,"width":0,"height":0,"points":[[0,0],[60,100]],"strokeColor":"#868e96","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":2,"strokeStyle":"solid","roughness":1,"opacity":100,"angle":0,"seed":1,"groupIds":[],"boundElements":null,"updated":1,"link":null,"locked":false,"startBinding":null,"endBinding":null,"startArrowhead":null,"endArrowhead":"arrow"}],"appState":{}}
+ARROWEOF
+if ! python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" "$ARROW_GEOMETRY_FILE" --strict >/dev/null 2>&1 \
+  && python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" "$ARROW_GEOMETRY_FILE" --fix-arrow-geometry --strict >/dev/null 2>&1 \
+  && jq -e '.elements[0].width == 60 and .elements[0].height == 100' "$ARROW_GEOMETRY_FILE" >/dev/null \
+  && python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" "$ARROW_GEOMETRY_FILE" --fix-arrow-geometry --strict --json > /tmp/test-arrow-geometry-second.json \
+  && jq -e '.fixed_arrows | length == 0' /tmp/test-arrow-geometry-second.json >/dev/null; then
+  log_pass "arrow geometry warning is deterministically auto-fixed"
+else
+  log_fail "arrow geometry auto-fix"
+fi
+
 # --- Test 4: Render ---
 echo "=== Test 4: Render ==="
 RENDER_OUT="/tmp/e2e-render-test"
@@ -382,8 +396,14 @@ frames = [el for el in scene.get("elements", []) if el.get("type") == "frame"]
 texts = [el for el in scene.get("elements", []) if el.get("type") == "text"]
 if len(frames) != 4:
     raise SystemExit(f"expected 4 architecture columns, got {len(frames)}")
-if not texts or any(el.get("fontFamily") != 2 for el in texts):
-    raise SystemExit("minimal theme must use clean sans-serif text")
+if not texts:
+    raise SystemExit("minimal theme text missing")
+if any(el.get("fontFamily") != 11 for el in texts if any(ord(ch) >= 0x2E80 for ch in el.get("text", ""))):
+    raise SystemExit("minimal theme Chinese must use handwriting text")
+if any(el.get("fontFamily") != 2 for el in texts if el.get("text") and not any(ord(ch) >= 0x2E80 for ch in el.get("text", ""))):
+    raise SystemExit("minimal theme English must retain clean sans-serif text")
+if scene.get("appState", {}).get("cjkFontFamily") != "Ma Shan Zheng":
+    raise SystemExit("minimal theme CJK handwriting metadata missing")
 xs = [el["x"] for el in frames]
 ys = [el["y"] for el in frames]
 x2 = [el["x"] + el.get("width", 0) for el in frames]
@@ -642,16 +662,85 @@ else
 fi
 
 echo "=== Test 15: Sketch recommendation and preset ==="
+if python3 "$PROJECT_DIR/scripts/template_selector.py" --guide --json > /tmp/e2e-template-guide.json \
+  && python3 - <<'PY'
+import json
+d=json.load(open('/tmp/e2e-template-guide.json'))
+assert d['template_count'] == 10
+assert len(d['categories']) == 4
+items=[t for category in d['categories'] for t in category['templates']]
+assert len(items) == 10 and len({t['key'] for t in items}) == 10
+assert all(t['best_for'] and t['avoid_when'] and t['recommended_styles'] for t in items)
+PY
+then
+  log_pass "template guide groups all 10 templates into four user-facing categories"
+else
+  log_fail "template guide catalog"
+fi
 if python3 "$PROJECT_DIR/scripts/template_selector.py" --recommend "画一张图" > /tmp/e2e-sketch-recommend.json \
   && python3 - <<'PY'
 import json
-d=json.load(open('/tmp/e2e-sketch-recommend.json'))['recommendation']
-assert d['requires_confirmation'] is True and d['template'] and d['sketchStyle']
+d=json.load(open('/tmp/e2e-sketch-recommend.json'))
+r=d['recommendation']; cards=d['interaction']['options']
+assert r['requires_confirmation'] is True and r['template'] == 'relationship'
+assert [c['template'] for c in cards] == ['relationship', 'flowchart', 'architecture']
+assert len(cards) == 3 and sum(bool(c['recommended']) for c in cards) == 1
+assert all(c['best_for'] and c['avoid_when'] and c['sketchStyle'] for c in cards)
+assert d['primary']['key'] == r['template'] and 'parameters' in d and 'alternatives' in d
 PY
 then
-  log_pass "ambiguous intent requests one confirmation"
+  log_pass "ambiguous intent presents three distinct template choices"
 else
   log_fail "ambiguous intent recommendation"
+fi
+if python3 "$PROJECT_DIR/scripts/template_selector.py" --recommend "分析有限元不收敛的根因" > /tmp/e2e-root-cause-recommend.json \
+  && python3 "$PROJECT_DIR/scripts/template_selector.py" --recommend "画一个流程图" > /tmp/e2e-explicit-template.json \
+  && python3 "$PROJECT_DIR/scripts/template_selector.py" --recommend "用根因诊断风格画一张图" > /tmp/e2e-explicit-style.json \
+  && python3 "$PROJECT_DIR/scripts/template_selector.py" --recommend "画一个流程图，使用工程笔记风格" > /tmp/e2e-explicit-both.json \
+  && python3 - <<'PY'
+import json
+root=json.load(open('/tmp/e2e-root-cause-recommend.json'))['recommendation']
+template=json.load(open('/tmp/e2e-explicit-template.json'))
+style=json.load(open('/tmp/e2e-explicit-style.json'))
+both=json.load(open('/tmp/e2e-explicit-both.json'))
+assert root['template'] == 'relationship' and root['sketchStyle'] == 'root-cause'
+assert root['confidence'] == 'high' and root['requires_confirmation'] is True
+assert template['recommendation']['template'] == 'flowchart'
+assert template['recommendation']['requires_confirmation'] is True
+assert template['interaction']['mode'] == 'select_style'
+assert {c['template'] for c in template['interaction']['options']} == {'flowchart'}
+assert len({c['sketchStyle'] for c in template['interaction']['options']}) >= 2
+assert style['recommendation']['sketchStyle'] == 'root-cause'
+assert style['interaction']['mode'] == 'select_template'
+assert all(c['sketchStyle'] == 'root-cause' for c in style['interaction']['options'])
+assert both['interaction']['mode'] == 'ready'
+assert both['recommendation']['requires_confirmation'] is False
+PY
+then
+  log_pass "template-only, style-only, and fully explicit interaction modes"
+else
+  log_fail "template recommendation tuning"
+fi
+if python3 "$PROJECT_DIR/scripts/template_selector.py" --choices "画一张图" > /tmp/e2e-template-choices.txt \
+  && grep -q '^1\.' /tmp/e2e-template-choices.txt \
+  && grep -q '^2\.' /tmp/e2e-template-choices.txt \
+  && grep -q '^3\.' /tmp/e2e-template-choices.txt \
+  && grep -q '你直接选' /tmp/e2e-template-choices.txt; then
+  log_pass "human-readable template choice menu"
+else
+  log_fail "template choice menu"
+fi
+if python3 "$PROJECT_DIR/scripts/template_selector.py" --params relationship --theme sketch --sketch-style root-cause > /tmp/e2e-template-params.json \
+  && python3 - <<'PY'
+import json
+d=json.load(open('/tmp/e2e-template-params.json'))
+assert d['template'] == 'relationship'
+assert d['theme'] == 'sketch' and d['sketchStyle'] == 'root-cause'
+PY
+then
+  log_pass "confirmed template choice resolves to generation parameters"
+else
+  log_fail "template choice parameter resolution"
 fi
 if python3 "$PROJECT_DIR/scripts/template_selector.py" --recommend "flowchart, 你直接选" > /tmp/e2e-sketch-direct.json \
   && python3 - <<'PY'
@@ -695,6 +784,87 @@ then
   log_pass "four sketch templates and five presets are deterministic"
 else
   log_fail "sketch template/preset coverage"
+fi
+
+# --- Test 16: Global CJK handwriting policy ---
+echo "=== Test 16: Global CJK handwriting policy ==="
+if python3 - "$PROJECT_DIR" <<'PY'
+import importlib.util
+import sys
+
+project = sys.argv[1]
+spec = importlib.util.spec_from_file_location("generator", f"{project}/scripts/ir_to_excalidraw.py")
+generator = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(generator)
+
+templates = (
+    "flowchart", "architecture", "sequence", "mindmap", "swimlane",
+    "erd", "hierarchy", "relationship", "comparison", "timeline",
+)
+latin_fonts = {"default": 1, "sketch": 1, "blueprint": 2, "minimal": 2}
+base = {
+    "title": "中文字体测试",
+    "nodes": [
+        {"id": "a", "label": "检测节点\nDETECT", "type": "process"},
+        {"id": "b", "label": "结束", "type": "end"},
+    ],
+    "edges": [{"id": "e", "from": "a", "to": "b", "label": "trigger"}],
+    "groups": [{"id": "g", "name": "阶段", "nodes": ["a", "b"], "level": 0}],
+}
+has_cjk = lambda value: any(ord(ch) >= 0x2E80 for ch in str(value))
+for template in templates:
+    for theme, latin_font in latin_fonts.items():
+        ir = dict(base, template=template, theme=theme)
+        first = generator.convert(ir)
+        second = generator.convert(ir)
+        assert first == second, (template, theme, "non-deterministic")
+        assert first["appState"].get("cjkFontFamily") == "Ma Shan Zheng", (template, theme)
+        texts = [el for el in first["elements"] if el.get("type") == "text" and el.get("text")]
+        cjk = [el for el in texts if has_cjk(el["text"])]
+        latin = [el for el in texts if not has_cjk(el["text"])]
+        assert cjk and all(el.get("fontFamily") == 11 for el in cjk), (template, theme, "CJK")
+        assert all(el.get("fontFamily") == latin_font for el in latin), (template, theme, "Latin")
+        assert all(el.get("customData", {}).get("cjkFontFamily") == "Ma Shan Zheng" for el in texts)
+for theme, latin_font in latin_fonts.items():
+    scene = generator.convert(dict(base, template="flowchart", theme=theme))
+    latin = [
+        el for el in scene["elements"]
+        if el.get("type") == "text" and el.get("text") and not has_cjk(el["text"])
+    ]
+    assert latin and all(el.get("fontFamily") == latin_font for el in latin), (theme, "Latin control")
+PY
+then
+  log_pass "10 templates x 4 themes preserve Chinese handwriting and theme-specific Latin fonts"
+else
+  log_fail "global generator CJK handwriting matrix"
+fi
+if node - "$PROJECT_DIR" <<'JS'
+const project = process.argv[2];
+const { TEMPLATES, buildTemplateScene } = require(`${project}/scripts/list_templates.js`);
+const hasCjk = (value) => /[\u2E80-\u9FFF\uF900-\uFAFF]/u.test(String(value));
+for (const name of Object.keys(TEMPLATES)) {
+  const elements = buildTemplateScene(name).elements;
+  const texts = elements.filter((el) => el.type === 'text' && el.text);
+  const cjk = texts.filter((el) => hasCjk(el.text));
+  const latin = texts.filter((el) => !hasCjk(el.text));
+  if (cjk.some((el) => el.fontFamily !== 11)) throw new Error(`${name}: CJK font`);
+  if (latin.some((el) => el.fontFamily !== 1)) throw new Error(`${name}: Latin font`);
+  if (texts.some((el) => el.customData?.cjkFontFamily !== 'Ma Shan Zheng')) throw new Error(`${name}: metadata`);
+  for (const arrow of elements.filter((el) => el.type === 'arrow')) {
+    const xs = arrow.points.map((point) => point[0]);
+    const ys = arrow.points.map((point) => point[1]);
+    const width = Math.max(...xs) - Math.min(...xs);
+    const height = Math.max(...ys) - Math.min(...ys);
+    if (Math.abs(arrow.width - width) > 0.01 || Math.abs(arrow.height - height) > 0.01) {
+      throw new Error(`${name}: arrow geometry`);
+    }
+  }
+}
+JS
+then
+  log_pass "all 10 static template previews use the same Chinese handwriting policy"
+else
+  log_fail "static template preview CJK handwriting"
 fi
 
 # --- Summary ---
