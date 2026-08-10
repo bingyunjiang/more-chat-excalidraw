@@ -21,7 +21,7 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 87611,
+      "seed": 1368,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -31,7 +31,7 @@
           "type": "text"
         }
       ],
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -60,16 +60,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 47643,
+      "seed": 97515,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "项目",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -77,11 +77,6 @@
       "originalText": "项目",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -91,7 +86,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -100,7 +100,7 @@
       "x": 100,
       "y": 260.0,
       "width": 140,
-      "height": 50,
+      "height": 50.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "#d0bfff",
@@ -114,7 +114,7 @@
       "roundness": {
         "type": 3
       },
-      "seed": 28482,
+      "seed": 40797,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -132,7 +132,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -147,7 +147,7 @@
       "id": "txt-n2",
       "type": "text",
       "x": 120.0,
-      "y": 272.0,
+      "y": 273.25,
       "width": 100,
       "height": 24,
       "angle": 0,
@@ -161,16 +161,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 26513,
+      "seed": 86583,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "需求",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -178,11 +178,6 @@
       "originalText": "需求",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -192,7 +187,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -201,7 +201,7 @@
       "x": 100,
       "y": 540.0,
       "width": 140,
-      "height": 50,
+      "height": 50.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "#d0bfff",
@@ -215,7 +215,7 @@
       "roundness": {
         "type": 3
       },
-      "seed": 69283,
+      "seed": 41732,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -229,7 +229,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -244,7 +244,7 @@
       "id": "txt-n3",
       "type": "text",
       "x": 120.0,
-      "y": 552.0,
+      "y": 553.25,
       "width": 100,
       "height": 24,
       "angle": 0,
@@ -258,16 +258,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 11387,
+      "seed": 53731,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "开发",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -275,11 +275,6 @@
       "originalText": "开发",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -289,7 +284,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -298,7 +298,7 @@
       "x": 100,
       "y": 780,
       "width": 140,
-      "height": 50,
+      "height": 50.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "#d0bfff",
@@ -312,7 +312,7 @@
       "roundness": {
         "type": 3
       },
-      "seed": 60535,
+      "seed": 26184,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -322,7 +322,7 @@
           "type": "text"
         }
       ],
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -337,7 +337,7 @@
       "id": "txt-n4",
       "type": "text",
       "x": 120.0,
-      "y": 792.0,
+      "y": 793.25,
       "width": 100,
       "height": 24,
       "angle": 0,
@@ -351,16 +351,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 14188,
+      "seed": 91756,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "测试",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -368,11 +368,6 @@
       "originalText": "测试",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -382,7 +377,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -391,7 +391,7 @@
       "x": 380,
       "y": 220,
       "width": 140,
-      "height": 50,
+      "height": 50.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "#fcc2d7",
@@ -405,7 +405,7 @@
       "roundness": {
         "type": 3
       },
-      "seed": 35151,
+      "seed": 86993,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -419,7 +419,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -434,7 +434,7 @@
       "id": "txt-n5",
       "type": "text",
       "x": 400.0,
-      "y": 232.0,
+      "y": 233.25,
       "width": 100,
       "height": 24,
       "angle": 0,
@@ -448,16 +448,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 11179,
+      "seed": 70444,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "调研",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -465,11 +465,6 @@
       "originalText": "调研",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -479,7 +474,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -488,7 +488,7 @@
       "x": 380,
       "y": 300,
       "width": 140,
-      "height": 50,
+      "height": 50.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "#fcc2d7",
@@ -502,7 +502,7 @@
       "roundness": {
         "type": 3
       },
-      "seed": 5141,
+      "seed": 98542,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -516,7 +516,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -531,7 +531,7 @@
       "id": "txt-n6",
       "type": "text",
       "x": 400.0,
-      "y": 312.0,
+      "y": 313.25,
       "width": 100,
       "height": 24,
       "angle": 0,
@@ -545,16 +545,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 75874,
+      "seed": 39286,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "评审",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -562,11 +562,6 @@
       "originalText": "评审",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -576,7 +571,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -585,7 +585,7 @@
       "x": 380,
       "y": 540,
       "width": 140,
-      "height": 50,
+      "height": 50.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "#fcc2d7",
@@ -599,7 +599,7 @@
       "roundness": {
         "type": 3
       },
-      "seed": 75188,
+      "seed": 79011,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -613,7 +613,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -628,7 +628,7 @@
       "id": "txt-n7",
       "type": "text",
       "x": 400.0,
-      "y": 552.0,
+      "y": 553.25,
       "width": 100,
       "height": 24,
       "angle": 0,
@@ -642,16 +642,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 24519,
+      "seed": 74270,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "编码",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -659,11 +659,6 @@
       "originalText": "编码",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -673,16 +668,21 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
       "id": "arrow-auto1",
       "type": "arrow",
-      "x": 170.0,
-      "y": 310.0,
-      "width": 280.0,
-      "height": 90.0,
+      "x": 240.0,
+      "y": 275.25,
+      "width": 140.0,
+      "height": 20.0,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -696,12 +696,12 @@
       "roundness": {
         "type": 2
       },
-      "seed": 60784,
+      "seed": 99000,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "points": [
@@ -710,19 +710,19 @@
           0
         ],
         [
-          280.0,
-          -90.0
+          140.0,
+          -20.0
         ]
       ],
       "startBinding": {
         "elementId": "n2",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "n5",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -737,10 +737,10 @@
     {
       "id": "arrow-auto2",
       "type": "arrow",
-      "x": 240,
-      "y": 285.0,
-      "width": 140,
-      "height": 40.0,
+      "x": 240.0,
+      "y": 295.25,
+      "width": 140.0,
+      "height": 20.0,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -754,12 +754,12 @@
       "roundness": {
         "type": 2
       },
-      "seed": 38914,
+      "seed": 91498,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "points": [
@@ -768,19 +768,19 @@
           0
         ],
         [
-          140,
-          40.0
+          140.0,
+          20.0
         ]
       ],
       "startBinding": {
         "elementId": "n2",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "n6",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -795,10 +795,10 @@
     {
       "id": "arrow-auto3",
       "type": "arrow",
-      "x": 170.0,
-      "y": 590.0,
-      "width": 280.0,
-      "height": 50.0,
+      "x": 240.0,
+      "y": 565.25,
+      "width": 140.0,
+      "height": 0,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -812,12 +812,12 @@
       "roundness": {
         "type": 2
       },
-      "seed": 98365,
+      "seed": 65248,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "points": [
@@ -826,19 +826,19 @@
           0
         ],
         [
-          280.0,
-          -50.0
+          140.0,
+          0.0
         ]
       ],
       "startBinding": {
         "elementId": "n3",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "n7",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -853,7 +853,7 @@
     {
       "id": "title-0",
       "type": "text",
-      "x": 40,
+      "x": 110.0,
       "y": 10,
       "width": 400,
       "height": 30,
@@ -868,12 +868,12 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 35828,
+      "seed": 77457,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199380780,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "项目计划",
@@ -885,11 +885,6 @@
       "originalText": "项目计划",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 1,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -899,7 +894,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 1,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     }
   ],

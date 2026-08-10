@@ -192,7 +192,7 @@
       "id": "txt-bt01",
       "type": "text",
       "x": 120.0,
-      "y": 197.0,
+      "y": 198.0,
       "width": 120,
       "height": 24,
       "angle": 0,
@@ -215,7 +215,7 @@
       "link": null,
       "locked": false,
       "text": "整车驾驶工况",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -223,11 +223,6 @@
       "originalText": "整车驾驶工况",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -237,7 +232,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -289,7 +289,7 @@
       "id": "txt-bt02",
       "type": "text",
       "x": 120.0,
-      "y": 347.0,
+      "y": 348.0,
       "width": 120,
       "height": 24,
       "angle": 0,
@@ -312,7 +312,7 @@
       "link": null,
       "locked": false,
       "text": "电芯发热功率",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -320,11 +320,6 @@
       "originalText": "电芯发热功率",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -334,7 +329,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -386,7 +386,7 @@
       "id": "txt-bt03",
       "type": "text",
       "x": 120.0,
-      "y": 497.0,
+      "y": 498.0,
       "width": 144.0,
       "height": 24,
       "angle": 0,
@@ -409,7 +409,7 @@
       "link": null,
       "locked": false,
       "text": "冷却液与环境边界",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -417,11 +417,6 @@
       "originalText": "冷却液与环境边界",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -431,7 +426,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -487,7 +487,7 @@
       "id": "txt-bt04",
       "type": "text",
       "x": 460.0,
-      "y": 207.0,
+      "y": 208.0,
       "width": 160,
       "height": 24,
       "angle": 0,
@@ -510,7 +510,7 @@
       "link": null,
       "locked": false,
       "text": "电化学-热耦合模型",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -518,11 +518,6 @@
       "originalText": "电化学-热耦合模型",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -532,7 +527,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -596,7 +596,7 @@
       "id": "txt-bt05",
       "type": "text",
       "x": 460.0,
-      "y": 357.0,
+      "y": 358.0,
       "width": 160,
       "height": 24,
       "angle": 0,
@@ -619,7 +619,7 @@
       "link": null,
       "locked": false,
       "text": "电池包传热模型",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -627,11 +627,6 @@
       "originalText": "电池包传热模型",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -641,7 +636,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -697,7 +697,7 @@
       "id": "txt-bt06",
       "type": "text",
       "x": 460.0,
-      "y": 507.0,
+      "y": 508.0,
       "width": 160,
       "height": 24,
       "angle": 0,
@@ -720,7 +720,7 @@
       "link": null,
       "locked": false,
       "text": "冷却流道 CFD",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -728,11 +728,6 @@
       "originalText": "冷却流道 CFD",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -742,7 +737,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -794,7 +794,7 @@
       "id": "txt-bt07",
       "type": "text",
       "x": 820.0,
-      "y": 197.0,
+      "y": 198.0,
       "width": 162.0,
       "height": 24,
       "angle": 0,
@@ -817,7 +817,7 @@
       "link": null,
       "locked": false,
       "text": "台架温度与流量数据",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -825,11 +825,6 @@
       "originalText": "台架温度与流量数据",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -839,7 +834,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -932,7 +932,7 @@
       "link": null,
       "locked": false,
       "text": "模型可信度判定",
-      "fontSize": 16,
+      "fontSize": 16.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -940,11 +940,6 @@
       "originalText": "模型可信度判定",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -954,7 +949,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -1006,7 +1006,7 @@
       "id": "txt-bt09",
       "type": "text",
       "x": 820.0,
-      "y": 507.0,
+      "y": 508.0,
       "width": 162.0,
       "height": 24,
       "angle": 0,
@@ -1029,7 +1029,7 @@
       "link": null,
       "locked": false,
       "text": "参数标定与误差归因",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -1037,11 +1037,6 @@
       "originalText": "参数标定与误差归因",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -1051,7 +1046,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -1103,7 +1103,7 @@
       "id": "txt-bt10",
       "type": "text",
       "x": 1180.0,
-      "y": 197.0,
+      "y": 198.0,
       "width": 126.0,
       "height": 24,
       "angle": 0,
@@ -1126,7 +1126,7 @@
       "link": null,
       "locked": false,
       "text": "最高温度与温差",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -1134,11 +1134,6 @@
       "originalText": "最高温度与温差",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -1148,7 +1143,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -1200,7 +1200,7 @@
       "id": "txt-bt11",
       "type": "text",
       "x": 1180.0,
-      "y": 347.0,
+      "y": 348.0,
       "width": 126.0,
       "height": 24,
       "angle": 0,
@@ -1223,7 +1223,7 @@
       "link": null,
       "locked": false,
       "text": "冷却策略与能耗",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -1231,11 +1231,6 @@
       "originalText": "冷却策略与能耗",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -1245,7 +1240,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -1297,7 +1297,7 @@
       "id": "txt-bt12",
       "type": "text",
       "x": 1180.0,
-      "y": 497.0,
+      "y": 498.0,
       "width": 126.0,
       "height": 24,
       "angle": 0,
@@ -1320,7 +1320,7 @@
       "link": null,
       "locked": false,
       "text": "热安全设计包络",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -1328,11 +1328,6 @@
       "originalText": "热安全设计包络",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -1342,16 +1337,21 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
       "id": "arrow-bte01",
       "type": "arrow",
-      "x": 180.0,
-      "y": 240,
-      "width": 360.0,
-      "height": 60,
+      "x": 260.0,
+      "y": 212.22222222222223,
+      "width": 180.0,
+      "height": 5.0,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -1362,7 +1362,9 @@
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
-      "roundness": null,
+      "roundness": {
+        "type": 2
+      },
       "seed": 74721,
       "version": 1,
       "versionNonce": 0,
@@ -1377,27 +1379,19 @@
           0
         ],
         [
-          0,
-          -30.0
-        ],
-        [
-          360.0,
-          -30.0
-        ],
-        [
-          360.0,
-          -60
+          180.0,
+          5.0
         ]
       ],
       "startBinding": {
         "elementId": "bt01",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt04",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -1412,10 +1406,10 @@
     {
       "id": "arrow-bte02",
       "type": "arrow",
-      "x": 180.0,
-      "y": 390,
-      "width": 360.0,
-      "height": 60,
+      "x": 260.0,
+      "y": 362.22222222222223,
+      "width": 180.0,
+      "height": 5.0,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -1426,7 +1420,9 @@
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
-      "roundness": null,
+      "roundness": {
+        "type": 2
+      },
       "seed": 71924,
       "version": 1,
       "versionNonce": 0,
@@ -1441,27 +1437,19 @@
           0
         ],
         [
-          0,
-          -18.0
-        ],
-        [
-          360.0,
-          -18.0
-        ],
-        [
-          360.0,
-          -60
+          180.0,
+          5.0
         ]
       ],
       "startBinding": {
         "elementId": "bt02",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt05",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -1476,10 +1464,10 @@
     {
       "id": "arrow-bte03",
       "type": "arrow",
-      "x": 192.0,
-      "y": 540,
-      "width": 348.0,
-      "height": 60,
+      "x": 284.0,
+      "y": 512.6436781609195,
+      "width": 156.0,
+      "height": 4.482758620689651,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -1490,7 +1478,9 @@
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
-      "roundness": null,
+      "roundness": {
+        "type": 2
+      },
       "seed": 45350,
       "version": 1,
       "versionNonce": 0,
@@ -1505,27 +1495,19 @@
           0
         ],
         [
-          0,
-          -6.0
-        ],
-        [
-          348.0,
-          -6.0
-        ],
-        [
-          348.0,
-          -60
+          156.0,
+          4.482758620689651
         ]
       ],
       "startBinding": {
         "elementId": "bt03",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt06",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -1541,9 +1523,9 @@
       "id": "arrow-bte04",
       "type": "arrow",
       "x": 540.0,
-      "y": 260,
+      "y": 260.0,
       "width": 0,
-      "height": 70,
+      "height": 70.0,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -1578,18 +1560,18 @@
         ],
         [
           0.0,
-          70
+          70.0
         ]
       ],
       "startBinding": {
         "elementId": "bt04",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt05",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -1605,9 +1587,9 @@
       "id": "arrow-bte05",
       "type": "arrow",
       "x": 540.0,
-      "y": 560,
+      "y": 480.0,
       "width": 0,
-      "height": 230,
+      "height": 70.0,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -1634,26 +1616,26 @@
         ],
         [
           0,
-          -127.0
+          -47.0
         ],
         [
           0.0,
-          -127.0
+          -47.0
         ],
         [
           0.0,
-          -230
+          -70.0
         ]
       ],
       "startBinding": {
         "elementId": "bt06",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt05",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -1668,10 +1650,10 @@
     {
       "id": "arrow-bte06",
       "type": "arrow",
-      "x": 540.0,
-      "y": 410,
-      "width": 340.0,
-      "height": 80,
+      "x": 640.0,
+      "y": 370.0,
+      "width": 160.0,
+      "height": 0,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -1682,7 +1664,9 @@
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
-      "roundness": null,
+      "roundness": {
+        "type": 2
+      },
       "seed": 37858,
       "version": 1,
       "versionNonce": 0,
@@ -1697,27 +1681,19 @@
           0
         ],
         [
-          0,
-          -40.0
-        ],
-        [
-          340.0,
-          -40.0
-        ],
-        [
-          340.0,
-          -80
+          160.0,
+          0.0
         ]
       ],
       "startBinding": {
         "elementId": "bt05",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt08",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -1732,8 +1708,8 @@
     {
       "id": "elbl-bte06",
       "type": "text",
-      "x": 675.0,
-      "y": 356.0,
+      "x": 685.0,
+      "y": 350.0,
       "width": 70,
       "height": 20,
       "angle": 0,
@@ -1756,7 +1732,7 @@
       "link": null,
       "locked": false,
       "text": "仿真响应",
-      "fontSize": 13,
+      "fontSize": 13.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -1764,11 +1740,6 @@
       "originalText": "仿真响应",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -1778,16 +1749,21 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
       "id": "arrow-bte07",
       "type": "arrow",
-      "x": 901.0,
-      "y": 240,
-      "width": 21.0,
-      "height": 90,
+      "x": 897.0625,
+      "y": 240.0,
+      "width": 11.8125,
+      "height": 90.0,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -1817,23 +1793,23 @@
           57.0
         ],
         [
-          -21.0,
+          -11.8125,
           57.0
         ],
         [
-          -21.0,
-          90
+          -11.8125,
+          90.0
         ]
       ],
       "startBinding": {
         "elementId": "bt07",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt08",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -1848,8 +1824,8 @@
     {
       "id": "elbl-bte07",
       "type": "text",
-      "x": 866.0,
-      "y": 254.5,
+      "x": 872.0625,
+      "y": 258.5,
       "width": 70,
       "height": 20,
       "angle": 0,
@@ -1872,7 +1848,7 @@
       "link": null,
       "locked": false,
       "text": "试验基准",
-      "fontSize": 13,
+      "fontSize": 13.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -1880,11 +1856,6 @@
       "originalText": "试验基准",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -1894,16 +1865,21 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
       "id": "arrow-bte08",
       "type": "arrow",
-      "x": 880.0,
-      "y": 410,
-      "width": 21.0,
-      "height": 70,
+      "x": 885.6,
+      "y": 410.0,
+      "width": 9.799999999999955,
+      "height": 70.0,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -1933,23 +1909,23 @@
           59.0
         ],
         [
-          21.0,
+          9.799999999999955,
           59.0
         ],
         [
-          21.0,
-          70
+          9.799999999999955,
+          70.0
         ]
       ],
       "startBinding": {
         "elementId": "bt08",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt09",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -1964,8 +1940,8 @@
     {
       "id": "elbl-bte08",
       "type": "text",
-      "x": 845.0,
-      "y": 425.5,
+      "x": 840.6,
+      "y": 429.5,
       "width": 70,
       "height": 20,
       "angle": 0,
@@ -1988,7 +1964,7 @@
       "link": null,
       "locked": false,
       "text": "偏差超限",
-      "fontSize": 13,
+      "fontSize": 13.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -1996,11 +1972,6 @@
       "originalText": "偏差超限",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -2010,16 +1981,21 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
       "id": "arrow-bte09",
       "type": "arrow",
-      "x": 880.0,
-      "y": 410,
-      "width": 363.0,
-      "height": 230,
+      "x": 960.0,
+      "y": 334.73829201101927,
+      "width": 214.9375,
+      "height": 94.73829201101927,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -2046,26 +2022,26 @@
         ],
         [
           0,
-          -139.0
+          -71.36914600550966
         ],
         [
-          363.0,
-          -139.0
+          214.9375,
+          -71.36914600550966
         ],
         [
-          363.0,
-          -230
+          214.9375,
+          -94.73829201101927
         ]
       ],
       "startBinding": {
         "elementId": "bt08",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt10",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -2080,10 +2056,10 @@
     {
       "id": "arrow-bte10",
       "type": "arrow",
-      "x": 880.0,
-      "y": 410,
-      "width": 363.0,
-      "height": 80,
+      "x": 960.0,
+      "y": 367.7961432506887,
+      "width": 200.0,
+      "height": 5.5096418732782695,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -2094,7 +2070,9 @@
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
-      "roundness": null,
+      "roundness": {
+        "type": 2
+      },
       "seed": 1985,
       "version": 1,
       "versionNonce": 0,
@@ -2109,27 +2087,19 @@
           0
         ],
         [
-          0,
-          -40.0
-        ],
-        [
-          363.0,
-          -40.0
-        ],
-        [
-          363.0,
-          -80
+          200.0,
+          -5.5096418732782695
         ]
       ],
       "startBinding": {
         "elementId": "bt08",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt11",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -2144,10 +2114,10 @@
     {
       "id": "arrow-bte11",
       "type": "arrow",
-      "x": 880.0,
-      "y": 410,
-      "width": 363.0,
-      "height": 70,
+      "x": 960.0,
+      "y": 400.8539944903581,
+      "width": 205.21428571428578,
+      "height": 79.1460055096419,
       "angle": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -2174,26 +2144,26 @@
         ],
         [
           0,
-          47.0
+          51.57300275482095
         ],
         [
-          363.0,
-          47.0
+          205.21428571428578,
+          51.57300275482095
         ],
         [
-          363.0,
-          70
+          205.21428571428578,
+          79.1460055096419
         ]
       ],
       "startBinding": {
         "elementId": "bt08",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "bt12",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
@@ -2209,7 +2179,7 @@
       "id": "title-0",
       "type": "text",
       "x": 513.0,
-      "y": 90,
+      "y": 55,
       "width": 400,
       "height": 30,
       "angle": 0,
@@ -2240,11 +2210,6 @@
       "originalText": "电池包热管理多物理场仿真架构",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 1,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -2254,7 +2219,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 1,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     }
   ],

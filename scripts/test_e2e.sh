@@ -695,6 +695,10 @@ assert [c['template'] for c in cards] == ['relationship', 'flowchart', 'architec
 assert len(cards) == 3 and sum(bool(c['recommended']) for c in cards) == 1
 assert all(c['best_for'] and c['avoid_when'] and c['sketchStyle'] for c in cards)
 assert d['primary']['key'] == r['template'] and 'parameters' in d and 'alternatives' in d
+assert d['interaction']['max_options'] == 3
+assert len(d['alternatives']) <= 3
+required_card_fields={'id','label','template','category','sketchStyle','style_label','why','best_for','avoid_when','structure','recommended'}
+assert all(required_card_fields <= set(c) for c in cards)
 PY
 then
   log_pass "ambiguous intent presents three distinct template choices"
@@ -728,6 +732,40 @@ then
   log_pass "template-only, style-only, and fully explicit interaction modes"
 else
   log_fail "template recommendation tuning"
+fi
+if python3 - <<'PY'
+import importlib.util
+from pathlib import Path
+
+path=Path("scripts/template_selector.py")
+spec=importlib.util.spec_from_file_location("selector", path)
+m=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+
+scores={key: 0 for key in m.TEMPLATES}
+scores["flowchart"] = 5
+scores["architecture"] = 5
+assert m._rank_templates(scores)[:2] == ["flowchart", "architecture"]
+
+profile=m._intent_profile("用根因诊断风格画一张图")
+assert profile["explicit_template"] is None
+assert profile["explicit_style"] == "root-cause"
+assert "根因诊断" not in profile["scoring_text"]
+
+zero_scores={key: 0 for key in m.TEMPLATES}
+ranked=m._rank_templates(zero_scores)
+primary, fallback=m._select_primary_template(profile, zero_scores, ranked)
+assert primary == "relationship"
+assert fallback[:3] == ["relationship", "flowchart", "architecture"]
+
+cards=m._template_options("relationship", ["flowchart", "architecture", "mindmap"], "画一张图", "reason", "mechanism-map")
+assert [c["template"] for c in cards] == ["relationship", "flowchart", "architecture"]
+assert len(cards) == 3 and sum(c["recommended"] for c in cards) == 1
+PY
+then
+  log_pass "template selector internals keep deterministic ranking, fallback, and option caps"
+else
+  log_fail "template selector internal decision contract"
 fi
 if python3 "$PROJECT_DIR/scripts/template_selector.py" --choices "画一张图" > /tmp/e2e-template-choices.txt \
   && grep -q '^1\.' /tmp/e2e-template-choices.txt \

@@ -285,6 +285,86 @@ def _edge_boundary_points(fx, fy, st_from, tx, ty, st_to):
     )
 
 
+def _vertical_flow_edge_crosses_intermediate_node(frm, to, fx, fy, tx, ty, node_styles, positions):
+    st_from = node_styles[frm]
+    st_to = node_styles[to]
+    source_cx = fx + st_from["w"] / 2
+    target_cx = tx + st_to["w"] / 2
+    if abs(source_cx - target_cx) > 24 or ty <= fy:
+        return False
+    source_bottom = fy + st_from["h"]
+    target_top = ty
+    for nid, (nx, ny) in positions.items():
+        if nid in (frm, to):
+            continue
+        st = node_styles.get(nid)
+        if not st:
+            continue
+        node_cx = nx + st["w"] / 2
+        if abs(node_cx - source_cx) > max(24, st["w"] / 2):
+            continue
+        if ny < target_top and ny + st["h"] > source_bottom:
+            return True
+    return False
+
+
+def _horizontal_edge_crosses_intermediate_node(frm, to, fx, fy, tx, ty, node_styles, positions):
+    st_from = node_styles[frm]
+    st_to = node_styles[to]
+    source_cy = fy + st_from["h"] / 2
+    target_cy = ty + st_to["h"] / 2
+    if abs(source_cy - target_cy) > 24:
+        return False
+    source_right = fx + st_from["w"]
+    target_left = tx
+    if target_left <= source_right:
+        return False
+    for nid, (nx, ny) in positions.items():
+        if nid in (frm, to):
+            continue
+        st = node_styles.get(nid)
+        if not st:
+            continue
+        node_cy = ny + st["h"] / 2
+        if abs(node_cy - source_cy) > max(24, st["h"] / 2):
+            continue
+        if nx < target_left and nx + st["w"] > source_right:
+            return True
+    return False
+
+
+def _rect_overlap_area(a, b):
+    ax1, ay1, ax2, ay2 = a
+    bx1, by1, bx2, by2 = b
+    return max(0, min(ax2, bx2) - max(ax1, bx1)) * max(0, min(ay2, by2) - max(ay1, by1))
+
+
+def _edge_label_hits_readable_text(lx, ly, label_w, label_h, elements):
+    label_box = (lx, ly, lx + label_w, ly + label_h)
+    label_area = max(label_w * label_h, 1)
+    for el in elements:
+        if not isinstance(el, dict) or el.get("type") != "text":
+            continue
+        el_id = str(el.get("id", ""))
+        if el_id.startswith(("elbl-", "title-")) or not str(el.get("text", "")).strip():
+            continue
+        try:
+            tx = float(el.get("x", 0) or 0)
+            ty = float(el.get("y", 0) or 0)
+            tw = float(el.get("width", 0) or 0)
+            th = float(el.get("height", 0) or 0)
+        except (TypeError, ValueError):
+            continue
+        text_area = max(tw * th, 1)
+        area = _rect_overlap_area(label_box, (tx, ty, tx + tw, ty + th))
+        if area <= 0:
+            continue
+        ratio = area / min(label_area, text_area)
+        if area >= 80 or ratio >= 0.08:
+            return True
+    return False
+
+
 def _arrow_el(
     el_id, x, y, points, theme, from_id, to_id, style="solid",
     bidirectional=False, curved=False, color=None, stroke_width=None,
@@ -528,7 +608,7 @@ def _layout_graphviz(ir_nodes, ir_edges, node_styles, engine="dot"):
         nid = node["id"]
         label = node.get("label", nid).replace('"', '\\"')
         lines.append(f'  "{nid}" [label="{label}"];')
-    for edge in ir_edges:
+    for edge_index, edge in enumerate(ir_edges):
         lines.append(f'  "{edge["from"]}" -> "{edge["to"]}";')
     lines.append("}")
     dot_src = "\n".join(lines)
@@ -1103,7 +1183,7 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
         ir_edges = auto_edges
 
     # 5. 生成边（箭头）
-    for edge in ir_edges:
+    for edge_index, edge in enumerate(ir_edges):
         eid = edge["id"]
         frm, to = edge["from"], edge["to"]
         if frm not in positions or to not in positions:
@@ -1128,7 +1208,22 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
         pts = [[0, 0], [dx, dy]]
         preferred_label_segment = None
         same_lane = abs((fy + st_from["h"] / 2) - (ty2 + st_to["h"] / 2)) < 30
-        if template == "swimlane" and same_lane and tx2 < fx:
+        if template == "sequence":
+            # Sequence messages use their own vertical timeline; drawing every
+            # arrow through the actor header text makes strict visual checks fail
+            # and is not how sequence diagrams are read.
+            actor_bottom = max(
+                (py + node_styles[nid]["h"] for nid, (_, py) in positions.items() if nid in node_styles),
+                default=max(fy + st_from["h"], ty2 + st_to["h"]),
+            )
+            ax = fx + st_from["w"] / 2
+            end_x = tx2 + st_to["w"] / 2
+            ay = actor_bottom + 70 + edge_index * 70
+            end_y = ay
+            dx = end_x - ax
+            dy = 0
+            pts = [[0, 0], [dx, 0]]
+        elif template == "swimlane" and same_lane and tx2 < fx:
             # Backward loop inside one lane: route above the nodes instead of
             # drawing a straight line through the intermediate process boxes.
             ax = fx
@@ -1173,11 +1268,78 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
                 [dx, dy],
             ]
             preferred_label_segment = 3
+        elif template == "flowchart" and _vertical_flow_edge_crosses_intermediate_node(
+            frm, to, fx, fy, tx2, ty2, node_styles, positions
+        ):
+            # A decision branch may intentionally skip the next process card
+            # (for example n3 -> n5 while n4 sits between them). Center-to-center
+            # routing slices through the skipped card text, so send the branch
+            # around the right side of the flow.
+            ax = fx + st_from["w"]
+            ay = fy + st_from["h"] / 2
+            target_x = tx2 + st_to["w"]
+            target_y = ty2 + st_to["h"] / 2
+            diagram_right = max(
+                (px + node_styles[nid]["w"] for nid, (px, _) in positions.items() if nid in node_styles),
+                default=max(fx + st_from["w"], tx2 + st_to["w"]),
+            )
+            outer_x = diagram_right + 70 + (sum(ord(c) for c in str(eid)) % 3) * 18
+            dx = target_x - ax
+            dy = target_y - ay
+            pts = [[0, 0], [outer_x - ax, 0], [outer_x - ax, dy], [dx, dy]]
+            preferred_label_segment = 1
+        elif template == "architecture" and _horizontal_edge_crosses_intermediate_node(
+            frm, to, fx, fy, tx2, ty2, node_styles, positions
+        ):
+            ax = fx + st_from["w"] / 2
+            ay = fy + st_from["h"]
+            target_x = tx2 + st_to["w"] / 2
+            target_y = ty2 + st_to["h"]
+            lane_y = max(fy + st_from["h"], ty2 + st_to["h"]) + 52 + (sum(ord(c) for c in str(eid)) % 3) * 18
+            dx = target_x - ax
+            dy = target_y - ay
+            pts = [[0, 0], [0, lane_y - ay], [dx, lane_y - ay], [dx, dy]]
+            preferred_label_segment = 1
+        elif template == "architecture" and abs((ty2 + st_to["h"] / 2) - (fy + st_from["h"] / 2)) > 180:
+            # Long cross-layer dependencies in dense architecture diagrams can
+            # otherwise run through intermediate service/data labels. Route them
+            # outside the diagram on the nearer side and then approach the
+            # target from its outer edge.
+            source_cx = fx + st_from["w"] / 2
+            centers = [px + node_styles[nid]["w"] / 2 for nid, (px, _) in positions.items() if nid in node_styles]
+            diagram_center = sum(centers) / len(centers) if centers else source_cx
+            diagram_left = min((px for nid, (px, _) in positions.items() if nid in node_styles), default=min(fx, tx2))
+            diagram_right = max(
+                (px + node_styles[nid]["w"] for nid, (px, _) in positions.items() if nid in node_styles),
+                default=max(fx + st_from["w"], tx2 + st_to["w"]),
+            )
+            side = -1 if source_cx < diagram_center else 1
+            if side < 0:
+                outer_x = diagram_left - 70 - (sum(ord(c) for c in str(eid)) % 3) * 18
+            else:
+                outer_x = diagram_right + 70 + (sum(ord(c) for c in str(eid)) % 3) * 18
+            ax = source_cx
+            ay = fy + st_from["h"]
+            target_x = tx2 + st_to["w"] / 2
+            target_y = ty2 + st_to["h"]
+            exit_y = ay + 46 + (sum(ord(c) for c in str(eid)) % 2) * 18
+            approach_y = target_y + 46 + (sum(ord(c) for c in str(eid)) % 3) * 16
+            dx = target_x - ax
+            dy = target_y - ay
+            pts = [
+                [0, 0],
+                [0, exit_y - ay],
+                [outer_x - ax, exit_y - ay],
+                [outer_x - ax, approach_y - ay],
+                [dx, approach_y - ay],
+                [dx, dy],
+            ]
+            preferred_label_segment = 3
         elif template in ("architecture", "swimlane") and abs(dy) > 20:
             lane = ((sum(ord(c) for c in str(eid)) % 5) - 2) * 12
             mid_y = (ay + end_y) / 2 + lane
             pts = [[0, 0], [0, mid_y - ay], [end_x - ax, mid_y - ay], [dx, dy]]
-        if (direction == "horizontal" or (abs(dy) < 30 and dx != 0)) and not (
+        if len(pts) == 2 and template != "sequence" and (direction == "horizontal" or (abs(dy) < 30 and dx != 0)) and not (
             template == "swimlane" and same_lane and tx2 < fx
         ):
             (ax, ay), (end_x, end_y) = _edge_boundary_points(fx, fy, st_from, tx2, ty2, st_to)
@@ -1248,10 +1410,31 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             label_offset = float(edge.get("labelOffset") or theme.get("edgeLabelOffset", 10))
             if sketch_template and template == "relationship":
                 label_offset = max(label_offset, 55)
-            mx = ax + (p1[0] + p2[0]) / 2 + nx * label_offset
-            my = ay + (p1[1] + p2[1]) / 2 + ny * label_offset
-            lx = mx - label_w / 2
-            ly = my - label_h / 2
+            lx = ly = None
+            offsets = [label_offset, label_offset + 18, label_offset + 36, label_offset + 60]
+            if sketch_template:
+                offsets.extend([label_offset + 84, label_offset + 112])
+            fractions = [0.5, 0.35, 0.65, 0.2, 0.8]
+            normals = [(nx, ny), (-nx, -ny)]
+            for fraction in fractions:
+                base_x = ax + p1[0] + seg_dx * fraction
+                base_y = ay + p1[1] + seg_dy * fraction
+                for cand_nx, cand_ny in normals:
+                    for offset in offsets:
+                        cand_lx = base_x + cand_nx * offset - label_w / 2
+                        cand_ly = base_y + cand_ny * offset - label_h / 2
+                        if not _edge_label_hits_readable_text(cand_lx, cand_ly, label_w, label_h, elements):
+                            lx, ly = cand_lx, cand_ly
+                            break
+                    if lx is not None:
+                        break
+                if lx is not None:
+                    break
+            if lx is None:
+                mx = ax + (p1[0] + p2[0]) / 2 + nx * label_offset
+                my = ay + (p1[1] + p2[1]) / 2 + ny * label_offset
+                lx = mx - label_w / 2
+                ly = my - label_h / 2
             elements.append(_text_el(
                 f"elbl-{eid}", lx, ly, edge["label"], theme,
                 fontSize=label_font, w=label_w, h=label_h,

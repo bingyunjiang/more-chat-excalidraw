@@ -21,7 +21,7 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 77249,
+      "seed": 1368,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -35,7 +35,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -64,16 +64,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 59772,
+      "seed": 97515,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "开始",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -81,11 +81,6 @@
       "originalText": "开始",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -95,7 +90,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -107,7 +107,7 @@
       "height": 80,
       "angle": 0,
       "strokeColor": "#2b2b2b",
-      "backgroundColor": "#ffffff",
+      "backgroundColor": "#fef3c7",
       "fillStyle": "solid",
       "strokeWidth": 3,
       "strokeStyle": "solid",
@@ -118,7 +118,7 @@
       "roundness": {
         "type": 3
       },
-      "seed": 74436,
+      "seed": 40797,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -136,7 +136,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -151,7 +151,7 @@
       "id": "txt-n2",
       "type": "text",
       "x": 80.0,
-      "y": 247.0,
+      "y": 248.0,
       "width": 160,
       "height": 24,
       "angle": 0,
@@ -165,16 +165,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 76328,
+      "seed": 86583,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "填写注册信息",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -182,11 +182,6 @@
       "originalText": "填写注册信息",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -196,7 +191,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -217,7 +217,7 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 61504,
+      "seed": 41732,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -239,7 +239,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -268,16 +268,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 59095,
+      "seed": 53731,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "信息合法？",
-      "fontSize": 16,
+      "fontSize": 16.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -285,11 +285,6 @@
       "originalText": "信息合法？",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -299,7 +294,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -311,7 +311,7 @@
       "height": 80,
       "angle": 0,
       "strokeColor": "#2b2b2b",
-      "backgroundColor": "#ffffff",
+      "backgroundColor": "#fef3c7",
       "fillStyle": "solid",
       "strokeWidth": 3,
       "strokeStyle": "solid",
@@ -322,7 +322,7 @@
       "roundness": {
         "type": 3
       },
-      "seed": 47272,
+      "seed": 26184,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -340,7 +340,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -355,7 +355,7 @@
       "id": "txt-n4",
       "type": "text",
       "x": 120.0,
-      "y": 607.0,
+      "y": 608.0,
       "width": 160,
       "height": 24,
       "angle": 0,
@@ -369,16 +369,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 69686,
+      "seed": 91756,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "创建账号",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -386,11 +386,6 @@
       "originalText": "创建账号",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -400,7 +395,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
@@ -421,7 +421,7 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 88933,
+      "seed": 86993,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
@@ -439,7 +439,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "customData": {
@@ -468,16 +468,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 48357,
+      "seed": 70444,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "完成",
-      "fontSize": 18,
+      "fontSize": 18.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -485,11 +485,6 @@
       "originalText": "完成",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -499,16 +494,21 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
       "id": "arrow-e1",
       "type": "arrow",
-      "x": 100.0,
-      "y": 120,
-      "width": 60.0,
-      "height": 100,
+      "x": 110.58823529411765,
+      "y": 120.0,
+      "width": 35.29411764705881,
+      "height": 100.0,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -522,12 +522,12 @@
       "roundness": {
         "type": 2
       },
-      "seed": 28740,
+      "seed": 14826,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "points": [
@@ -536,23 +536,25 @@
           0
         ],
         [
-          60.0,
-          100
+          35.29411764705881,
+          100.0
         ]
       ],
       "startBinding": {
         "elementId": "n1",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "n2",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "customData": {
+        "sketchTemplateRole": "critical-path",
+        "sketchStyle": "engineering-notebook",
         "animate": {
           "order": 4,
           "duration": 300,
@@ -563,10 +565,10 @@
     {
       "id": "arrow-e2",
       "type": "arrow",
-      "x": 160.0,
-      "y": 300,
-      "width": 40.0,
-      "height": 100,
+      "x": 168.88888888888889,
+      "y": 300.0,
+      "width": 22.22222222222223,
+      "height": 100.0,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -580,12 +582,12 @@
       "roundness": {
         "type": 2
       },
-      "seed": 88482,
+      "seed": 10886,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "points": [
@@ -594,23 +596,25 @@
           0
         ],
         [
-          40.0,
-          100
+          22.22222222222223,
+          100.0
         ]
       ],
       "startBinding": {
         "elementId": "n2",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "n3",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "customData": {
+        "sketchTemplateRole": "critical-path",
+        "sketchStyle": "engineering-notebook",
         "animate": {
           "order": 4,
           "duration": 300,
@@ -622,9 +626,9 @@
       "id": "arrow-e3",
       "type": "arrow",
       "x": 200.0,
-      "y": 480,
+      "y": 480.0,
       "width": 0,
-      "height": 100,
+      "height": 100.0,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -638,12 +642,12 @@
       "roundness": {
         "type": 2
       },
-      "seed": 26948,
+      "seed": 66599,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "points": [
@@ -653,22 +657,24 @@
         ],
         [
           0.0,
-          100
+          100.0
         ]
       ],
       "startBinding": {
         "elementId": "n3",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "n4",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "customData": {
+        "sketchTemplateRole": "critical-path",
+        "sketchStyle": "engineering-notebook",
         "animate": {
           "order": 4,
           "duration": 300,
@@ -679,10 +685,10 @@
     {
       "id": "elbl-e3",
       "type": "text",
-      "x": 180.0,
-      "y": 516.0,
-      "width": 60,
-      "height": 20,
+      "x": 186.0,
+      "y": 508.4,
+      "width": 76,
+      "height": 43.2,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -694,16 +700,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 19895,
+      "seed": 3797,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "是",
-      "fontSize": 13,
+      "fontSize": 32.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -711,11 +717,6 @@
       "originalText": "是",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -725,16 +726,21 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
       "id": "arrow-e4",
       "type": "arrow",
-      "x": 200.0,
-      "y": 480,
-      "width": 0,
-      "height": 280,
+      "x": 280,
+      "y": 440.0,
+      "width": 110,
+      "height": 350.0,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -745,15 +751,13 @@
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
-      "roundness": {
-        "type": 2
-      },
-      "seed": 73226,
+      "roundness": null,
+      "seed": 1422,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "points": [
@@ -762,23 +766,33 @@
           0
         ],
         [
-          0.0,
-          280
+          90,
+          0
+        ],
+        [
+          90,
+          350.0
+        ],
+        [
+          -20,
+          350.0
         ]
       ],
       "startBinding": {
         "elementId": "n3",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "n5",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "customData": {
+        "sketchTemplateRole": "critical-path",
+        "sketchStyle": "engineering-notebook",
         "animate": {
           "order": 4,
           "duration": 300,
@@ -789,10 +803,10 @@
     {
       "id": "elbl-e4",
       "type": "text",
-      "x": 180.0,
-      "y": 606.0,
-      "width": 60,
-      "height": 20,
+      "x": 308.0,
+      "y": 593.4,
+      "width": 76,
+      "height": 43.2,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -804,16 +818,16 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 98277,
+      "seed": 33097,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "否",
-      "fontSize": 13,
+      "fontSize": 32.0,
       "fontFamily": 11,
       "textAlign": "center",
       "verticalAlign": "middle",
@@ -821,11 +835,6 @@
       "originalText": "否",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 5,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -835,16 +844,21 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 5,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     },
     {
       "id": "arrow-e5",
       "type": "arrow",
       "x": 200.0,
-      "y": 660,
+      "y": 660.0,
       "width": 0,
-      "height": 100,
+      "height": 100.0,
       "angle": 0,
       "strokeColor": "#868e96",
       "backgroundColor": "transparent",
@@ -858,12 +872,12 @@
       "roundness": {
         "type": 2
       },
-      "seed": 92753,
+      "seed": 41406,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "points": [
@@ -873,22 +887,24 @@
         ],
         [
           0.0,
-          100
+          100.0
         ]
       ],
       "startBinding": {
         "elementId": "n4",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "endBinding": {
         "elementId": "n5",
-        "focus": 0.5,
-        "gap": 8
+        "focus": 0,
+        "gap": 4
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "customData": {
+        "sketchTemplateRole": "critical-path",
+        "sketchStyle": "engineering-notebook",
         "animate": {
           "order": 4,
           "duration": 300,
@@ -899,7 +915,7 @@
     {
       "id": "title-0",
       "type": "text",
-      "x": 40,
+      "x": -30.0,
       "y": 10,
       "width": 400,
       "height": 30,
@@ -914,12 +930,12 @@
       "groupIds": [],
       "frameId": null,
       "roundness": null,
-      "seed": 21542,
+      "seed": 77457,
       "version": 1,
       "versionNonce": 0,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1786199391702,
+      "updated": 1,
       "link": null,
       "locked": false,
       "text": "用户注册流程",
@@ -931,11 +947,6 @@
       "originalText": "用户注册流程",
       "lineHeight": 1.25,
       "customData": {
-        "animate": {
-          "order": 1,
-          "duration": 400,
-          "type": "fade-in"
-        },
         "cjkFontFamily": "Ma Shan Zheng",
         "cjkFontFallbacks": [
           "Long Cang",
@@ -945,7 +956,12 @@
           "Wawati SC",
           "Kaiti SC",
           "PingFang SC"
-        ]
+        ],
+        "animate": {
+          "order": 1,
+          "duration": 400,
+          "type": "fade-in"
+        }
       }
     }
   ],
@@ -953,6 +969,8 @@
   "appState": {
     "viewBackgroundColor": "#ffffff",
     "gridSize": 20,
+    "sketchStyle": "engineering-notebook",
+    "sketchTemplate": "flowchart",
     "cjkFontFamily": "Ma Shan Zheng",
     "cjkFontFallbacks": [
       "Long Cang",

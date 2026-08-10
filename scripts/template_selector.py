@@ -463,6 +463,139 @@ def _find_explicit_style(intent_lower):
     return None
 
 
+def _strip_style_terms(intent_lower, style_key):
+    if not style_key:
+        return intent_lower
+    style = SKETCH_STYLES[style_key]
+    style_terms = [style_key, style_key.replace("-", " "), style["label"], *style.get("aliases", [])]
+    scoring_text = intent_lower
+    for term in style_terms:
+        scoring_text = scoring_text.replace(term.lower(), " ")
+    return scoring_text
+
+
+def _intent_profile(intent_text):
+    intent_lower = intent_text.lower()
+    explicit_style_key = _find_explicit_style(intent_lower)
+    return {
+        "text": intent_text,
+        "lower": intent_lower,
+        "explicit_template": _find_explicit_template(intent_lower),
+        "explicit_style": explicit_style_key,
+        "direct_select": any(k in intent_lower for k in ("你直接选", "直接选", "不用问", "随便")),
+        "scoring_text": _strip_style_terms(intent_lower, explicit_style_key),
+    }
+
+
+def _rank_templates(scores):
+    template_order = list(TEMPLATES)
+    return sorted(TEMPLATES, key=lambda key: (-scores[key], template_order.index(key)))
+
+
+def _select_primary_template(profile, scores, ranked):
+    if profile["explicit_template"]:
+        return profile["explicit_template"], ranked
+    if scores[ranked[0]] > 0:
+        return ranked[0], ranked
+    fallback_ranked = ["relationship", "flowchart", "architecture"] + [
+        key for key in ranked if key not in ("relationship", "flowchart", "architecture")
+    ]
+    return "relationship", fallback_ranked
+
+
+def _ranked_alternatives(primary, scores, ranked):
+    positive_ranked = [key for key in ranked if scores[key] > 0]
+    return _fallback_alternatives(primary, positive_ranked if positive_ranked else ranked)
+
+
+def _confidence_for(primary, alternatives, scores):
+    primary_score = scores.get(primary, 0)
+    next_score = max((scores.get(key, 0) for key in alternatives), default=0)
+    if primary_score >= 8 and primary_score - next_score >= 3:
+        return "high"
+    if primary_score > 0:
+        return "medium"
+    return "low"
+
+
+def _recommendation_reason(primary, matched, explicit_template_key):
+    matched_terms = [term for term in matched.get(primary, []) if not term.startswith("\\b")]
+    if explicit_template_key:
+        return f"用户已明确选择{TEMPLATE_GUIDE[primary]['label']}"
+    if matched_terms:
+        return f"识别到“{'、'.join(matched_terms[:3])}”，更适合{TEMPLATE_GUIDE[primary]['label']}"
+    return f"信息不足，先用最能承载自由关系的{TEMPLATE_GUIDE[primary]['label']}"
+
+
+def _style_options(primary, intent_lower, preferred_style):
+    style_keys = [preferred_style] + [key for key in TEMPLATE_GUIDE[primary]["styles"] if key != preferred_style]
+    return [
+        _choice_card(
+            primary,
+            intent_lower,
+            SKETCH_STYLES[style_key]["use"],
+            recommended=index == 0,
+            style_override=style_key,
+        )
+        for index, style_key in enumerate(style_keys[:3])
+    ]
+
+
+def _template_options(primary, alternatives, intent_lower, reason, style, lock_style=False):
+    cards = [
+        _choice_card(primary, intent_lower, reason, recommended=True, style_override=style),
+        *[
+            _choice_card(
+                key,
+                intent_lower,
+                f"如果更关注{TEMPLATE_GUIDE[key]['best_for']}，可选此项",
+                style_override=style if lock_style else None,
+            )
+            for key in alternatives
+        ],
+    ]
+    return cards[:3]
+
+
+def _build_interaction(profile, primary, alternatives, style, reason):
+    intent_lower = profile["lower"]
+    explicit_template_key = profile["explicit_template"]
+    explicit_style_key = profile["explicit_style"]
+
+    if profile["direct_select"]:
+        cards = [_choice_card(primary, intent_lower, reason, recommended=True, style_override=style)]
+        return {
+            "mode": "auto",
+            "requires_confirmation": False,
+            "cards": cards,
+            "prompt": f"将采用“{cards[0]['label']} + {cards[0]['style_label']}”，{reason}。",
+        }
+    if explicit_template_key and explicit_style_key:
+        cards = [_choice_card(primary, intent_lower, reason, recommended=True, style_override=style)]
+        return {
+            "mode": "ready",
+            "requires_confirmation": False,
+            "cards": cards,
+            "prompt": f"模板与风格已确定：{cards[0]['label']} + {cards[0]['style_label']}。",
+        }
+    if explicit_template_key:
+        cards = _style_options(primary, intent_lower, style)
+        return {
+            "mode": "select_style",
+            "requires_confirmation": True,
+            "cards": cards,
+            "prompt": f"模板已确定为“{TEMPLATE_GUIDE[primary]['label']}”。我推荐“{cards[0]['style_label']}”，请选择手绘气质。",
+        }
+
+    mode = "select_template" if explicit_style_key else "select_both"
+    cards = _template_options(primary, alternatives, intent_lower, reason, style, lock_style=bool(explicit_style_key))
+    if explicit_style_key:
+        prompt = f"风格已确定为“{SKETCH_STYLES[style]['label']}”。我推荐“{cards[0]['label']}”，请选择叙事模板。"
+    else:
+        prompt = f"我推荐“{cards[0]['label']} + {cards[0]['style_label']}”，{reason}。请选择下面一种，或让我直接按推荐生成。"
+    return {"mode": mode, "requires_confirmation": True, "cards": cards, "prompt": prompt}
+
+
 def catalog_payload():
     categories = []
     for category_key, category in TEMPLATE_CATEGORIES.items():
@@ -575,85 +708,15 @@ def get_template_info(template_name):
 
 def recommend(intent_text):
     """根据用户意图推荐最佳模板"""
-    intent_lower = intent_text.lower()
-    explicit_template_key = _find_explicit_template(intent_lower)
-    explicit_style_key = _find_explicit_style(intent_lower)
-    scoring_text = intent_lower
-    if explicit_style_key:
-        style = SKETCH_STYLES[explicit_style_key]
-        for term in [explicit_style_key, explicit_style_key.replace("-", " "), style["label"], *style.get("aliases", [])]:
-            scoring_text = scoring_text.replace(term.lower(), " ")
-    scores, matched = _score_templates(scoring_text)
-    ranked = sorted(TEMPLATES, key=lambda key: (-scores[key], list(TEMPLATES).index(key)))
-    if explicit_template_key:
-        primary = explicit_template_key
-    elif scores[ranked[0]] > 0:
-        primary = ranked[0]
-    else:
-        primary = "relationship"
-        ranked = ["relationship", "flowchart", "architecture"] + [
-            key for key in ranked if key not in ("relationship", "flowchart", "architecture")
-        ]
-    positive_ranked = [key for key in ranked if scores[key] > 0]
-    alternatives = _fallback_alternatives(primary, positive_ranked if positive_ranked else ranked)
-
-    direct_select = any(k in intent_lower for k in ("你直接选", "直接选", "不用问", "随便"))
-    style = explicit_style_key or _style_for_template(primary, intent_lower)
-    primary_score = scores.get(primary, 0)
-    next_score = max((scores.get(key, 0) for key in alternatives), default=0)
-    confidence = "high" if primary_score >= 8 and primary_score - next_score >= 3 else "medium" if primary_score > 0 else "low"
-    matched_terms = [term for term in matched.get(primary, []) if not term.startswith("\\b")]
-    if explicit_template_key:
-        reason = f"用户已明确选择{TEMPLATE_GUIDE[primary]['label']}"
-    elif matched_terms:
-        reason = f"识别到“{'、'.join(matched_terms[:3])}”，更适合{TEMPLATE_GUIDE[primary]['label']}"
-    else:
-        reason = f"信息不足，先用最能承载自由关系的{TEMPLATE_GUIDE[primary]['label']}"
-
-    if direct_select:
-        interaction_mode = "auto"
-        requires_confirmation = False
-        cards = [_choice_card(primary, intent_lower, reason, recommended=True, style_override=style)]
-        prompt = f"将采用“{cards[0]['label']} + {cards[0]['style_label']}”，{reason}。"
-    elif explicit_template_key and explicit_style_key:
-        interaction_mode = "ready"
-        requires_confirmation = False
-        cards = [_choice_card(primary, intent_lower, reason, recommended=True, style_override=style)]
-        prompt = f"模板与风格已确定：{cards[0]['label']} + {cards[0]['style_label']}。"
-    elif explicit_template_key:
-        interaction_mode = "select_style"
-        requires_confirmation = True
-        style_keys = [style] + [key for key in TEMPLATE_GUIDE[primary]["styles"] if key != style]
-        cards = [
-            _choice_card(
-                primary,
-                intent_lower,
-                SKETCH_STYLES[style_key]["use"],
-                recommended=index == 0,
-                style_override=style_key,
-            )
-            for index, style_key in enumerate(style_keys[:3])
-        ]
-        prompt = f"模板已确定为“{TEMPLATE_GUIDE[primary]['label']}”。我推荐“{cards[0]['style_label']}”，请选择手绘气质。"
-    else:
-        interaction_mode = "select_template" if explicit_style_key else "select_both"
-        requires_confirmation = True
-        cards = [
-            _choice_card(primary, intent_lower, reason, recommended=True, style_override=style),
-            *[
-                _choice_card(
-                    key,
-                    intent_lower,
-                    f"如果更关注{TEMPLATE_GUIDE[key]['best_for']}，可选此项",
-                    style_override=style if explicit_style_key else None,
-                )
-                for key in alternatives
-            ],
-        ][:3]
-        if explicit_style_key:
-            prompt = f"风格已确定为“{SKETCH_STYLES[style]['label']}”。我推荐“{cards[0]['label']}”，请选择叙事模板。"
-        else:
-            prompt = f"我推荐“{cards[0]['label']} + {cards[0]['style_label']}”，{reason}。请选择下面一种，或让我直接按推荐生成。"
+    profile = _intent_profile(intent_text)
+    scores, matched = _score_templates(profile["scoring_text"])
+    ranked = _rank_templates(scores)
+    primary, ranked = _select_primary_template(profile, scores, ranked)
+    alternatives = _ranked_alternatives(primary, scores, ranked)
+    style = profile["explicit_style"] or _style_for_template(primary, profile["lower"])
+    confidence = _confidence_for(primary, alternatives, scores)
+    reason = _recommendation_reason(primary, matched, profile["explicit_template"])
+    interaction = _build_interaction(profile, primary, alternatives, style, reason)
     result = {
         "primary": {
             "key": primary,
@@ -680,16 +743,16 @@ def recommend(intent_text):
             "sketchStyle": style,
             "rationale": reason,
             "confidence": confidence,
-            "requires_confirmation": requires_confirmation,
+            "requires_confirmation": interaction["requires_confirmation"],
         },
         "interaction": {
-            "mode": interaction_mode,
-            "prompt": prompt,
-            "options": cards,
+            "mode": interaction["mode"],
+            "prompt": interaction["prompt"],
+            "options": interaction["cards"],
             "max_options": 3,
             "reply_hint": (
                 "回复序号、风格名，或“你直接选”"
-                if interaction_mode == "select_style"
+                if interaction["mode"] == "select_style"
                 else "回复序号、模板名，或“你直接选”"
             ),
         },

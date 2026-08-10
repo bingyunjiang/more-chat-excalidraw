@@ -167,14 +167,16 @@ function parseSequence(src) {
 
   let order = 1;
   for (const line of lines) {
-    const participant = line.match(/^participant\s+(?:as\s+)?([^\s:]+)/);
+    const participant = line.match(/^participant\s+([^\s:]+)(?:\s+as\s+(.+))?$/);
     if (participant) {
       ensureActor(participant[1]);
+      const actor = ir.nodes.find((node) => node.id === actors.get(participant[1]));
+      if (actor && participant[2]) actor.label = participant[2].trim();
       continue;
     }
     // A->>B: message  (also ->, -->, ->>, -->>, -x, -))
     const msg = line.match(
-      /^([^\s:]+)\s*(-{1,2}[>x)]|-{1,2}>>?)\s*([^\s:]+)\s*:\s*(.+)$/
+      /^(.+?)\s*(-->>|->>|-->|->|-{1,2}[x)])\s*([^\s:]+)\s*:\s*(.+)$/
     );
     if (msg) {
       const from = ensureActor(msg[1]);
