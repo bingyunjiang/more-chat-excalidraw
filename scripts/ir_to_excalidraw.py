@@ -447,6 +447,68 @@ def _layout_table(nodes, node_styles, metadata, start_x=20, start_y=80, col_w=18
     return positions
 
 
+def _layout_content_map_orbit(nodes, node_styles, metadata=None):
+    """Relationship content map layout with a stable reading path.
+
+    Used for concept/content maps where "organic" should still be ordered:
+    one center topic, ordered outer slots clockwise, and guardrail notes below.
+    The slots are intentionally spacious so hand-drawn curves can breathe.
+    """
+    metadata = metadata or {}
+    positions = {}
+    if not nodes:
+        return positions
+
+    center_id = metadata.get("center_node")
+    if not center_id:
+        center_id = next((n["id"] for n in nodes if n.get("type") == "topic"), None)
+    if not center_id:
+        center_id = nodes[0]["id"]
+
+    guardrail_ids = set(metadata.get("guardrail_nodes") or [])
+    if not guardrail_ids:
+        guardrail_terms = ("治理", "可信", "guardrail", "governance", "fidelity", "质量", "权限", "安全")
+        for node in nodes:
+            text = f"{node.get('id', '')} {node.get('label', '')}".lower()
+            if node["id"] != center_id and any(term.lower() in text for term in guardrail_terms):
+                guardrail_ids.add(node["id"])
+
+    center_style = node_styles.get(center_id, {"w": 240, "h": 100})
+    positions[center_id] = (700 - center_style["w"] / 2, 610 - center_style["h"] / 2)
+
+    # Clockwise reading order, starting from the left-side reality/data area.
+    #
+    # The first version of this layout placed late-stage decision/feedback nodes
+    # near the center, which made an otherwise readable content map feel like a
+    # scatter plot and let feedback curves cross the central topic label. Keep
+    # every process card on the outer ring; reserve the center as a quiet topic
+    # island and the bottom row for non-flow guardrails.
+    orbit_slots = [
+        (80, 220), (80, 520), (150, 790), (600, 830), (1050, 790),
+        (1210, 520), (1210, 220), (840, 80), (430, 80), (430, 360),
+        (40, 720), (1240, 720),
+    ]
+    guardrail_slots = [(420, 1040), (860, 1040), (80, 1040), (1240, 1040)]
+
+    orbit_nodes = [
+        node for node in nodes
+        if node["id"] != center_id and node["id"] not in guardrail_ids
+    ]
+    for node, slot in zip(orbit_nodes, orbit_slots):
+        positions[node["id"]] = slot
+
+    # If there are more orbit nodes than the curated slots, place overflow in a
+    # loose bottom row instead of collapsing onto existing cards.
+    overflow = orbit_nodes[len(orbit_slots):]
+    for i, node in enumerate(overflow):
+        positions[node["id"]] = (80 + i * 300, 1160)
+
+    for node, slot in zip((n for n in nodes if n["id"] in guardrail_ids), guardrail_slots):
+        positions[node["id"]] = slot
+
+    return positions
+
+
 def _layout_graphviz(ir_nodes, ir_edges, node_styles, engine="dot"):
     """Graphviz 自动布局（借鉴 drawmode + excalidraw-architect-mcp）。
 
@@ -699,7 +761,20 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
     else:
         positions = None
 
-    if positions is None and template == "flowchart":
+    layout_pattern = str(metadata.get("layout_pattern") or metadata.get("layoutPattern") or "").lower()
+    scene_hint = str(metadata.get("scene") or "").lower()
+    if (
+        positions is None
+        and template == "relationship"
+        and (
+            layout_pattern in ("content-map-orbit", "content_map_orbit", "ordered-orbit", "ordered_orbit")
+            or "content-map" in scene_hint
+            or "content_map" in scene_hint
+            or "内容地图" in scene_hint
+        )
+    ):
+        positions = _layout_content_map_orbit(ir_nodes, node_styles, metadata)
+    elif positions is None and template == "flowchart":
         positions = _layout_vertical(ir_nodes, node_styles)
     elif positions is None and template in ("mindmap", "hierarchy"):
         positions = _layout_tree(ir_nodes, node_styles)
@@ -1074,18 +1149,30 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
             pts = [[0, 0], [dx, dy]]
         elif template == "swimlane" and ty2 < fy:
             # Validation/refinement loops returning to an earlier lane travel
-            # around the left edge of the diagram, keeping the main flow clear.
-            ax = fx
-            ay = fy + st_from["h"] / 2
-            target_x = tx2
-            target_y = ty2 + st_to["h"] / 2
+            # around the left edge of the diagram, then approach the target from
+            # below. A direct horizontal return to the target left edge cuts
+            # through all earlier cards in that lane when the target is not the
+            # first node, which makes strict text-occlusion checks fail.
+            ax = fx + st_from["w"] / 2
+            ay = fy + st_from["h"]
+            target_x = tx2 + st_to["w"] / 2
+            target_y = ty2 + st_to["h"]
             lane = 70 + (sum(ord(c) for c in str(eid)) % 3) * 20
             diagram_left = min((pos[0] for pos in positions.values()), default=min(fx, tx2))
             outer_x = diagram_left - lane
+            approach_y = target_y + 46 + (sum(ord(c) for c in str(eid)) % 2) * 18
+            exit_y = ay + 44 + (sum(ord(c) for c in str(eid)) % 2) * 16
             dx = target_x - ax
             dy = target_y - ay
-            pts = [[0, 0], [outer_x - ax, 0], [outer_x - ax, dy], [dx, dy]]
-            preferred_label_segment = 1
+            pts = [
+                [0, 0],
+                [0, exit_y - ay],
+                [outer_x - ax, exit_y - ay],
+                [outer_x - ax, approach_y - ay],
+                [dx, approach_y - ay],
+                [dx, dy],
+            ]
+            preferred_label_segment = 3
         elif template in ("architecture", "swimlane") and abs(dy) > 20:
             lane = ((sum(ord(c) for c in str(eid)) % 5) - 2) * 12
             mid_y = (ay + end_y) / 2 + lane

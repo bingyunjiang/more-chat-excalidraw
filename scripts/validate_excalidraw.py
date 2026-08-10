@@ -92,6 +92,54 @@ def _rect_area(bbox):
     return max(0, x2 - x1) * max(0, y2 - y1)
 
 
+def _point_in_rect(point, bbox):
+    x, y = point
+    x1, y1, x2, y2 = bbox
+    return x1 <= x <= x2 and y1 <= y <= y2
+
+
+def _segments_intersect(a, b, c, d):
+    """Return True when two line segments intersect."""
+    def orient(p, q, r):
+        return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+
+    def on_segment(p, q, r):
+        return (
+            min(p[0], r[0]) <= q[0] <= max(p[0], r[0])
+            and min(p[1], r[1]) <= q[1] <= max(p[1], r[1])
+        )
+
+    o1 = orient(a, b, c)
+    o2 = orient(a, b, d)
+    o3 = orient(c, d, a)
+    o4 = orient(c, d, b)
+    if (o1 > 0) != (o2 > 0) and (o3 > 0) != (o4 > 0):
+        return True
+    eps = 1e-9
+    return (
+        abs(o1) <= eps and on_segment(a, c, b)
+        or abs(o2) <= eps and on_segment(a, d, b)
+        or abs(o3) <= eps and on_segment(c, a, d)
+        or abs(o4) <= eps and on_segment(c, b, d)
+    )
+
+
+def _segment_intersects_rect(p1, p2, bbox, pad=0):
+    """Return True when a line segment crosses or enters a rectangle."""
+    x1, y1, x2, y2 = bbox
+    rect = (x1 - pad, y1 - pad, x2 + pad, y2 + pad)
+    if _point_in_rect(p1, rect) or _point_in_rect(p2, rect):
+        return True
+    rx1, ry1, rx2, ry2 = rect
+    edges = [
+        ((rx1, ry1), (rx2, ry1)),
+        ((rx2, ry1), (rx2, ry2)),
+        ((rx2, ry2), (rx1, ry2)),
+        ((rx1, ry2), (rx1, ry1)),
+    ]
+    return any(_segments_intersect(p1, p2, a, b) for a, b in edges)
+
+
 def _visual_checks(elements, warnings, visual_contract=None, sketch=False, cjk_handwriting=False):
     """Layout quality heuristics: overlaps, dangling arrows, density."""
     # Skip connector elements and tiny markers when computing overlaps
@@ -209,6 +257,42 @@ def _visual_checks(elements, warnings, visual_contract=None, sketch=False, cjk_h
                     f"visual: edge label {label.get('id')!r} overlaps readable text "
                     f"{text_el.get('id')!r} ({area:.0f}px^2, {ratio:.0%} of smaller)"
                 )
+
+    # Readability guard: connector lines should not travel through body text
+    # either. This catches the common content-map failure mode where a curved
+    # feedback arrow visually slices through the central topic or a neighboring
+    # card label without causing a container overlap warning.
+    for arrow in elements:
+        if not isinstance(arrow, dict) or arrow.get("type") != "arrow":
+            continue
+        points = arrow.get("points") or []
+        if len(points) < 2 or not all(isinstance(p, list) and len(p) == 2 for p in points):
+            continue
+        try:
+            abs_points = [
+                (float(arrow.get("x", 0) or 0) + float(p[0]), float(arrow.get("y", 0) or 0) + float(p[1]))
+                for p in points
+            ]
+        except (TypeError, ValueError):
+            continue
+        bound_ids = {
+            eid for eid in (
+                (arrow.get("startBinding") or {}).get("elementId"),
+                (arrow.get("endBinding") or {}).get("elementId"),
+            ) if eid
+        }
+        for text_el in readable_texts:
+            if text_el.get("containerId") in bound_ids:
+                continue
+            tb = _bbox(text_el)
+            if not tb:
+                continue
+            for p1, p2 in zip(abs_points, abs_points[1:]):
+                if _segment_intersects_rect(p1, p2, tb, pad=4):
+                    warnings.append(
+                        f"visual: arrow {arrow.get('id')!r} crosses readable text {text_el.get('id')!r}"
+                    )
+                    break
 
     # Layout density: minimum spacing between containers
     for i in range(len(containers)):

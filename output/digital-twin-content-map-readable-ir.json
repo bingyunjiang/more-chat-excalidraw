@@ -5,11 +5,7 @@
   "theme": "sketch",
   "sketchStyle": "mechanism-map",
   "cjkFontFamily": "Ma Shan Zheng",
-  "cjkFontFallbacks": [
-    "Long Cang",
-    "Liu Jian Mao Cao",
-    "Hannotate SC"
-  ],
+  "cjkFontFallbacks": ["Long Cang", "Liu Jian Mao Cao", "Hannotate SC"],
   "direction": "free",
   "nodes": [
     {
@@ -19,11 +15,7 @@
       "style": "#fff3bf",
       "strokeColor": "#e67700",
       "strokeWidth": 3,
-      "fontSize": 24,
-      "position": {
-        "x": 610,
-        "y": 485
-      }
+      "fontSize": 24
     },
     {
       "id": "physical",
@@ -31,11 +23,7 @@
       "type": "input",
       "style": "#d0ebff",
       "strokeColor": "#1971c2",
-      "fontSize": 21,
-      "position": {
-        "x": 120,
-        "y": 210
-      }
+      "fontSize": 21
     },
     {
       "id": "telemetry",
@@ -43,11 +31,7 @@
       "type": "input",
       "style": "#d0ebff",
       "strokeColor": "#1971c2",
-      "fontSize": 21,
-      "position": {
-        "x": 110,
-        "y": 610
-      }
+      "fontSize": 21
     },
     {
       "id": "data",
@@ -55,11 +39,7 @@
       "type": "database",
       "style": "#c3fae8",
       "strokeColor": "#0b7285",
-      "fontSize": 20,
-      "position": {
-        "x": 430,
-        "y": 820
-      }
+      "fontSize": 20
     },
     {
       "id": "semantic",
@@ -67,11 +47,7 @@
       "type": "database",
       "style": "#e6fcf5",
       "strokeColor": "#087f5b",
-      "fontSize": 20,
-      "position": {
-        "x": 870,
-        "y": 820
-      }
+      "fontSize": 20
     },
     {
       "id": "model",
@@ -79,11 +55,7 @@
       "type": "service",
       "style": "#e5dbff",
       "strokeColor": "#5f3dc4",
-      "fontSize": 21,
-      "position": {
-        "x": 1220,
-        "y": 630
-      }
+      "fontSize": 21
     },
     {
       "id": "state",
@@ -91,11 +63,7 @@
       "type": "service",
       "style": "#d3f9d8",
       "strokeColor": "#2b8a3e",
-      "fontSize": 21,
-      "position": {
-        "x": 1230,
-        "y": 310
-      }
+      "fontSize": 21
     },
     {
       "id": "scenario",
@@ -103,11 +71,7 @@
       "type": "callout",
       "style": "#fff4e6",
       "strokeColor": "#e8590c",
-      "fontSize": 21,
-      "position": {
-        "x": 870,
-        "y": 90
-      }
+      "fontSize": 21
     },
     {
       "id": "apps",
@@ -115,11 +79,7 @@
       "type": "output",
       "style": "#d3f9d8",
       "strokeColor": "#2f9e44",
-      "fontSize": 21,
-      "position": {
-        "x": 430,
-        "y": 40
-      }
+      "fontSize": 21
     },
     {
       "id": "decision",
@@ -127,11 +87,7 @@
       "type": "output",
       "style": "#ffe3e3",
       "strokeColor": "#c2255c",
-      "fontSize": 21,
-      "position": {
-        "x": 470,
-        "y": 310
-      }
+      "fontSize": 21
     },
     {
       "id": "feedback",
@@ -139,11 +95,7 @@
       "type": "callout",
       "style": "#ffd8a8",
       "strokeColor": "#d9480f",
-      "fontSize": 21,
-      "position": {
-        "x": 80,
-        "y": 410
-      }
+      "fontSize": 21
     },
     {
       "id": "governance",
@@ -152,11 +104,7 @@
       "style": "#f8f9fa",
       "strokeColor": "#495057",
       "strokeStyle": "dashed",
-      "fontSize": 20,
-      "position": {
-        "x": 600,
-        "y": 1040
-      }
+      "fontSize": 20
     },
     {
       "id": "fidelity",
@@ -165,148 +113,28 @@
       "style": "#fff9db",
       "strokeColor": "#f08c00",
       "strokeWidth": 2,
-      "fontSize": 20,
-      "position": {
-        "x": 760,
-        "y": 640
-      }
+      "fontSize": 20
     }
   ],
   "edges": [
-    {
-      "id": "e1",
-      "from": "physical",
-      "to": "telemetry",
-      "label": "",
-      "color": "#1971c2",
-      "strokeWidth": 3
-    },
-    {
-      "id": "e2",
-      "from": "telemetry",
-      "to": "data",
-      "label": "",
-      "color": "#0b7285",
-      "strokeWidth": 3
-    },
-    {
-      "id": "e3",
-      "from": "data",
-      "to": "semantic",
-      "label": "",
-      "color": "#087f5b",
-      "strokeWidth": 3
-    },
-    {
-      "id": "e4",
-      "from": "semantic",
-      "to": "model",
-      "label": "",
-      "color": "#5f3dc4",
-      "strokeWidth": 3
-    },
-    {
-      "id": "e5",
-      "from": "model",
-      "to": "state",
-      "label": "",
-      "color": "#2b8a3e",
-      "strokeWidth": 3
-    },
-    {
-      "id": "e6",
-      "from": "state",
-      "to": "scenario",
-      "label": "",
-      "color": "#2b8a3e",
-      "strokeWidth": 3
-    },
-    {
-      "id": "e7",
-      "from": "scenario",
-      "to": "apps",
-      "label": "",
-      "color": "#c2255c",
-      "strokeWidth": 3
-    },
-    {
-      "id": "e8",
-      "from": "apps",
-      "to": "decision",
-      "label": "",
-      "color": "#c2255c",
-      "strokeWidth": 3
-    },
-    {
-      "id": "e9",
-      "from": "decision",
-      "to": "feedback",
-      "label": "",
-      "color": "#d9480f",
-      "strokeWidth": 3
-    },
-    {
-      "id": "e10",
-      "from": "feedback",
-      "to": "physical",
-      "label": "",
-      "style": "dashed",
-      "curve": true,
-      "curveOffset": 52,
-      "color": "#d9480f",
-      "strokeWidth": 3
-    },
-    {
-      "id": "e11",
-      "from": "twin",
-      "to": "physical",
-      "label": "",
-      "style": "dashed",
-      "color": "#868e96",
-      "strokeWidth": 2
-    },
-    {
-      "id": "e12",
-      "from": "twin",
-      "to": "model",
-      "label": "",
-      "style": "dashed",
-      "color": "#868e96",
-      "strokeWidth": 2
-    },
-    {
-      "id": "e13",
-      "from": "fidelity",
-      "to": "state",
-      "label": "",
-      "style": "dashed",
-      "color": "#f08c00",
-      "strokeWidth": 2
-    },
-    {
-      "id": "e14",
-      "from": "governance",
-      "to": "data",
-      "label": "",
-      "style": "dashed",
-      "color": "#495057",
-      "strokeWidth": 2
-    },
-    {
-      "id": "e15",
-      "from": "governance",
-      "to": "semantic",
-      "label": "",
-      "style": "dashed",
-      "color": "#495057",
-      "strokeWidth": 2
-    }
+    {"id": "e1", "from": "physical", "to": "telemetry", "label": "", "color": "#1971c2", "strokeWidth": 3},
+    {"id": "e2", "from": "telemetry", "to": "data", "label": "", "color": "#0b7285", "strokeWidth": 3},
+    {"id": "e3", "from": "data", "to": "semantic", "label": "", "color": "#087f5b", "strokeWidth": 3},
+    {"id": "e4", "from": "semantic", "to": "model", "label": "", "color": "#5f3dc4", "strokeWidth": 3},
+    {"id": "e5", "from": "model", "to": "state", "label": "", "color": "#2b8a3e", "strokeWidth": 3},
+    {"id": "e6", "from": "state", "to": "scenario", "label": "", "color": "#2b8a3e", "strokeWidth": 3},
+    {"id": "e7", "from": "scenario", "to": "apps", "label": "", "color": "#c2255c", "strokeWidth": 3},
+    {"id": "e8", "from": "apps", "to": "decision", "label": "", "color": "#c2255c", "strokeWidth": 3},
+    {"id": "e9", "from": "decision", "to": "feedback", "label": "", "color": "#d9480f", "strokeWidth": 3},
+    {"id": "e10", "from": "feedback", "to": "physical", "label": "", "style": "dashed", "curve": true, "curveOffset": 52, "color": "#d9480f", "strokeWidth": 3}
   ],
   "groups": [],
   "metadata": {
-    "scene": "digital-twin-content-map-organic-v2",
-    "complexity": "medium",
-    "source": "repair from initial organic map, preserving handdrawn style",
+    "scene": "digital-twin-content-map",
+    "layout_pattern": "content-map-orbit",
+    "center_node": "twin",
+    "guardrail_nodes": ["governance", "fidelity"],
+    "source": "content-map-orbit layout repair",
     "summary": [
       "数字孪生的核心不是三维展示，而是围绕真实资产建立数据、语义、模型和决策闭环。",
       "最小可行闭环是：真实对象、实时数据、数据底座、语义资产模型、孪生模型、当前孪生态、场景推演、应用决策、反馈现场。",

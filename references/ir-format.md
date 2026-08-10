@@ -44,6 +44,23 @@
 | `metadata` | object | 否 | 来源、创建时间、LLM 提示词等附加信息 |
 | `visual_contract` | object | 否 | 可选视觉蒸馏契约，见 `visual-distillation-contract.md` |
 
+### 内容地图专用 metadata
+
+关系图如果表达“内容地图 / 概念闭环 / 机制地图”，不要让节点自由散排。使用：
+
+```json
+{
+  "template": "relationship",
+  "metadata": {
+    "layout_pattern": "content-map-orbit",
+    "center_node": "topic",
+    "guardrail_nodes": ["governance", "acceptance"]
+  }
+}
+```
+
+排布规则：主流程节点按输入 → 数据 → 语义/模型 → 状态/推演 → 应用/决策 → 反馈的顺序放在外环；中心节点只作为主题岛；治理、可信度、验收点等非主流程说明放底栏。边标签默认可留空，避免在密集关系图中压住正文。
+
 ## 3. 节点 node
 
 ```json
