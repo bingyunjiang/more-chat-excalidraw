@@ -205,6 +205,40 @@ SKETCH_STYLES = {
     "review-markup": {"label": "评审批注", "aliases": ["评审风格", "批注风格"], "formality": "striking", "vibe": "annotated critique", "use": "架构评审与风险批注"},
 }
 
+# Delivery mode is orthogonal to the content template. A recording request can
+# legitimately use several templates across frames, so it must not be forced
+# into a single relationship/flowchart choice.
+DELIVERY_PROFILES = {
+    "single-diagram": {
+        "label": "单张图",
+        "signals": [],
+        "frame_count": 1,
+        "aspect_ratio": None,
+        "description": "一张画布完成表达",
+    },
+    "long-canvas": {
+        "label": "长画布",
+        "signals": [r"长画布", r"横向移动", r"一张大图"],
+        "frame_count": "variable",
+        "aspect_ratio": None,
+        "description": "在同一张画布上横向或纵向推进",
+    },
+    "video-storyboard": {
+        "label": "视频分镜",
+        "signals": [r"录屏", r"视频", r"分镜", r"逐帧", r"镜头", r"提词器", r"16[:：]9", r"讲解"],
+        "frame_count": "3-6",
+        "aspect_ratio": "16:9",
+        "description": "按镜头拆成多个 16:9 frame，可逐帧导出",
+    },
+    "presentation-board": {
+        "label": "演示白板",
+        "signals": [r"演示", r"汇报", r"路演", r"presentation", r"PPT"],
+        "frame_count": "variable",
+        "aspect_ratio": "16:9",
+        "description": "适合讲解、汇报和投屏阅读",
+    },
+}
+
 # 面向用户的模板选择信息。TEMPLATES 保持生成层兼容；此处只负责把
 # “10 个技术 key”整理成用户容易比较的四组选择卡。
 TEMPLATE_CATEGORIES = {
@@ -393,7 +427,7 @@ def _score_templates(intent_lower):
     for key, tmpl in TEMPLATES.items():
         for alias in tmpl["aliases"]:
             alias_lower = alias.lower()
-            if alias_lower in intent_lower:
+            if _alias_matches(alias_lower, intent_lower):
                 # Longer phrases carry more intent than generic one-character terms.
                 weight = 3 if len(alias_lower) >= 4 else 2 if len(alias_lower) >= 2 else 1
                 scores[key] += weight
@@ -403,6 +437,28 @@ def _score_templates(intent_lower):
                 scores[key] += 5
                 matched[key].append(pattern)
     return scores, matched
+
+
+def _alias_matches(alias_lower, intent_lower):
+    """Match Chinese phrases by substring and Latin aliases by token boundary.
+
+    A raw substring match makes the alias ``ER`` match the ``er`` in
+    ``paper-workflow``. Latin abbreviations must be bounded by non-word
+    characters, while Chinese phrases still need normal substring matching.
+    """
+    if not alias_lower:
+        return False
+    if re.search(r"[a-z0-9]", alias_lower):
+        escaped = re.escape(alias_lower)
+        return re.search(rf"(?<![a-z0-9]){escaped}(?![a-z0-9])", intent_lower, re.IGNORECASE) is not None
+    return alias_lower in intent_lower
+
+
+def _delivery_profile(intent_lower):
+    for key, profile in DELIVERY_PROFILES.items():
+        if any(re.search(pattern, intent_lower, re.IGNORECASE) for pattern in profile["signals"]):
+            return key
+    return "single-diagram"
 
 
 def _fallback_alternatives(primary, ranked_keys):
@@ -482,6 +538,7 @@ def _intent_profile(intent_text):
         "lower": intent_lower,
         "explicit_template": _find_explicit_template(intent_lower),
         "explicit_style": explicit_style_key,
+        "delivery_profile": _delivery_profile(intent_lower),
         "direct_select": any(k in intent_lower for k in ("你直接选", "直接选", "不用问", "随便")),
         "scoring_text": _strip_style_terms(intent_lower, explicit_style_key),
     }
@@ -717,7 +774,15 @@ def recommend(intent_text):
     confidence = _confidence_for(primary, alternatives, scores)
     reason = _recommendation_reason(primary, matched, profile["explicit_template"])
     interaction = _build_interaction(profile, primary, alternatives, style, reason)
+    if profile["delivery_profile"] == "video-storyboard":
+        interaction["prompt"] += " 交付方式为视频分镜，建议按 3–6 个 16:9 frame 组织内容；每帧可以使用不同图表模板。"
+    elif profile["delivery_profile"] == "presentation-board":
+        interaction["prompt"] += " 交付方式为演示白板，建议优先保证投屏字号和安全边距。"
     result = {
+        "delivery": {
+            "profile": profile["delivery_profile"],
+            **DELIVERY_PROFILES[profile["delivery_profile"]],
+        },
         "primary": {
             "key": primary,
             "name": TEMPLATES[primary]["name"],
@@ -741,6 +806,7 @@ def recommend(intent_text):
         "recommendation": {
             "template": primary,
             "sketchStyle": style,
+            "deliveryProfile": profile["delivery_profile"],
             "rationale": reason,
             "confidence": confidence,
             "requires_confirmation": interaction["requires_confirmation"],
@@ -759,6 +825,7 @@ def recommend(intent_text):
         "parameters": {
             "theme": "sketch",
             "sketchStyle": style,
+            "delivery_profile": profile["delivery_profile"],
             "layout_direction": TEMPLATES[primary].get("layout", "vertical"),
             "spacing": TEMPLATES[primary].get("spacing", {"vertical": 80, "horizontal": 120})
         }

@@ -1,10 +1,10 @@
 # more-chat-excalidraw 交接文档
 
-> 更新时间：2026-08-08（v0.0.1 初始版本）
+> 更新时间：2026-08-15（v0.1.0 初始公开版本）
 
 ## 当前状态
 
-**版本保持 v0.0.1。核心闭环与本轮发布收口已完成；测试统一称为 e2e suite，结果以当前环境输出为准。**
+**当前版本为 v0.1.0。核心闭环与本轮公开发布收口已完成；测试统一称为 e2e suite，结果以当前环境输出为准。**
 
 本 skill 完全自包含，不依赖其他 skill：render bundle 已内联到 scripts/render-bundle/，
 编辑器 bundle 源码在 scripts/web/，MCP SDK/zod 从本 skill 内加载。
@@ -25,7 +25,7 @@
 | M8 完整预览 | 内嵌 Excalidraw 编辑器(/editor) + 双向同步(/api/save) + 多画布 + PDF 导出 | ✅ |
 | M9 创新功能 | 动画 + Mermaid + 知识图谱 + Graphviz + MCP + 图标库 | ✅ 核心能力完成，平台边界已记录 |
 | E.3 演示 | 13 个示例 + 动画 GIF（output/animation-demo.gif） | ✅ 完成 |
-| M10 发布 | v0.0.1 + CHANGELOG + 文档示例 + CI 配置 | ✅ 在线安装与跨平台实机仍待验证 |
+| M10 发布 | v0.1.0 + CHANGELOG + 文档示例 + CI 配置 | ✅ GitHub public 发布；在线安装与跨平台实机仍待验证 |
 
 ## 核心脚本速查
 

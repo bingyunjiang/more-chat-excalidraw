@@ -56,13 +56,25 @@ function proxyCjkFont(urlPath, res) {
 function parseArgs(argv) {
   const args = argv.slice(2);
   const positional = [];
-  const opts = { format: "png", noServer: false, checkBrowser: false };
+  const opts = {
+    format: "png",
+    noServer: false,
+    checkBrowser: false,
+    requireNative: false,
+    requirePng: false,
+    frames: false,
+    contactSheet: false,
+  };
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === "--format" || a === "-f") { opts.format = args[++i]; continue; }
     if (a.startsWith("--format=")) { opts.format = a.split("=")[1]; continue; }
     if (a === "--no-server") { opts.noServer = true; continue; }
     if (a === "--check-browser") { opts.checkBrowser = true; continue; }
+    if (a === "--require-native") { opts.requireNative = true; continue; }
+    if (a === "--require-png") { opts.requirePng = true; continue; }
+    if (a === "--frames") { opts.frames = true; continue; }
+    if (a === "--contact-sheet") { opts.contactSheet = true; continue; }
     if (a === "--help" || a === "-h") { opts.help = true; continue; }
     positional.push(a);
   }
@@ -208,6 +220,54 @@ function createServer(dir) {
   return server;
 }
 
+function extractFrameScenes(sceneData) {
+  const elements = sceneData.elements || [];
+  const frames = elements.filter((element) => element && element.type === "frame");
+  return frames.map((frame, index) => {
+    const frameId = frame.id;
+    const selected = elements.filter((element) =>
+      element.id === frameId || element.frameId === frameId
+    );
+    const originX = frame.x || 0;
+    const originY = frame.y || 0;
+    const shifted = selected.map((element) => ({
+      ...element,
+      x: (element.x || 0) - originX,
+      y: (element.y || 0) - originY,
+    }));
+    return {
+      index: index + 1,
+      id: frameId,
+      scene: {
+        ...sceneData,
+        elements: shifted,
+        appState: {
+          ...(sceneData.appState || {}),
+          viewBackgroundColor: (sceneData.appState || {}).viewBackgroundColor || "#ffffff",
+        },
+      },
+    };
+  });
+}
+
+function writeStoryboardQa(sceneFile, outdir, frameScenes, renderMode) {
+  const base = path.basename(sceneFile, path.extname(sceneFile));
+  const report = {
+    scene: sceneFile,
+    mode: renderMode,
+    frames: frameScenes.map((entry) => ({
+      index: entry.index,
+      id: entry.id,
+      elementCount: entry.scene.elements.length,
+      frame: entry.scene.elements.find((element) => element.type === "frame") || null,
+      outputStem: `${base}-frame-${String(entry.index).padStart(2, "0")}`,
+    })),
+  };
+  const reportPath = path.join(outdir, `${base}-qa-report.json`);
+  fs.writeFileSync(reportPath, JSON.stringify(report, null, 2) + "\n");
+  return reportPath;
+}
+
 function startServer(server) {
   return new Promise((resolve, reject) => {
     server.on("error", (err) => {
@@ -225,6 +285,10 @@ function startServer(server) {
  * Uses Playwright to set SVG content and screenshot to PNG.
  */
 async function renderFallbackSvg(sceneFile, outdir, opts) {
+  if (opts.requireNative) {
+    console.error("[ERROR] Native Excalidraw rendering is required; fallback SVG is not allowed.");
+    return false;
+  }
   // Fallback path must work without Playwright (pure SVG rendering).
   // Playwright is only needed for PNG/PDF branches below.
   const { renderSvgFromScene } = require("./lib/svg_render");
@@ -236,6 +300,16 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
 
   fs.mkdirSync(outdir, { recursive: true });
   const base = path.basename(sceneFile, path.extname(sceneFile));
+
+  const writeManifest = (mode, outputs, extra = {}) => {
+    const manifestPath = path.join(outdir, `${base}-render-manifest.json`);
+    fs.writeFileSync(manifestPath, JSON.stringify({
+      scene: sceneFile,
+      mode,
+      outputs,
+      ...extra,
+    }, null, 2) + "\n");
+  };
 
   let svgSaved = false;
   if (opts.format === "svg" || opts.format === "both") {
@@ -249,22 +323,29 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
     const playwright = findPlaywright();
     if (!playwright) {
       console.error("[WARN] Playwright not found. PNG skipped; SVG is available.");
-      if (opts.format === "both") return true; // SVG already saved
+      if (opts.requireNative || opts.requirePng) return false;
+      if (opts.format === "both") {
+        writeManifest("fallback-svg", [`${base}.svg`], { png: false, reason: "playwright-unavailable" });
+        return true;
+      }
       if (!svgSaved) {
         const svgPath = path.join(outdir, `${base}.svg`);
         fs.writeFileSync(svgPath, svg);
         console.log(`[OK] ${svgPath} (fallback SVG, PNG unavailable)`);
       }
+      writeManifest("fallback-svg", [`${base}.svg`], { png: false, reason: "playwright-unavailable" });
       return true;
     }
     const executablePath = findChromium(playwright);
     if (!executablePath) {
       console.error("[WARN] Safe Chromium headless shell not found. PNG skipped; SVG is available.");
+      if (opts.requireNative || opts.requirePng) return false;
       if (!svgSaved) {
         const svgPath2 = path.join(outdir, `${base}.svg`);
         fs.writeFileSync(svgPath2, svg);
         console.log(`[OK] ${svgPath2} (fallback SVG, safe headless browser unavailable)`);
       }
+      writeManifest("fallback-svg", [`${base}.svg`], { png: false, reason: "chromium-unavailable" });
       return true;
     }
     let browser;
@@ -276,17 +357,25 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
     } catch (err) {
       if (err.message && (err.message.includes("EPERM") || err.message.includes("closed"))) {
         console.error("[WARN] Cannot launch Chromium in sandbox. PNG skipped; SVG is available.");
-        if (opts.format === "both") return true; // SVG already saved
+        if (opts.requireNative || opts.requirePng) return false;
+        if (opts.format === "both") {
+          writeManifest("fallback-svg", [`${base}.svg`], { png: false, reason: "chromium-launch-blocked" });
+          return true;
+        }
         // If only PNG was requested, still save SVG as a fallback
         if (!svgSaved) {
           const svgPath2 = path.join(outdir, `${base}.svg`);
           fs.writeFileSync(svgPath2, svg);
           console.log(`[OK] ${svgPath2} (fallback SVG, PNG unavailable in sandbox)`);
         }
+        writeManifest("fallback-svg", [`${base}.svg`], { png: false, reason: "png-launch-blocked" });
         return true;
       }
       console.error(`[ERROR] Failed to launch Chromium for PNG: ${err.message}`);
-      if (opts.format === "both") return true; // SVG already saved
+      if (opts.format === "both") {
+        writeManifest("fallback-svg", [`${base}.svg`], { png: false, reason: "png-render-failed" });
+        return true;
+      }
       return false;
     }
     try {
@@ -299,6 +388,7 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
       const svgLocator = page.locator("svg").first();
       await svgLocator.screenshot({ path: pngPath });
       console.log(`[OK] ${pngPath} (fallback PNG from SVG)`);
+      writeManifest("fallback-svg-plus-browser", [path.basename(pngPath), `${base}.svg`], { pngFrom: "fallback-svg" });
     } catch (err) {
       console.error(`[ERROR] PNG screenshot failed: ${err.message}`);
       return false;
@@ -311,11 +401,17 @@ async function renderFallbackSvg(sceneFile, outdir, opts) {
     // PDF requires Playwright + Chromium; in sandbox fallback to SVG.
     if (fs.existsSync(path.join(outdir, `${base}.svg`)) || svgSaved) {
       console.error("[WARN] PDF requires Chromium; SVG already saved as fallback.");
+      if (opts.requireNative) return false;
     } else {
       const svgPath = path.join(outdir, `${base}.svg`);
       fs.writeFileSync(svgPath, svg);
       console.log(`[OK] ${svgPath} (fallback SVG, PDF unavailable in sandbox)`);
     }
+  }
+
+  if (!fs.existsSync(path.join(outdir, `${base}-render-manifest.json`))) {
+    const outputs = fs.readdirSync(outdir).filter((name) => name.startsWith(`${base}.`));
+    writeManifest("fallback-svg", outputs, { png: false, pdf: false });
   }
 
   return true;
@@ -341,6 +437,7 @@ async function renderWithPlaywright(sceneFile, outdir, opts) {
   const executablePath = findChromium(playwright);
   if (!executablePath) {
     console.error("[WARN] Safe Chromium headless shell not found. Falling back to SVG render.");
+    if (opts.requireNative || opts.requirePng) return false;
     return renderFallbackSvg(sceneFile, outdir, opts);
   }
 
@@ -360,6 +457,7 @@ async function renderWithPlaywright(sceneFile, outdir, opts) {
       console.error("[WARN] Cannot start HTTP server (sandbox/permission restriction).");
       console.error("[INFO] Falling back to direct SVG render...");
       fs.rmSync(workdir, { recursive: true, force: true });
+      if (opts.requireNative || opts.requirePng) return false;
       return renderFallbackSvg(sceneFile, outdir, opts);
     }
     console.error(`[ERROR] Failed to start HTTP server: ${err.message}`);
@@ -466,7 +564,22 @@ async function renderWithPlaywright(sceneFile, outdir, opts) {
     }
 
     const info = await page.evaluate(() => (document.querySelector("#info") || {}).textContent);
+    const fontInfo = await page.evaluate(() => {
+      const svg = document.querySelector("#excalidraw-container svg");
+      return {
+        primary: svg?.dataset?.cjkFont || null,
+        configured: svg?.dataset?.cjkFonts ? svg.dataset.cjkFonts.split(",").filter(Boolean) : [],
+      };
+    });
     console.log(`[INFO] ${info || ""}`.trim());
+    const outputs = [];
+    if (opts.format === "png" || opts.format === "both") outputs.push(`${base}.png`);
+    if (opts.format === "svg" || opts.format === "both") outputs.push(`${base}.svg`);
+    if (opts.format === "pdf" || opts.format === "both") outputs.push(`${base}.pdf`);
+    fs.writeFileSync(
+      path.join(outdir, `${base}-render-manifest.json`),
+      JSON.stringify({ scene: sceneFile, mode: "native-excalidraw", outputs, renderer: "@excalidraw/excalidraw", fonts: fontInfo }, null, 2) + "\n",
+    );
     return true;
   } catch (err) {
     console.error(`[ERROR] ${err.message}`);
@@ -482,13 +595,17 @@ async function main() {
   const { positional, opts } = parseArgs(process.argv);
 
   if (opts.help) {
-    console.log(`Usage: node render_preview.js <file.excalidraw> [outdir] [--format png|svg|pdf|both] [--no-server]
+    console.log(`Usage: node render_preview.js <file.excalidraw> [outdir] [--format png|svg|pdf|both] [--no-server] [--frames] [--contact-sheet] [--require-native] [--require-png]
 
 Render a .excalidraw file to PNG and/or SVG using the local render bundle.
 
 Options:
   --format png|svg|pdf|both   Output format (default: png)
   --no-server             Skip HTTP server, use fallback SVG render
+  --require-native        Fail unless the native Excalidraw renderer runs
+  --require-png           Fail when a requested PNG cannot be produced
+  --frames                Export each top-level frame separately
+  --contact-sheet         Export the complete frame board as a contact sheet
   --check-browser         Print the safe headless browser selected for rendering
 
 Environment:
@@ -523,6 +640,47 @@ Environment:
   if (!["png", "svg", "pdf", "both"].includes(opts.format)) {
     console.error(`[ERROR] Invalid format: ${opts.format}. Use png, svg, pdf, or both.`);
     process.exit(2);
+  }
+
+  if (opts.frames || opts.contactSheet) {
+    const sceneData = JSON.parse(fs.readFileSync(sceneFile, "utf-8"));
+    const frameScenes = extractFrameScenes(sceneData);
+    if (!frameScenes.length) {
+      console.error("[ERROR] --frames/--contact-sheet requires at least one frame element");
+      process.exit(1);
+    }
+    const outdirResolved = path.resolve(outdir);
+    fs.mkdirSync(outdirResolved, { recursive: true });
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "excalidraw-frame-scenes-"));
+    let ok = true;
+    try {
+      if (opts.frames) {
+        for (const entry of frameScenes) {
+          const stem = `${path.basename(sceneFile, path.extname(sceneFile))}-frame-${String(entry.index).padStart(2, "0")}`;
+          const frameFile = path.join(tempRoot, `${stem}.excalidraw`);
+          fs.writeFileSync(frameFile, JSON.stringify(entry.scene, null, 2) + "\n");
+          const frameOpts = { ...opts, frames: false, contactSheet: false };
+          const frameOk = opts.noServer
+            ? await renderFallbackSvg(frameFile, outdirResolved, frameOpts)
+            : await renderWithPlaywright(frameFile, outdirResolved, frameOpts);
+          if (!frameOk) ok = false;
+        }
+      }
+      if (opts.contactSheet) {
+        const stem = `${path.basename(sceneFile, path.extname(sceneFile))}-contact-sheet`;
+        const sheetFile = path.join(tempRoot, `${stem}.excalidraw`);
+        fs.writeFileSync(sheetFile, JSON.stringify(sceneData, null, 2) + "\n");
+        const sheetOpts = { ...opts, frames: false, contactSheet: false };
+        const sheetOk = opts.noServer
+          ? await renderFallbackSvg(sheetFile, outdirResolved, sheetOpts)
+          : await renderWithPlaywright(sheetFile, outdirResolved, sheetOpts);
+        if (!sheetOk) ok = false;
+      }
+      writeStoryboardQa(sceneFile, outdirResolved, frameScenes, opts.noServer ? "fallback-svg" : "native-or-fallback");
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+    process.exit(ok ? 0 : 1);
   }
 
   if (opts.noServer) {

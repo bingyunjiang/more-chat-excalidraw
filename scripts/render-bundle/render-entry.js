@@ -7,13 +7,58 @@ const CJK_FONT_ASSETS = {
   "Liu Jian Mao Cao": "LiuJianMaoCao.woff2",
 };
 
+const CJK_FONT_BY_FAMILY_ID = {
+  11: "Ma Shan Zheng",
+  12: "Long Cang",
+  13: "Liu Jian Mao Cao",
+};
+
 function getCjkFontConfig(sceneData) {
   const appState = sceneData.appState || {};
   const textConfig = (sceneData.elements || [])
     .find((el) => el.type === "text" && el.customData?.cjkFontFamily)?.customData || {};
   const primary = appState.cjkFontFamily || textConfig.cjkFontFamily;
   const fallbacks = appState.cjkFontFallbacks || textConfig.cjkFontFallbacks || [];
-  return primary ? [primary, ...fallbacks] : [];
+  const elementFonts = (sceneData.elements || [])
+    .filter((el) => el.type === "text" && CJK_RE.test(el.text || ""))
+    .map((el) => CJK_FONT_BY_FAMILY_ID[el.fontFamily])
+    .filter(Boolean);
+  return [...new Set([primary, ...fallbacks, ...elementFonts].filter(Boolean))];
+}
+
+function getElementFontForText(sceneData, value) {
+  const normalized = (value || "").replace(/\s+/g, "");
+  if (!normalized) return null;
+  const textElements = (sceneData.elements || [])
+    .filter((el) => el.type === "text" && CJK_RE.test(el.text || ""));
+  const exact = textElements.find((el) =>
+    (el.text || "").replace(/\s+/g, "") === normalized
+  );
+  const partial = exact || textElements.find((el) =>
+    (el.text || "").replace(/\s+/g, "").includes(normalized)
+  );
+  return CJK_FONT_BY_FAMILY_ID[partial?.fontFamily] || null;
+}
+
+function getElementFontForNode(sceneData, node) {
+  const candidateId = node.getAttribute("data-element-id") || node.getAttribute("data-id");
+  if (candidateId) {
+    const element = (sceneData.elements || []).find((el) => el.id === candidateId);
+    const mapped = CJK_FONT_BY_FAMILY_ID[element?.fontFamily];
+    if (mapped) return mapped;
+  }
+  return getElementFontForText(sceneData, node.textContent || "");
+}
+
+function fontStack(primary, configured) {
+  const ordered = [
+    primary,
+    ...configured.filter((name) => name !== primary),
+    "sans-serif",
+  ].filter(Boolean);
+  return ordered
+    .map((name) => name === "sans-serif" ? name : `"${name.replaceAll('"', '\\\"')}"`)
+    .join(", ");
 }
 
 async function applyCjkFont(svg, sceneData) {
@@ -33,13 +78,11 @@ async function applyCjkFont(svg, sceneData) {
   const selected = configured.find((name) =>
     document.fonts.check(`16px "${name}"`, "中文手绘")
   ) || configured[0];
-  const ordered = [selected, ...configured.filter((name) => name !== selected), "sans-serif"];
-  const cssStack = ordered
-    .map((name) => name === "sans-serif" ? name : `"${name.replaceAll('"', '\\"')}"`)
-    .join(", ");
   for (const node of svg.querySelectorAll("text")) {
     const value = node.textContent || "";
     if (!CJK_RE.test(value)) continue;
+    const elementFont = getElementFontForNode(sceneData, node);
+    const cssStack = fontStack(elementFont || selected, configured);
     const runs = [];
     for (const char of value) {
       const cjk = CJK_RE.test(char);
@@ -64,6 +107,7 @@ async function applyCjkFont(svg, sceneData) {
     }
   }
   svg.dataset.cjkFont = selected;
+  svg.dataset.cjkFonts = configured.join(",");
 }
 
 async function main() {

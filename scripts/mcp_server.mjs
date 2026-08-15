@@ -55,7 +55,7 @@ function runNode(args) {
 
 const server = new McpServer({
   name: "more-chat-excalidraw",
-  version: "0.0.1",
+  version: "0.1.0",
 });
 
 const irScript = path.join(__dirname, "ir_to_excalidraw.py");

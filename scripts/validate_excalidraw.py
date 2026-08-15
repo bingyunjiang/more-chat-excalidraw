@@ -9,6 +9,7 @@ Exit code 0 = OK; 1 = errors found. Warnings never fail unless --strict.
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -67,14 +68,60 @@ def fix_arrow_geometry_file(filepath):
 
 
 def _bbox(el):
-    """Bounding box of an element as (x, y, x2, y2) or None."""
+    """Return the axis-aligned box, including Excalidraw rotation."""
     if not isinstance(el, dict):
         return None
     x, y = el.get("x"), el.get("y")
     w, h = el.get("width"), el.get("height")
     if not all(isinstance(v, (int, float)) for v in (x, y, w, h)):
         return None
-    return (x, y, x + w, y + h)
+    angle = el.get("angle", 0) or 0
+    if not isinstance(angle, (int, float)) or abs(angle) < 1e-9:
+        return (x, y, x + w, y + h)
+    cx, cy = x + w / 2, y + h / 2
+    cos_a, sin_a = math.cos(angle), math.sin(angle)
+    corners = []
+    for px, py in ((x, y), (x + w, y), (x + w, y + h), (x, y + h)):
+        dx, dy = px - cx, py - cy
+        corners.append((cx + dx * cos_a - dy * sin_a, cy + dx * sin_a + dy * cos_a))
+    xs = [point[0] for point in corners]
+    ys = [point[1] for point in corners]
+    return (min(xs), min(ys), max(xs), max(ys))
+
+
+def _hex_rgb(value):
+    if not isinstance(value, str) or not value.startswith("#"):
+        return None
+    raw = value[1:]
+    if len(raw) == 3:
+        raw = "".join(char * 2 for char in raw)
+    if len(raw) != 6:
+        return None
+    try:
+        return tuple(int(raw[index:index + 2], 16) / 255 for index in (0, 2, 4))
+    except ValueError:
+        return None
+
+
+def _relative_luminance(value):
+    rgb = _hex_rgb(value)
+    if rgb is None:
+        return None
+    linear = [channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4 for channel in rgb]
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+
+def _contrast_ratio(foreground, background):
+    fg, bg = _relative_luminance(foreground), _relative_luminance(background)
+    if fg is None or bg is None:
+        return None
+    light, dark = max(fg, bg), min(fg, bg)
+    return (light + 0.05) / (dark + 0.05)
+
+
+def _id_has_prefix(el, prefix):
+    value = str(el.get("id", ""))
+    return value.startswith(prefix) or value.split("--")[-1].startswith(prefix)
 
 
 def _rects_overlap(a, b):
@@ -140,7 +187,15 @@ def _segment_intersects_rect(p1, p2, bbox, pad=0):
     return any(_segments_intersect(p1, p2, a, b) for a, b in edges)
 
 
-def _visual_checks(elements, warnings, visual_contract=None, sketch=False, cjk_handwriting=False):
+def _visual_checks(
+    elements,
+    warnings,
+    visual_contract=None,
+    sketch=False,
+    cjk_handwriting=False,
+    delivery_profile=None,
+    app_state=None,
+):
     """Layout quality heuristics: overlaps, dangling arrows, density."""
     # Skip connector elements and tiny markers when computing overlaps
     shapes = []
@@ -201,19 +256,19 @@ def _visual_checks(elements, warnings, visual_contract=None, sketch=False, cjk_h
             warnings.append(f"visual: CJK text {el.get('id')!r} uses a non-CJK font family")
         if cjk_handwriting and not any(ord(ch) >= 0x2E80 for ch in text) and el.get("fontFamily") in (11, 12, 13):
             warnings.append(f"visual: English text {el.get('id')!r} uses a CJK handwriting font")
-        if sketch and str(el.get("id", "")).startswith("elbl-") and float(el.get("fontSize", 0) or 0) < 32:
+        if sketch and _id_has_prefix(el, "elbl-") and float(el.get("fontSize", 0) or 0) < 32:
             warnings.append(f"visual: edge label {el.get('id')!r} is below 32px")
         if el.get("containerId") and el.get("width", 0) < 24:
             warnings.append(f"visual: text {el.get('id')!r} has insufficient node padding")
 
     # Title safety zone: titles should not touch the top canvas edge.
     for el in elements:
-        if isinstance(el, dict) and el.get("type") == "text" and str(el.get("id", "")).startswith("title-"):
+        if isinstance(el, dict) and el.get("type") == "text" and _id_has_prefix(el, "title-"):
             if sketch and float(el.get("y", 0) or 0) < 10:
                 warnings.append(f"visual: title {el.get('id')!r} is inside the top safety zone")
 
-    titles = [el for el in elements if isinstance(el, dict) and el.get("type") == "text" and str(el.get("id", "")).startswith("title-")]
-    edge_labels = [el for el in elements if isinstance(el, dict) and el.get("type") == "text" and str(el.get("id", "")).startswith("elbl-")]
+    titles = [el for el in elements if isinstance(el, dict) and el.get("type") == "text" and _id_has_prefix(el, "title-")]
+    edge_labels = [el for el in elements if isinstance(el, dict) and el.get("type") == "text" and _id_has_prefix(el, "elbl-")]
     for title in titles:
         tb = _bbox(title)
         if not tb:
@@ -230,9 +285,34 @@ def _visual_checks(elements, warnings, visual_contract=None, sketch=False, cjk_h
         el for el in elements
         if isinstance(el, dict)
         and el.get("type") == "text"
-        and not str(el.get("id", "")).startswith(("elbl-", "title-"))
+        and not _id_has_prefix(el, "elbl-")
+        and not _id_has_prefix(el, "title-")
         and str(el.get("text", "")).strip()
     ]
+
+    # Two independent text layers must not occupy the same readable area. The
+    # previous checker only compared edge labels with body text, so title/body
+    # collisions could pass strict validation even when they visibly stacked.
+    for index, first in enumerate(readable_texts):
+        first_box = _bbox(first)
+        if not first_box:
+            continue
+        for second in readable_texts[index + 1:]:
+            if first.get("containerId") and first.get("containerId") == second.get("containerId"):
+                continue
+            second_box = _bbox(second)
+            if not second_box:
+                continue
+            area = _rects_overlap(first_box, second_box)
+            if area <= 0:
+                continue
+            small = min(_rect_area(first_box), _rect_area(second_box))
+            ratio = area / small if small > 0 else 0
+            if area >= 20 or ratio >= 0.08:
+                warnings.append(
+                    f"visual: readable text {first.get('id')!r} overlaps "
+                    f"{second.get('id')!r} ({area:.0f}px^2, {ratio:.0%} of smaller)"
+                )
     for label in edge_labels:
         lb = _bbox(label)
         if not lb or not str(label.get("text", "")).strip():
@@ -293,6 +373,51 @@ def _visual_checks(elements, warnings, visual_contract=None, sketch=False, cjk_h
                         f"visual: arrow {arrow.get('id')!r} crosses readable text {text_el.get('id')!r}"
                     )
                     break
+
+    # Video/storyboard frames have a stricter presentation contract than a
+    # freeform research board: rotated stickers and captions must stay inside
+    # a safe area, and text must remain readable at recording scale.
+    if delivery_profile == "video-storyboard":
+        state = app_state or {}
+        safe_margin = float(state.get("safeMargin", 40) or 40)
+        frames = {
+            el.get("id"): (_bbox(el), el)
+            for el in elements
+            if isinstance(el, dict) and el.get("type") == "frame" and _bbox(el)
+        }
+        by_id = {el.get("id"): el for el in elements if isinstance(el, dict)}
+        for el in elements:
+            frame_id = el.get("frameId") if isinstance(el, dict) else None
+            if not frame_id or frame_id not in frames or el.get("type") == "frame":
+                continue
+            child_box = _bbox(el)
+            frame_box, _ = frames[frame_id]
+            if not child_box or not frame_box:
+                continue
+            fx1, fy1, fx2, fy2 = frame_box
+            cx1, cy1, cx2, cy2 = child_box
+            if cx1 < fx1 + safe_margin or cy1 < fy1 + safe_margin or cx2 > fx2 - safe_margin or cy2 > fy2 - safe_margin:
+                warnings.append(
+                    f"visual: element {el.get('id')!r} leaves frame {frame_id!r} safe area "
+                    f"({safe_margin:g}px)"
+                )
+
+            if el.get("type") == "text":
+                role = (el.get("customData") or {}).get("typographyRole")
+                font_size = float(el.get("fontSize", 0) or 0)
+                if role not in ("caption", "credit", "eyebrow") and font_size < 16:
+                    warnings.append(
+                        f"visual: video text {el.get('id')!r} is below 16px ({font_size:g}px)"
+                    )
+                container = by_id.get(el.get("containerId"))
+                background = container.get("backgroundColor") if container else state.get("viewBackgroundColor", "#ffffff")
+                if background in (None, "transparent", "none"):
+                    background = state.get("viewBackgroundColor", "#ffffff")
+                ratio = _contrast_ratio(el.get("strokeColor"), background)
+                if ratio is not None and ratio < 3.0:
+                    warnings.append(
+                        f"visual: video text {el.get('id')!r} has low contrast ({ratio:.2f}:1)"
+                    )
 
     # Layout density: minimum spacing between containers
     for i in range(len(containers)):
@@ -462,6 +587,22 @@ def validate_file(filepath, strict=False, visual=False):
         if not isinstance(group_ids, list):
             warnings.append(f"{label}: groupIds should be an array")
 
+    # A native Excalidraw container is designed for one bound text element.
+    # Multiple bound bilingual lines are a common source of post-import
+    # re-centering and visible text collisions; composite bilingual cards should
+    # use grouped independent text layers instead.
+    bound_text_counts = {}
+    for candidate in elements:
+        if isinstance(candidate, dict) and candidate.get("type") == "text" and candidate.get("containerId"):
+            container_id = candidate["containerId"]
+            bound_text_counts[container_id] = bound_text_counts.get(container_id, 0) + 1
+    for container_id, count in bound_text_counts.items():
+        if count > 1:
+            warnings.append(
+                f"text container {container_id!r} has {count} bound text elements; "
+                "use grouped independent layers for bilingual content"
+            )
+
     # Second pass: reference integrity
     for el in elements:
         if not isinstance(el, dict):
@@ -530,12 +671,20 @@ def validate_file(filepath, strict=False, visual=False):
         app_state = data.get("appState") or {}
         sketch = bool(app_state.get("sketchStyle") or app_state.get("sketchTemplate"))
         cjk_handwriting = bool(app_state.get("cjkFontFamily"))
+        delivery = data.get("delivery") or {}
+        delivery_profile = (
+            delivery.get("profile")
+            or app_state.get("deliveryProfile")
+            or app_state.get("delivery_profile")
+        )
         _visual_checks(
             elements,
             warnings,
             data.get("visual_contract"),
             sketch=sketch,
             cjk_handwriting=cjk_handwriting,
+            delivery_profile=delivery_profile,
+            app_state={**app_state, **delivery},
         )
 
     return errors, warnings, stats

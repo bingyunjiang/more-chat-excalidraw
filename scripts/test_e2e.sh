@@ -16,12 +16,18 @@ log_pass() { echo "[PASS] $1"; pass=$((pass+1)); }
 log_fail() { echo "[FAIL] $1"; fail=$((fail+1)); }
 log_warn() { echo "[WARN] $1"; warn=$((warn+1)); }
 
+# Keep the suite self-contained: generated/test outputs are intentionally not
+# part of the public examples directory.
+E2E_FIXTURE="/tmp/e2e-fixture-flowchart.excalidraw"
+python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example flowchart --output "$E2E_FIXTURE" >/dev/null 2>&1 || true
+FIXTURE_TOTAL=$(jq -r '.elements | length' "$E2E_FIXTURE" 2>/dev/null || echo 0)
+
 # --- Test 1: Validate fixture ---
 echo "=== Test 1: Validate fixture ==="
-if python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" "$PROJECT_DIR/output/fixture-flowchart.excalidraw"; then
-  log_pass "validate fixture-flowchart.excalidraw"
+if python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" "$E2E_FIXTURE"; then
+  log_pass "validate generated flowchart fixture"
 else
-  log_fail "validate fixture-flowchart.excalidraw"
+  log_fail "validate generated flowchart fixture"
 fi
 
 # --- Test 2: Validate minimal file ---
@@ -110,6 +116,20 @@ PY
   fi
 fi
 
+STRICT_RENDER_OUT="/tmp/e2e-render-strict"
+rm -rf "$STRICT_RENDER_OUT"
+if node "$PROJECT_DIR/scripts/render_preview.js" "$MINIMAL" "$STRICT_RENDER_OUT" --format svg --no-server >/dev/null 2>&1 \
+  && jq -e '.mode == "fallback-svg" and (.outputs | length) >= 1' "$STRICT_RENDER_OUT/test-minimal-render-manifest.json" >/dev/null; then
+  log_pass "fallback render writes an explicit render manifest"
+else
+  log_fail "fallback render manifest"
+fi
+if node "$PROJECT_DIR/scripts/render_preview.js" "$MINIMAL" "$STRICT_RENDER_OUT" --format svg --no-server --require-native >/dev/null 2>&1; then
+  log_fail "--require-native incorrectly accepted fallback SVG"
+else
+  log_pass "--require-native rejects fallback SVG"
+fi
+
 # --- Test 5: Open --check-only ---
 echo "=== Test 5: Service check ==="
 if node "$PROJECT_DIR/scripts/open_in_excalidraw.js" --check-only 2>&1; then
@@ -125,7 +145,7 @@ PREVIEW_LOG="/tmp/e2e-preview-server.log"
 rm -f "$PREVIEW_LOG"
 
 node "$PROJECT_DIR/scripts/preview_server.js" --port "$PREVIEW_PORT" \
-  "$PROJECT_DIR/output/fixture-flowchart.excalidraw" > "$PREVIEW_LOG" 2>&1 &
+  "$E2E_FIXTURE" > "$PREVIEW_LOG" 2>&1 &
 PREVIEW_PID=$!
 
 # Wait for server to come up
@@ -143,8 +163,8 @@ if [ "$SERVER_UP" = "1" ]; then
 
   # 6a: GET /api/status has element counts
   STATUS_JSON=$(curl -s "http://localhost:${PREVIEW_PORT}/api/status")
-  if echo "$STATUS_JSON" | grep -q '"total":14'; then
-    log_pass "preview server loaded fixture (14 elements)"
+  if echo "$STATUS_JSON" | grep -q "\"total\":${FIXTURE_TOTAL}"; then
+    log_pass "preview server loaded generated fixture (${FIXTURE_TOTAL} elements)"
   else
     log_fail "preview server fixture load (got: $STATUS_JSON)"
   fi
@@ -258,7 +278,11 @@ if [ "$SERVER_UP" = "1" ]; then
     log_fail "/api/animate (got: $ANIM_JSON)"
   fi
 else
-  log_fail "preview server failed to start"
+  if [ "$SANDBOX" = "--sandbox" ]; then
+    log_warn "preview server unavailable in sandbox; port binding is restricted"
+  else
+    log_fail "preview server failed to start"
+  fi
   cat "$PREVIEW_LOG" 2>/dev/null | tail -5
 fi
 
@@ -521,7 +545,7 @@ if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example architecture \
 else
   log_fail "--library-dir explicit override"
 fi
-if python3 - "$PROJECT_DIR/examples/microservice-arch-ir.json" "$PROJECT_DIR/scripts/ir_to_excalidraw.py" <<'PY'
+if python3 - "$PROJECT_DIR/tests/fixtures/library-semantic.ir.json" "$PROJECT_DIR/scripts/ir_to_excalidraw.py" <<'PY'
 import json, subprocess, sys, tempfile
 ir_path, script = sys.argv[1:]
 ir = json.load(open(ir_path, encoding="utf-8"))
@@ -582,7 +606,7 @@ fi
 # --- Test 13: Animation GIF export (E.3) ---
 echo "=== Test 13: Animation GIF export ==="
 if python3 "$PROJECT_DIR/scripts/render_animation_gif.py" \
-    "$PROJECT_DIR/output/example-flowchart-animated.excalidraw" \
+    "$E2E_FIXTURE" \
     --output /tmp/e2e-animation.gif >/dev/null 2>&1; then
   if [ -s /tmp/e2e-animation.gif ] && head -c 6 /tmp/e2e-animation.gif | grep -q "GIF89a"; then
     log_pass "animation GIF exported (valid GIF89a)"
@@ -594,7 +618,7 @@ else
 fi
 
 echo "=== Test 14: Visual contract ==="
-VISUAL_IR="$PROJECT_DIR/examples/visual-contract-ir.json"
+VISUAL_IR="$PROJECT_DIR/tests/fixtures/visual-contract.ir.json"
 VISUAL_OUT="/tmp/e2e-visual-contract.excalidraw"
 if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" "$VISUAL_IR" --output "$VISUAL_OUT" >/dev/null 2>&1 \
   && python3 - "$VISUAL_OUT" <<'PY'
@@ -645,12 +669,36 @@ else
 fi
 if python3 - <<'PY'
 import importlib.util
+
+spec = importlib.util.spec_from_file_location("validator", "scripts/validate_excalidraw.py")
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+warnings = []
+mod._visual_checks([
+    {"id": "frame", "type": "frame", "x": 0, "y": 0, "width": 400, "height": 240, "angle": 0},
+    {"id": "shape", "type": "rectangle", "x": 40, "y": 40, "width": 320, "height": 140, "angle": 0, "backgroundColor": "#ffffff", "frameId": "frame"},
+    {"id": "text-a", "type": "text", "x": 80, "y": 90, "width": 180, "height": 40, "angle": 0, "text": "标题", "fontSize": 22, "strokeColor": "#777777", "containerId": None, "frameId": "frame"},
+    {"id": "text-b", "type": "text", "x": 120, "y": 100, "width": 180, "height": 40, "angle": 0, "text": "正文", "fontSize": 22, "strokeColor": "#777777", "containerId": None, "frameId": "frame"},
+    {"id": "rotated", "type": "rectangle", "x": 360, "y": 190, "width": 100, "height": 80, "angle": 0.5, "backgroundColor": "#ffffff", "frameId": "frame"},
+], warnings, delivery_profile="video-storyboard", app_state={"safeMargin": 20, "viewBackgroundColor": "#ffffff"})
+assert any("readable text" in item and "overlaps" in item for item in warnings)
+assert any("safe area" in item for item in warnings)
+assert mod._contrast_ratio("#777777", "#ffffff") < 5
+PY
+then
+  log_pass "visual audit covers text collisions, rotated frame bounds, and contrast"
+else
+  log_fail "visual audit extended coverage"
+fi
+if python3 - "$PROJECT_DIR/tests/fixtures/visual-contract.ir.json" <<'PY'
+import importlib.util
 import json
+import sys
 
 spec = importlib.util.spec_from_file_location("converter", "scripts/ir_to_excalidraw.py")
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
-base = json.load(open("examples/visual-contract-ir.json", encoding="utf-8"))
+base = json.load(open(sys.argv[1], encoding="utf-8"))
 
 dangling = json.loads(json.dumps(base))
 dangling["visual_contract"]["decisive_facts"][0]["targets"] = ["missing-node"]
@@ -798,6 +846,29 @@ then
 else
   log_fail "direct selection confirmation gate"
 fi
+if python3 "$PROJECT_DIR/scripts/template_selector.py" --recommend "我要对 more-paper-workflow 先进行梳理，然后制作 Excalidraw 白板文件，用于录制视频" > /tmp/e2e-video-storyboard.json \
+  && python3 "$PROJECT_DIR/scripts/template_selector.py" --recommend "画一个 ER 图" > /tmp/e2e-erd-explicit.json \
+  && python3 - <<'PY'
+import importlib.util
+import json
+
+spec = importlib.util.spec_from_file_location("selector", "scripts/template_selector.py")
+selector = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(selector)
+assert selector._alias_matches("er", "paper-workflow") is False
+assert selector._alias_matches("er", "画一个 er 图") is True
+video = json.load(open("/tmp/e2e-video-storyboard.json", encoding="utf-8"))
+erd = json.load(open("/tmp/e2e-erd-explicit.json", encoding="utf-8"))
+assert video["delivery"]["profile"] == "video-storyboard"
+assert video["recommendation"]["deliveryProfile"] == "video-storyboard"
+assert video["primary"]["key"] != "erd"
+assert erd["primary"]["key"] == "erd"
+PY
+then
+  log_pass "video delivery profile and bounded Latin alias matching"
+else
+  log_fail "template selector video/ER regression"
+fi
 if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" --example thermal-runaway --output /tmp/e2e-sketch-preset.excalidraw >/dev/null \
   && python3 - <<'PY'
 import json
@@ -911,6 +982,46 @@ then
   log_pass "all 10 static template previews use the same Chinese handwriting policy"
 else
   log_fail "static template preview CJK handwriting"
+fi
+
+# --- Test 17: Video storyboard IR and per-frame export ---
+echo "=== Test 17: Video storyboard delivery ==="
+STORYBOARD_OUT="/tmp/e2e-storyboard-smoke.excalidraw"
+STORYBOARD_RENDER="/tmp/e2e-storyboard-render"
+rm -rf "$STORYBOARD_RENDER"
+if python3 "$PROJECT_DIR/scripts/ir_to_excalidraw.py" \
+    "$PROJECT_DIR/examples/storyboard-smoke.ir.json" \
+    --output "$STORYBOARD_OUT" >/dev/null 2>&1 \
+  && python3 "$PROJECT_DIR/scripts/validate_excalidraw.py" "$STORYBOARD_OUT" --visual --fail-on-warning >/dev/null 2>&1 \
+  && python3 - "$STORYBOARD_OUT" <<'PY'
+import json
+import sys
+
+scene = json.load(open(sys.argv[1], encoding="utf-8"))
+assert scene["delivery"]["profile"] == "video-storyboard"
+assert len(scene["storyboard"]["frames"]) == 2
+texts = [e for e in scene["elements"] if e.get("type") == "text"]
+assert {e.get("fontFamily") for e in texts}.issuperset({1, 11, 12})
+ids = {e.get("id") for e in scene["elements"]}
+for element in scene["elements"]:
+    for binding in element.get("boundElements") or []:
+        assert binding.get("id") in ids
+    for key in ("startBinding", "endBinding"):
+        binding = element.get(key) or {}
+        if binding.get("elementId"):
+            assert binding["elementId"] in ids
+PY
+then
+  if node "$PROJECT_DIR/scripts/render_preview.js" "$STORYBOARD_OUT" "$STORYBOARD_RENDER" --format svg --no-server --frames --contact-sheet >/dev/null 2>&1 \
+    && [ -f "$STORYBOARD_RENDER/e2e-storyboard-smoke-frame-01.svg" ] \
+    && [ -f "$STORYBOARD_RENDER/e2e-storyboard-smoke-frame-02.svg" ] \
+    && jq -e '.frames | length == 2' "$STORYBOARD_RENDER/e2e-storyboard-smoke-qa-report.json" >/dev/null; then
+    log_pass "storyboard IR is deterministic, bound, validated, and exported per frame"
+  else
+    log_fail "video storyboard IR/per-frame export"
+  fi
+else
+  log_fail "video storyboard IR/per-frame export"
 fi
 
 # --- Summary ---

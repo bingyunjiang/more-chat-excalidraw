@@ -1,0 +1,60 @@
+{
+  "version": 2,
+  "title": "More Chat Excalidraw storyboard smoke test",
+  "delivery": {
+    "profile": "video-storyboard",
+    "frameWidth": 1600,
+    "frameHeight": 900,
+    "safeMargin": 60,
+    "gutter": 120
+  },
+  "shared": {
+    "theme": "sketch",
+    "sketchStyle": "engineering-notebook",
+    "cjkFontFamily": "Ma Shan Zheng",
+    "cjkFontFallbacks": ["Long Cang", "Liu Jian Mao Cao"],
+    "typography": {
+      "titleZh": {"fontFamily": 11, "fontSize": 42, "lineHeight": 1.2},
+      "titleEn": {"fontFamily": 1, "fontSize": 20, "lineHeight": 1.2},
+      "bodyZh": {"fontFamily": 12, "fontSize": 23, "lineHeight": 1.25},
+      "bodyEn": {"fontFamily": 1, "fontSize": 18, "lineHeight": 1.25},
+      "edgeLabel": {"fontFamily": 1, "fontSize": 32, "lineHeight": 1.1}
+    }
+  },
+  "frames": [
+    {
+      "id": "frame-01",
+      "title": "梳理问题 / Map the problem",
+      "template": "relationship",
+      "nodes": [
+        {"id": "intent", "label": "理解用户意图\nUNDERSTAND INTENT", "type": "topic", "position": {"x": 520, "y": 300}},
+        {"id": "options", "label": "模板与交付选型\nSELECT TEMPLATE + DELIVERY", "type": "process", "position": {"x": 920, "y": 300}},
+        {"id": "evidence", "label": "真实案例证据\nCASE EVIDENCE", "type": "note", "position": {"x": 720, "y": 540}}
+      ],
+      "edges": [
+        {"id": "e1", "from": "intent", "to": "options", "label": "clarify"},
+        {"id": "e2", "from": "evidence", "to": "options", "label": "ground"}
+      ],
+      "speakerNotes": "先说明问题和交付目标，再选择合适的图表模板。",
+      "cameraCue": "从中心主题缓慢移动到右侧选型卡片。",
+      "estimatedDuration": 8
+    },
+    {
+      "id": "frame-02",
+      "title": "生成交付 / Generate and deliver",
+      "template": "flowchart",
+      "nodes": [
+        {"id": "ir", "label": "结构化 IR", "type": "process", "position": {"x": 240, "y": 320}},
+        {"id": "scene", "label": "Excalidraw 画布", "type": "process", "position": {"x": 680, "y": 320}},
+        {"id": "qa", "label": "严格校验与预览", "type": "output", "position": {"x": 1120, "y": 320}}
+      ],
+      "edges": [
+        {"id": "e3", "from": "ir", "to": "scene", "label": "generate"},
+        {"id": "e4", "from": "scene", "to": "qa", "label": "validate"}
+      ],
+      "speakerNotes": "最后展示生成、校验和可编辑交付的闭环。",
+      "cameraCue": "沿流程从左向右平移，停留在质量门。",
+      "estimatedDuration": 10
+    }
+  ]
+}

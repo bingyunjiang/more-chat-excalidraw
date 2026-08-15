@@ -39,12 +39,13 @@ jobs:
             node --check "$f"
           done
 
-      - name: Validate all example .excalidraw files
+      - name: Validate published example assets
         run: |
-          for f in output/example-*.excalidraw; do
-            echo "== $f =="
-            python3 scripts/validate_excalidraw.py "$f" --visual || exit 1
-          done
+          python3 scripts/validate_excalidraw.py \
+            examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.excalidraw \
+            --visual
+          python3 scripts/ir_to_excalidraw.py examples/storyboard-smoke.ir.json \
+            --output /tmp/ci-storyboard.excalidraw --validate
 
       - name: IR conversion smoke test (built-in layouts + Graphviz)
         run: |

@@ -1,5 +1,6 @@
 ---
 name: more-chat-excalidraw
+version: 0.1.0
 description: 通过自然对话生成、预览、打开和迭代编辑本地 Excalidraw 画布。当用户想"画一张图/流程图/架构图/时序图/思维导图"、要求把对话内容做成 Excalidraw 图表、修改已有的 .excalidraw 文件、或让 agent 用 Excalidraw 呈现思路时使用。覆盖 .excalidraw v2 JSON 生成、结构校验、SVG/PNG 预览渲染，以及打开本地 Excalidraw（http://localhost:5001/）查看与迭代。
 ---
 
@@ -17,17 +18,17 @@ Graphviz（自动布局）、本地 Excalidraw 应用（打开画布）。
 
 1. **理解意图**：识别要强调的是步骤、角色、系统结构、消息先后、时间演进还是因果分析。运行 `python3 scripts/template_selector.py --choices "<意图>"` 获得面向用户的选择菜单；完整机器结果使用 `--recommend`。模板分类见 [references/template-choice-guide.md](references/template-choice-guide.md)，布局细节见 [references/diagram-templates.md](references/diagram-templates.md)。
 2. **主动共同选型**：若用户没有明确 template/theme/sketchStyle，先给出 1 个推荐组合和最多 2 个差异明显的备选项，只集中确认一次；让用户回复序号、模板名或“你直接选”。只明确模板时仅确认手绘风格，只明确风格时仅确认模板；模板与风格两者均明确，或用户授权直接选择时，才不重复追问。最终用一句话说明采用的 `template + sketchStyle` 和理由。不要向用户倾倒 10 个内部 key；CLI 始终非交互，由 Agent 负责对话。
-3. **生成结构化文案（IR）**：把用户意图整理为 IR 中间格式（见 [references/ir-format.md](references/ir-format.md)），包含 nodes/edges/groups/template/theme/sketchStyle。IR 独立于 Excalidraw，便于后续迭代与版本化。需要视觉追溯时可声明 [visual-distillation-contract.md](references/visual-distillation-contract.md) 中的 `visual_contract`。
+3. **生成结构化文案（IR）**：把用户意图整理为 IR 中间格式（见 [references/ir-format.md](references/ir-format.md)），包含 nodes/edges/groups/template/theme/sketchStyle。若目标是录屏、逐帧讲解或 16:9 演示，使用 `delivery.profile: "video-storyboard"`，让不同 frame 选择不同内容模板；规则见 [video-storyboard.md](references/video-storyboard.md)。IR 独立于 Excalidraw，便于后续迭代与版本化。需要视觉追溯时可声明 [visual-distillation-contract.md](references/visual-distillation-contract.md) 中的 `visual_contract`。
 4. **IR → `.excalidraw` JSON**：运行 `python3 scripts/ir_to_excalidraw.py <ir.json> --output output/<topic>.excalidraw` 自动完成布局、元素生成、箭头绑定与配色。也可手工按 [references/excalidraw-schema.md](references/excalidraw-schema.md) 与元素模板生成。默认输出到当前工作区，文件名建议 `output/<topic>-YYYYMMDD-HHMM.excalidraw`。
 5. **校验**：运行 `python3 scripts/validate_excalidraw.py <file>`，修复所有 error 后再交付。历史场景若出现箭头 `width/height` 与 `points` 范围不一致，使用 `--fix-arrow-geometry` 确定性修复后再加 `--visual --fail-on-warning` 验收。
 6. **实时预览**：启动 `node scripts/preview_server.js [<file>] [--open]`（默认端口 6060，预览页会轮询 API 实时刷新，模式参考 al1y/mcp-excalidraw）。之后每次生成或修改 `.excalidraw`，用 `node scripts/push_preview.js <file>` 推送，已打开的预览页约 1.5 秒内自动更新。交付前先看预览，检查元素是否重叠、文字是否溢出、连线是否绑定正确；发现问题直接修正后重新推送。需要浏览器内编辑时访问 `http://localhost:6060/editor`（完整 Excalidraw 编辑器，编辑后点"保存到服务器"写回文件）；需要分步讲解动画时访问 `http://localhost:6060/animate`（按 customData.animate 顺序逐帧播放）。
-7. **静态渲染**（可选，出图）：需要 PNG/SVG/PDF 文件时运行 `node scripts/render_preview.js <file> --format both` 生成同目录预览文件；PNG/PDF 只截取画布边界，不包含验证页眉或视口空白；只自动使用 Playwright `chrome-headless-shell`，不启动完整 GUI Chrome；沙箱内无法起安全浏览器时自动降级为纯 SVG。可用 `node scripts/render_preview.js --check-browser` 查看选择结果。
+7. **静态渲染**（可选，出图）：需要 PNG/SVG/PDF 文件时运行 `node scripts/render_preview.js <file> --format both` 生成同目录预览文件；PNG/PDF 只截取画布边界，不包含验证页眉或视口空白；只自动使用 Playwright `chrome-headless-shell`，不启动完整 GUI Chrome；沙箱内无法起安全浏览器时自动降级为纯 SVG，但必须查看 render manifest，不能把 fallback 宣称为原生 PNG。Storyboard 可加 `--frames --contact-sheet` 逐帧导出，要求真实文件时加 `--require-native --require-png`。可用 `node scripts/render_preview.js --check-browser` 查看选择结果。
 8. **打开与迭代**：运行 `node scripts/open_in_excalidraw.js <file>` 把画布推送到本地 Excalidraw（http://localhost:5001/）并打开浏览器；页面会自动刷新导入，用户可直接编辑。用户提出修改时增量更新元素（保持既有 `id` 不变，被替换的元素用新 `id`），不要整图重画。
 
 ## 质量规则
 
 - 每个元素必须有唯一 `id`、正确的 `type` 和数值型 `x/y/width/height`。
-- 文字标签用 `containerId` 绑定到图形（图形同时声明 `boundElements`），不要用独立文本框拼凑。
+- 单语言文字标签用 `containerId` 绑定到图形（图形同时声明 `boundElements`）。双语卡片使用一个形状加分组的独立文本层，避免多个文本绑定同一容器后被 Excalidraw 同时重定位。
 - 箭头用 `startBinding/endBinding` 绑定节点，保证移动节点时连线跟随。
 - 默认配色：节点描边 `#1e1e1e`、填充 `#ffffff` 或模板色板，连线 `#868e96`；同图内色板保持一致。
 - 文本宽度不超过所在图形宽度（经验值：宽度 ≈ 字号 × 中文字数 × 1.0），必要时放大图形或换行。
@@ -67,7 +68,7 @@ node scripts/check_web_lock.mjs
 - `validate_excalidraw.py`：校验 `.excalidraw` 文件结构与引用完整性；`--fix-arrow-geometry` 可按 `points` 精确修正旧箭头的 `width/height`，返回非零退出码表示仍有错误。
 - `preview_server.js`：实时预览服务器（轮询 API 模式）。启动后 `push_preview.js` 推送的图会实时出现在预览页，无需写本地 Excalidraw web root。
 - `push_preview.js`：把 `.excalidraw` 推送到运行中的预览服务器。
-- `render_preview.js`：无头浏览器渲染 `.excalidraw` 为 PNG（和 SVG），供 agent 自检与交付。
+- `render_preview.js`：无头浏览器渲染 `.excalidraw` 为 PNG（和 SVG），支持 Storyboard 逐帧导出、contact sheet、render manifest 和严格 native/png 要求，供 agent 自检与交付。
 - `open_in_excalidraw.js`：把 `.excalidraw` 推送到本地 Excalidraw 的 `scene.excalidraw` 并打开 http://localhost:5001/，供用户即时编辑。
 
 ### references/
@@ -84,3 +85,4 @@ node scripts/check_web_lock.mjs
 - `sketch-style-catalog.md`、`handdrawn-visual-rules.md`：sketch preset 目录与 render→look→targeted fix 验收规则。
 - 本地编辑器边界：localhost:5001 可能自动 fit 到顶部并被浮动工具栏覆盖；正式验收以 PNG/SVG 为准，必要时在编辑器内手动平移画布。
 - `visual-distillation-contract.md`：可选视觉蒸馏契约，定义决定性事实、来源映射、边界、布局信号、视觉家族及 proposed/confirmed 状态。
+- `video-storyboard.md`：录屏交付模式、逐帧 IR、双语卡片、安全区和逐帧导出规则。

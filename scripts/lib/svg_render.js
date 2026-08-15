@@ -12,12 +12,17 @@
  */
 
 const CJK_RE = /[\u2E80-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF]/;
+const CJK_FONT_BY_FAMILY_ID = {
+  11: "Ma Shan Zheng",
+  12: "Long Cang",
+  13: "Liu Jian Mao Cao",
+};
 
 function cssFontStack(data, el, text) {
   if (CJK_RE.test(String(text))) {
     const custom = el?.customData || {};
     const state = data.appState || {};
-    const primary = state.cjkFontFamily || custom.cjkFontFamily;
+    const primary = CJK_FONT_BY_FAMILY_ID[el?.fontFamily] || state.cjkFontFamily || custom.cjkFontFamily;
     const fallbacks = state.cjkFontFallbacks || custom.cjkFontFallbacks || [];
     if (primary) {
       return [...new Set([primary, ...fallbacks])]
@@ -29,6 +34,12 @@ function cssFontStack(data, el, text) {
   if (el?.fontFamily === 3) return "&quot;Cascadia Code&quot;, monospace";
   if (el?.fontFamily === 2) return "Helvetica, Arial, sans-serif";
   return "Virgil, &quot;Comic Sans MS&quot;, cursive";
+}
+
+function transformAttr(el, cx = el.x + (el.width || 0) / 2, cy = el.y + (el.height || 0) / 2) {
+  const angle = Number(el?.angle || 0);
+  if (!Number.isFinite(angle) || Math.abs(angle) < 1e-9) return "";
+  return ` transform="rotate(${(angle * 180 / Math.PI).toFixed(4)} ${cx} ${cy})"`;
 }
 
 function textWithScriptRuns(data, el, text) {
@@ -192,14 +203,14 @@ function renderSvgFromScene(data, opts = {}) {
       parts.push(
         `<rect x="${el.x}" y="${el.y}" width="${el.width}" height="${el.height}" ` +
           `fill="${fillOrNone(el.backgroundColor)}" stroke="${el.strokeColor || "#1e1e1e"}" ` +
-          `stroke-width="${el.strokeWidth || 2}" rx="${rx}"/>`
+          `stroke-width="${el.strokeWidth || 2}" rx="${rx}"${transformAttr(el)}/>`
       );
     } else if (el.type === "ellipse") {
       parts.push(
         `<ellipse cx="${el.x + el.width / 2}" cy="${el.y + el.height / 2}" ` +
           `rx="${el.width / 2}" ry="${el.height / 2}" ` +
           `fill="${fillOrNone(el.backgroundColor)}" stroke="${el.strokeColor || "#1e1e1e"}" ` +
-          `stroke-width="${el.strokeWidth || 2}"/>`
+          `stroke-width="${el.strokeWidth || 2}"${transformAttr(el)}/>`
       );
     } else if (el.type === "diamond") {
       const cx = el.x + el.width / 2;
@@ -207,7 +218,7 @@ function renderSvgFromScene(data, opts = {}) {
       parts.push(
         `<polygon points="${cx},${el.y} ${el.x + el.width},${cy} ${cx},${el.y + el.height} ` +
           `${el.x},${cy}" fill="${fillOrNone(el.backgroundColor)}" ` +
-          `stroke="${el.strokeColor || "#1e1e1e"}" stroke-width="${el.strokeWidth || 2}"/>`
+          `stroke="${el.strokeColor || "#1e1e1e"}" stroke-width="${el.strokeWidth || 2}"${transformAttr(el)}/>`
       );
     } else if (el.type === "image") {
       // Embed the actual image data (dataURL from top-level files) when present.
@@ -250,7 +261,7 @@ function renderSvgFromScene(data, opts = {}) {
         parts.push(
           `<text x="${cx}" y="${startY + idx * lineH}" text-anchor="${anchor}" ` +
             `dominant-baseline="central" font-size="${fontSize}" font-family="${cssFontStack(data, el, line)}" ` +
-            `fill="${el.strokeColor || "#1e1e1e"}">${textWithScriptRuns(data, el, line)}</text>`
+            `fill="${el.strokeColor || "#1e1e1e"}"${transformAttr(el, container ? container.x + container.width / 2 : el.x + (el.width || 0) / 2, container ? container.y + container.height / 2 : el.y + (el.height || 0) / 2)}>${textWithScriptRuns(data, el, line)}</text>`
         );
       });
     } else if ((el.type === "arrow" || el.type === "line") && Array.isArray(el.points)) {
@@ -261,7 +272,7 @@ function renderSvgFromScene(data, opts = {}) {
       const marker = el.type === "arrow" ? ' marker-end="url(#arrowhead)"' : "";
       parts.push(
         `<path d="${d}" fill="none" stroke="${el.strokeColor || "#868e96"}" ` +
-          `stroke-width="${el.strokeWidth || 2}"${marker}/>`
+          `stroke-width="${el.strokeWidth || 2}"${marker}${transformAttr(el)}/>`
       );
     }
     // freedraw / embeddable / other types: intentionally skipped in lightweight render.

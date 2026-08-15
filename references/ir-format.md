@@ -253,6 +253,15 @@
 - **Mermaid 导入**：Mermaid 源码 → 解析 → IR（metadata 保留原始源码）
 - **Markdown 导入**：文档标题/列表 → IR 层级结构
 - **已有画布**：.excalidraw 元素 → 反解 IR（增量编辑基础）
+
+## 10. Video Storyboard IR（version 2，可选）
+
+录屏交付不等于新增一种图表模板。使用 `delivery.profile: "video-storyboard"`
+后，`frames[]` 中的每个 frame 可以选择不同的 `template`，共享主题、字体、
+安全区和品牌配置。完整规则见 [video-storyboard.md](video-storyboard.md)。
+
+旧版只包含 `nodes/edges/groups` 的 IR 仍按 version 1 路径转换，不要求补充
+`delivery` 或 `frames`。
 # Sketch extensions
 
 Top-level `sketchStyle` (or `preset`) selects one of the five self-authored sketch presets. `theme: "sketch"` remains the compatibility switch. Edge fields `feedback` and `dependency` add template semantics; labels in sketch default to 32px.

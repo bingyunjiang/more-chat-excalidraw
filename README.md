@@ -10,7 +10,7 @@
 把自然对话变成可编辑的 Excalidraw 画布  
 Turn natural conversation into editable Excalidraw canvases
 
-[![Version](https://img.shields.io/badge/version-v0.0.1-2f6feb)](#版本历史)
+[![Version](https://img.shields.io/badge/version-v0.1.0-2f6feb)](#版本历史)
 [![License](https://img.shields.io/badge/license-MIT-1f883d)](./LICENSE)
 [![Type](https://img.shields.io/badge/type-AI%20Agent%20Skill-8250df)](#项目表头)
 [![Language](https://img.shields.io/badge/language-ZH%20primary%20%7C%20EN-f59e0b)](#项目表头)
@@ -41,7 +41,7 @@ Turn natural conversation into editable Excalidraw canvases
 | 字段 | 内容 |
 | --- | --- |
 | 名称 | `more-chat-excalidraw` |
-| 版本 | `v0.0.1` |
+| 版本 | `v0.1.0` |
 | 类型 | AI Agent Skill / 图表生成技能 |
 | 场景 | 流程图 / 架构图 / 时序图 / 思维导图 / ER 图 / 泳道图 / 层级图 / 关系图 / 对比图 / 时间线图 / 知识图谱 |
 | 本地运行 | macOS / Windows / Linux，Node.js 18+，Python 3 |
@@ -68,7 +68,7 @@ Turn natural conversation into editable Excalidraw canvases
   → ir_to_excalidraw.py（布局 + 配色 + 绑定 + 动画元数据）
   → validate_excalidraw.py（结构 + 引用 + 视觉质量门）
   → preview_server.js（SVG 轮询预览 / 内嵌编辑器 / 动画播放）
-  → render_preview.js（PNG / SVG / PDF 导出）
+  → render_preview.js（PNG / SVG / PDF / Storyboard 逐帧导出）
   → open_in_excalidraw.js（打开本地 Excalidraw 编辑）
 ```
 
@@ -106,7 +106,19 @@ python3 scripts/ir_to_excalidraw.py --example fea --output examples/fea-workflow
 
 该示例采用四阶段横向工程泳道，覆盖工况、几何、材料本构、单元/网格、边界与接触、求解收敛、网格无关性、验证及报告归档，并将失败回路布置在主流程之外。
 
-### 4. 一句话生成图表
+### 4. 真实案例：论文工作流视频白板
+
+本项目曾根据真实的 `more-paper-workflow` 使用过程制作 6 帧录屏白板，用于把“梳理 → 选型 → 生成 → 校验 → 预览 → 交付”讲清楚。它展示了本 skill 的视频分镜交付、双语字体、安全边距、逐帧动画和严格视觉校验能力。
+
+- [案例目录](examples/more-paper-workflow-video-rich-sketch/)
+- [可编辑 Excalidraw 白板](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.excalidraw)
+- [PNG 预览](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.png) · [SVG 预览](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.svg) · [PDF](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.pdf)
+
+你可以直接对 Agent 说：
+
+> 梳理 more-paper-workflow 的实际工作流，制作 3–6 个 16:9 Excalidraw 视频分镜，每帧使用合适的图表模板，保留中文手绘字体、英文层级、提词器和严格视觉校验。
+
+### 5. 一句话生成图表
 
 对 Agent 说"画一个微服务架构图"，自动推荐模板、生成 IR、完成布局配色并输出 `.excalidraw`：
 
@@ -115,7 +127,9 @@ python3 scripts/template_selector.py --recommend "画一个微服务架构图"
 python3 scripts/ir_to_excalidraw.py --example architecture --output output/arch.excalidraw --validate
 ```
 
-### 2. 从 Mermaid 或知识图谱生成
+## 扩展能力
+
+### 1. 从 Mermaid 或知识图谱生成
 
 ```bash
 # Mermaid → Excalidraw（flowchart / sequenceDiagram 子集）
@@ -125,7 +139,7 @@ node scripts/mermaid_to_excalidraw.js --string "graph TD; A-->B" --output output
 python3 scripts/knowledge_graph.py --text arch.txt --output output/kg.excalidraw
 ```
 
-### 3. 自动布局、主题与图标
+### 2. 自动布局、主题与图标
 
 ```bash
 # Graphviz 自动布局（可选）：dot 层次 / neato 力导向 / twopi 树形
@@ -138,7 +152,7 @@ python3 scripts/ir_to_excalidraw.py --example flowchart --theme blueprint --outp
 python3 scripts/ir_to_excalidraw.py --example architecture --icons --output output/arch-icons.excalidraw
 ```
 
-### 4. 实时预览、编辑与动画
+### 3. 实时预览、编辑与动画
 
 ```bash
 node scripts/preview_server.js output/arch.excalidraw --open
@@ -149,21 +163,30 @@ node scripts/preview_server.js output/arch.excalidraw --open
 - `http://localhost:6060/animate`：关键帧动画逐帧播放（自动注入 `customData.animate`）
 - `python3 scripts/render_animation_gif.py <file.excalidraw>`：导出动画 GIF（[示例](output/animation-demo.gif)）
 
-### 5. 增量编辑与回退
+### 4. 增量编辑与回退
 
 ```bash
 python3 scripts/merge_excalidraw.py patch output/flow.excalidraw --set 'n3.backgroundColor=#ffc9c9' --move 'n5:20,0'
 python3 scripts/merge_excalidraw.py restore output/flow.excalidraw output/history/backup-*.excalidraw
 ```
 
-### 6. 导出与交付
+### 5. 导出与交付
 
 ```bash
 node scripts/render_preview.js output/arch.excalidraw /tmp/out --format both   # PNG + SVG
 node scripts/render_preview.js output/arch.excalidraw /tmp/out --format pdf   # PDF
+
+# 视频分镜：逐帧 + 完整 contact sheet + QA 报告
+python3 scripts/ir_to_excalidraw.py examples/storyboard-smoke.ir.json --output /tmp/storyboard.excalidraw --validate
+node scripts/render_preview.js /tmp/storyboard.excalidraw /tmp/storyboard-render \
+  --format both --frames --contact-sheet --require-native --require-png
 ```
 
-### 7. 通过 MCP 协议调用
+录屏交付使用 `delivery.profile: "video-storyboard"`。每个 frame 可以使用不同图表模板，
+但共享 16:9 画布、安全边距、字体层级和动画顺序。详细 IR 见
+[references/video-storyboard.md](references/video-storyboard.md)。
+
+### 6. 通过 MCP 协议调用
 
 ```bash
 node scripts/mcp_server.mjs
@@ -238,7 +261,7 @@ bash scripts/test_e2e.sh
 ## 沙箱兼容性
 
 - **preview_server.js**：需要绑定端口，沙箱内运行需 escalation；启动后一切写入都在内存和预览页，不碰本地 Excalidraw web root
-- **render_preview.js**：PNG/PDF 默认裁切到画布边界，不输出验证页眉和视口空白；沙箱内无法启动 HTTP 服务器或 Chromium 时，自动 fallback 到 SVG 渲染
+- **render_preview.js**：PNG/PDF 默认裁切到画布边界，不输出验证页眉和视口空白；沙箱内无法启动 HTTP 服务器或 Chromium 时，自动 fallback 到 SVG 渲染，并写出 render manifest；要求真实结果时使用 `--require-native --require-png`
 - **浏览器安全**：PNG/PDF 渲染只自动选择 Playwright 的 `chrome-headless-shell`，不启动完整的 “Google Chrome for Testing” GUI 应用；可用 `node scripts/render_preview.js --check-browser` 查看选择结果
 - **open_in_excalidraw.js**：沙箱内无法写入 web root 时，给出明确提示和手动操作命令（exit code 3）
 - **ir_to_excalidraw.py / validate_excalidraw.py**：纯 Python 标准库，沙箱内可直接运行
@@ -246,7 +269,7 @@ bash scripts/test_e2e.sh
 ## 质量与验证
 
 - **结构校验**：元素 id 唯一、字段类型、引用完整性（boundElements / containerId / frameId / 箭头绑定交叉检查）
-- **视觉质量门**：`--visual` 检查元素重叠、悬空箭头、布局密度，以及边标签/箭线遮挡或穿过可读文本
+- **视觉质量门**：`--visual` 检查元素重叠、普通文本互相遮挡、悬空箭头、旋转后 frame 安全区、视频字号/对比度，以及边标签/箭线遮挡或穿过可读文本
 - **e2e 测试**：`bash scripts/test_e2e.sh` 覆盖生成、校验、渲染、预览、编辑器、保存、多画布、动画、Mermaid、知识图谱、Graphviz、增量编辑、MCP、确定性与 Library visual；具体结果以当前环境输出为准
 - **CI**：GitHub Actions（validate + smoke + e2e），见 `.github/workflows/ci.yml`
 
@@ -254,7 +277,7 @@ bash scripts/test_e2e.sh
 
 | 版本 | 日期 | 要点 |
 | --- | --- | --- |
-| v0.0.1 | 2026-08-08 | 初始开发版：自然对话生成 Excalidraw 画布；持续补充手绘双语分析板、显式中文手写字体、视觉提炼契约、Library、工程案例与 strict 视觉回归，版本号保持不变。 |
+| v0.1.0 | 2026-08-15 | 初始公开版：自然对话生成与编辑 Excalidraw 画布；包含 10 种模板、中文手写字体、视觉契约、Library、工程案例、视频 storyboard、逐帧导出与 strict 视觉质量门。 |
 
 详细变更见 [CHANGELOG.md](CHANGELOG.md)。
 

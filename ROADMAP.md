@@ -1,6 +1,6 @@
 # more-chat-excalidraw 开发计划
 
-> 最后更新：2026-08-09（v0.0.1，发布收口）
+> 最后更新：2026-08-15（v0.1.0，初始公开发布）
 
 本轮新增工程有限元（FEA）示例；核心 Library 组件已 self-authored MIT 内置；第三方缓存仅作为可选覆盖且需自行核验许可。10 种模板 × 4 套主题已统一中文手写字体策略，并覆盖生成器、Library 标签、静态预览和回归校验；当前交付场景的遗留箭头几何 warning 已清零。
 
@@ -323,14 +323,14 @@
 | M7：JSON 生成 | IR→Excalidraw + 自动布局 + 自纠错 | C | ✅ 完成（ir_to_excalidraw.py + Graphviz + merge + --visual 质量门） |
 | M8：完整预览 | 内嵌编辑器 + 双向同步 + 多画布 + PDF 导出 | D（完整版） | ✅ 完成 |
 | M9：创新功能 | 动画 + Mermaid + 自纠错 + 知识图谱 + Graphviz + MCP + 图标库 | A/B/C/D 创新 | ✅ 核心能力完成，平台边界已记录 |
-| M10：可发布 | 版本号 + CHANGELOG + 文档 + 示例 | — | ✅ v0.0.1 发布收口（在线安装与跨平台实机仍待验证） |
+| M10：可发布 | 版本号 + CHANGELOG + 文档 + 示例 | — | ✅ v0.1.0 初始公开发布（在线安装与跨平台实机仍待验证） |
 
 ## 后续阶段（P3）
 
 ### Phase E：发布与维护（P3，M10）
 
 - [x] **E.1 版本号与 CHANGELOG**
-  - 语义化版本号（当前 v0.0.1 初始版本）
+  - 语义化版本号（当前 v0.1.0 初始公开版本）
   - CHANGELOG.md 追踪每次变更
 - [x] **E.2 CI/CD**
   - GitHub Actions：validate + smoke + e2e（.github/workflows/ci.yml），CI 配置已纳入 npm ci/build；运行状态以远端实际结果为准
@@ -368,4 +368,4 @@
 | al1y/mcp-excalidraw | 15★ | 实时 Web 预览 MCP 服务器（Phase 4.0 已实现） |
 # Sketch follow-up
 
-Future work: browser-level font snapshots and native Excalidraw interaction tests. Current deliverable remains v0.0.1 and does not change Library/MCP/web assets.
+Future work: browser-level font snapshots and native Excalidraw interaction tests. Current deliverable is v0.1.0; Library/MCP/web assets are versioned with the public release.

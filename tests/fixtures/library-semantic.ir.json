@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "template": "architecture",
+  "theme": "default",
+  "nodes": [
+    {"id": "db", "label": "PostgreSQL", "type": "database", "position": {"x": 100, "y": 200}},
+    {"id": "actor", "label": "用户", "type": "actor", "position": {"x": 500, "y": 200}}
+  ],
+  "edges": []
+}

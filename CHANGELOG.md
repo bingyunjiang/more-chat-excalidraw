@@ -2,47 +2,27 @@
 
 本项目的所有显著变更。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [0.0.1] - 2026-08-08
+## [0.1.0] - 2026-08-15
 
-### Changed (unreleased)
+这是 more-chat-excalidraw 的初始公开版本，包含此前开发阶段积累并完成验收的能力。
 
-- 修复 42 个当前交付场景中 273 条遗留箭头的 `width/height` 与 `points` 范围不一致；静态模板构造同步修正，并新增 `validate_excalidraw.py --fix-arrow-geometry` 确定性迁移入口和回归测试。历史恢复备份保持不动。
-- 全部 10 种模板和 4 套主题统一采用中文手写字体策略：默认 Ma Shan Zheng（11），可切换 Long Cang（12）或 Liu Jian Mao Cao（13）；default/sketch 的纯英文保留 Virgil，minimal/blueprint 的纯英文保留 Helvetica。生成器、内置 Library 标签、静态模板预览和 strict 视觉校验使用同一规则。
-- 新增可选 `visual_contract`：每张画布声明 3–6 条决定性事实、来源引用、目标 IR 节点/边和受控视觉家族；strict 视觉校验拒绝无来源图形、悬空目标和未声明家族。
-- 生成元素写入 `semanticRole`、`visualFactIds`、`visualSources`、`visualFamily` 与提案状态；新增来源锁定 fixture、确定性转换和负向回归，未声明契约的旧 IR 保持兼容。
+### Added
 
-- 新增 `thermal-runaway` 手绘双语研究分析板；IR 支持 `note/callout`、多行文字自动尺寸、hand/sans/mono 字体层级，以及曲线、颜色、粗细、虚线和箭头端点控制。
+- 自然语言 → IR → Excalidraw v2 → 校验 → SVG/PNG/PDF 预览 → 本地编辑的完整闭环。
+- 流程图、架构图、时序图、思维导图、泳道图、ER 图、层级图、关系图、对比图和时间线图共 10 种模板。
+- 4 套主题、5 套手绘 preset、语义色板、50+ 技术组件样式和自包含 MIT Library。
+- Mermaid、知识图谱、Graphviz、MCP、增量编辑、动画 GIF 和实时预览能力。
+- 全部模板统一的中文手写字体策略、`visual_contract` 视觉追溯契约和 strict 视觉质量门。
+- `video-storyboard` 交付模式：共享 16:9 画布、安全边距、双语字体、逐帧导出、contact sheet 和 QA 报告。
+- 真实 `more-paper-workflow` 视频白板案例，作为 README 的初始宣讲示例。
 
-- 新增电池包热管理多物理场仿真视觉基准案例（minimal 四列工程架构及 Excalidraw/PNG/SVG/PDF）；minimal/blueprint 的纯英文使用无衬线字体、中文使用手写体，minimal 线条改为工程灰。
+### Changed
 
-- 新增稳定 FEA 工程有限元流程示例（IR、Excalidraw、SVG/PNG/PDF）及工程关键词模板推荐；视觉复核后改为四阶段横向泳道、阶段居中、外侧返回回路和标签自适应宽度。
+- 修正箭头 `width/height` 与 `points` 不一致、中文字体回退、普通文本碰撞、旋转边界、低对比度和小字号等交付问题。
+- 模板选择器增加 delivery profile，并修复 `ER` 等短 Latin alias 在普通单词中的误匹配。
+- 渲染链明确区分 native 与 fallback；fallback 会写出 manifest，`--require-native` 和 `--require-png` 可作为正式交付质量门。
+- 文档、Library manifest、MCP server、web bundle 和 package metadata 统一为 `v0.1.0`。
 
-- 静态渲染动态选择 Playwright `chrome-headless-shell`，不再自动启动完整的 Google Chrome for Testing GUI 应用，避免 macOS agent 沙箱弹出崩溃对话框；PNG/PDF 仅导出画布边界，移除验证页眉与视口空白；fallback PNG 从 SVG viewBox 读取安全 viewport 尺寸。
-- 默认生成改为字节级确定性；`EXCALIDRAW_UPDATED` 可显式控制更新时间。
-- web 依赖正式声明 MCP SDK/zod，CI/e2e 覆盖构建、MCP 实际工具调用与 Library 视觉校验。
-- Library 匹配与真实尺寸在布局前解析，组件 frame/箭头使用实际边界；核心 Library 组件已 self-authored MIT 内置，无需下载；第三方缓存仅可显式覆盖。
-- opener 按 macOS/Linux/Windows 选择安全启动方式，并保留 macOS launchd 行为。
+### License
 
-### 初始版本
-
-通过自然对话生成、预览、打开和迭代编辑本地 Excalidraw 画布。
-
-- **核心闭环**：理解意图 → 生成 JSON → 校验 → 渲染预览 → 打开/迭代
-- **模板系统**：10 种图类型（流程图/架构图/时序图/思维导图/泳道图/ER图/层级图/关系图/对比图/时间线图）；语义色板（8 填充色 + 4 主题）；元素级构建块；50+ 技术组件样式；9 种视觉模式；动画关键帧模板
-- **文案引擎**：IR 中间格式定义（19 种节点类型、边/分组/模板专用字段）；`template_selector.py` 意图推荐
-- **JSON 生成**：`ir_to_excalidraw.py` IR → Excalidraw 转换器（10 种布局、4 套主题、自动绑定、动画元数据注入）；Graphviz 自动布局（dot/neato/twopi）
-- **增量编辑**：`merge_excalidraw.py` merge（保留旧 id）/ patch（--set/--move）/ restore（备份回退）
-- **Mermaid 转换**：`mermaid_to_excalidraw.js` 轻量解析 flowchart/sequenceDiagram 子集 → IR → Excalidraw
-- **知识图谱**：`knowledge_graph.py` 从实体/关系描述自动分层生成架构图
-- **实时预览**：`preview_server.js` 轮询 SVG 预览 + 内嵌完整 Excalidraw 编辑器（/editor）+ 动画播放页（/animate）+ 双向同步保存（/api/save）+ 多画布（/api/canvases）
-- **多格式导出**：`render_preview.js` PNG / SVG / PDF（沙箱内自动降级 SVG）
-- **自纠错质量门**：`validate_excalidraw.py --visual` 检查元素重叠、悬空箭头、布局密度
-- **云架构图标库**：`icon_library.py` 自包含 67 个技术图标（SVG data URL），`ir_to_excalidraw.py --icons` 注入 image 元素 + files 资源（借鉴 excalidraw-icons-mcp）
-- **动画 GIF 导出**：`render_animation_gif.py` 读取关键帧顺序合成 GIF（output/animation-demo.gif，借鉴 excalimate）
-- **MCP 协议**：`mcp_server.mjs` 暴露 generate_diagram / validate_diagram / push_preview / list_templates 四个工具
-- **测试**：e2e suite 覆盖生成、校验、渲染、预览、编辑器、保存、多画布、动画、Mermaid、知识图谱、Graphviz、增量编辑与 MCP
-- **CI**：GitHub Actions（validate + smoke + e2e）
-# v0.0.1 sketch system update
-
-- Added five self-authored sketch presets, four template behaviors, active selection recommendation, visual rules, and two engineering case studies. Version remains v0.0.1.
-- Consolidated all 10 templates into four user-facing categories and added three-card interactive choices with best-fit/avoid guidance while retaining CLI and IR compatibility.
+MIT License，详见 [LICENSE](LICENSE)。

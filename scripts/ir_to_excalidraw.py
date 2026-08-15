@@ -19,6 +19,7 @@ import hashlib
 import argparse
 import shutil
 import subprocess
+from copy import deepcopy
 
 # ─── 语义色板（对应 references/color-palette.md）───────────────────────────
 SEMANTIC_FILL = {
@@ -724,9 +725,228 @@ def _apply_visual_contract(elements, ir):
         el["customData"] = custom
 
 
+# ─── Storyboard 组合 ───────────────────────────────────────────────────────
+def _storyboard_element_bounds(elements):
+    """Return the local axis-aligned bounds including connector points."""
+    xs, ys = [], []
+    for element in elements:
+        if not isinstance(element, dict) or element.get("type") == "frame":
+            continue
+        x, y = element.get("x"), element.get("y")
+        if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
+            continue
+        width = element.get("width", 0) or 0
+        height = element.get("height", 0) or 0
+        xs.extend([x, x + width])
+        ys.extend([y, y + height])
+        for point in element.get("points") or []:
+            if isinstance(point, list) and len(point) == 2:
+                xs.append(x + point[0])
+                ys.append(y + point[1])
+    if not xs:
+        return 0, 0, 0, 0
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def _storyboard_frame_element(frame_id, name, x, width, height, theme):
+    element = _base_el(frame_id, "frame", x, 0, width, height, theme, {
+        "name": name,
+        "backgroundColor": theme.get("bg", "#ffffff"),
+        "strokeColor": theme.get("strokeColor", "#1e1e1e"),
+        "roundness": None,
+        "customData": {"animate": {"order": 1, "duration": 400, "type": "fade-in", "group": frame_id}},
+    })
+    return element
+
+
+def convert_storyboard(ir, template_override=None, layout_engine=None, icons=False, library=False, library_dir=None):
+    """Compose per-frame IRs into one deterministic, horizontally arranged board."""
+    delivery = dict(ir.get("delivery") or {})
+    width = int(delivery.get("frameWidth", 1600))
+    height = int(delivery.get("frameHeight", 900))
+    safe_margin = int(delivery.get("safeMargin", 60))
+    gutter = int(delivery.get("gutter", 120))
+    shared = deepcopy(ir.get("shared") or {})
+    frames = ir.get("frames") or []
+    if not frames:
+        raise ValueError("video-storyboard IR requires a non-empty frames array")
+
+    all_elements = []
+    all_files = {}
+    frame_records = []
+    warnings = []
+    theme_key = shared.get("theme", ir.get("theme", "default"))
+    theme = dict(THEMES.get(theme_key, THEMES["default"]))
+
+    for index, source_frame in enumerate(frames):
+        frame = deepcopy(source_frame)
+        frame_id = str(frame.get("id") or f"frame-{index + 1:02d}")
+        frame_name = str(frame.get("title") or frame.get("name") or frame_id)
+        frame_ir = deepcopy(shared)
+        frame_ir.update({key: value for key, value in frame.items() if key not in ("speakerNotes", "cameraCue", "estimatedDuration")})
+        frame_ir["version"] = 1
+        frame_ir["theme"] = frame.get("theme", shared.get("theme", ir.get("theme", "default")))
+        frame_ir["template"] = frame.get("template", shared.get("template", ir.get("template", "flowchart")))
+        frame_ir.setdefault("nodes", [])
+        frame_ir.setdefault("edges", [])
+        frame_ir.setdefault("groups", [])
+        local_scene = convert(
+            frame_ir,
+            template_override=template_override,
+            layout_engine=layout_engine,
+            icons=icons,
+            library=library,
+            library_dir=library_dir,
+        )
+        local_elements = deepcopy(local_scene.get("elements") or [])
+        id_map = {element.get("id"): f"{frame_id}--{element.get('id')}" for element in local_elements if element.get("id")}
+        min_x, min_y, max_x, max_y = _storyboard_element_bounds(local_elements)
+        dx = safe_margin - min_x
+        dy = safe_margin - min_y
+        frame_x = index * (width + gutter)
+        outer_id = f"storyboard-{frame_id}"
+        outer = _storyboard_frame_element(outer_id, frame_name, frame_x, width, height, theme)
+        all_elements.append(outer)
+
+        for element in local_elements:
+            old_id = element.get("id")
+            element["id"] = id_map.get(old_id, f"{frame_id}--{old_id}")
+            if element.get("containerId"):
+                element["containerId"] = id_map.get(element["containerId"], element["containerId"])
+            if element.get("boundElements"):
+                element["boundElements"] = [
+                    {**binding, "id": id_map.get(binding.get("id"), binding.get("id"))}
+                    if isinstance(binding, dict) else binding
+                    for binding in element["boundElements"]
+                ]
+            for binding_key in ("startBinding", "endBinding"):
+                binding = element.get(binding_key)
+                if isinstance(binding, dict) and binding.get("elementId"):
+                    binding["elementId"] = id_map.get(binding["elementId"], binding["elementId"])
+            if element.get("fileId"):
+                element["fileId"] = f"{frame_id}--{element['fileId']}"
+            if element.get("frameId"):
+                element["frameId"] = outer_id
+            elif element.get("type") != "frame":
+                element["frameId"] = outer_id
+            element["x"] = element.get("x", 0) + frame_x + dx
+            element["y"] = element.get("y", 0) + dy
+            custom = dict(element.get("customData") or {})
+            animation = dict(custom.get("animate") or {})
+            local_order = int(animation.get("order", 5) or 5)
+            animation.update({"order": index * 10 + local_order, "group": outer_id})
+            custom["animate"] = animation
+            custom["storyboardFrame"] = frame_id
+            element["customData"] = custom
+            all_elements.append(element)
+
+        translated_max_x = max_x + dx
+        translated_max_y = max_y + dy
+        if translated_max_x > width - safe_margin or translated_max_y > height - safe_margin:
+            warnings.append({
+                "frameId": frame_id,
+                "type": "content-exceeds-safe-area",
+                "bounds": [translated_max_x, translated_max_y],
+                "frameSize": [width, height],
+            })
+
+        for file_id, file_data in (local_scene.get("files") or {}).items():
+            all_files[f"{frame_id}--{file_id}"] = file_data
+        frame_records.append({
+            "id": frame_id,
+            "title": frame_name,
+            "template": frame_ir["template"],
+            "speakerNotes": frame.get("speakerNotes", ""),
+            "cameraCue": frame.get("cameraCue", ""),
+            "estimatedDuration": frame.get("estimatedDuration"),
+        })
+
+    app_state = {
+        "viewBackgroundColor": theme.get("bg", "#ffffff"),
+        "gridSize": 20,
+        "deliveryProfile": "video-storyboard",
+        "safeMargin": safe_margin,
+    }
+    if theme_key == "sketch":
+        app_state["sketchStyle"] = shared.get("sketchStyle", "engineering-notebook")
+        app_state["sketchTemplate"] = "storyboard"
+    if shared.get("cjkFontFamily"):
+        app_state["cjkFontFamily"] = str(shared["cjkFontFamily"])
+        app_state["cjkFontFallbacks"] = [str(name) for name in shared.get("cjkFontFallbacks", [])]
+        app_state["cjkFontFamilyId"] = int(FONT_FAMILY_MAP.get(str(shared["cjkFontFamily"]).lower(), 11))
+
+    result = {
+        "type": "excalidraw",
+        "version": 2,
+        "source": "https://excalidraw.com",
+        "elements": all_elements,
+        "files": all_files,
+        "appState": app_state,
+        "delivery": {
+            "profile": "video-storyboard",
+            "frameWidth": width,
+            "frameHeight": height,
+            "safeMargin": safe_margin,
+            "gutter": gutter,
+        },
+        "storyboard": {
+            "frames": frame_records,
+            "warnings": warnings,
+        },
+    }
+    if ir.get("visual_contract") is not None:
+        result["visual_contract"] = ir["visual_contract"]
+    return result
+
+
+def _apply_typography_contract(result, ir):
+    """Apply role-based typography without changing legacy IR output."""
+    typography = ir.get("typography") or (ir.get("shared") or {}).get("typography")
+    if not isinstance(typography, dict):
+        return
+    for element in result.get("elements", []):
+        if element.get("type") != "text":
+            continue
+        text = str(element.get("text", ""))
+        element_id = str(element.get("id", ""))
+        if element.get("customData", {}).get("typographyRole"):
+            role = element["customData"]["typographyRole"]
+        elif "elbl-" in element_id:
+            role = "edgeLabel"
+        elif "title-" in element_id:
+            role = "titleZh" if _has_cjk(text) else "titleEn"
+        else:
+            role = "bodyZh" if _has_cjk(text) else "bodyEn"
+        spec = typography.get(role) or typography.get("bodyZh" if _has_cjk(text) else "bodyEn")
+        if not isinstance(spec, dict):
+            continue
+        if spec.get("fontSize") is not None:
+            element["fontSize"] = float(spec["fontSize"])
+        if spec.get("fontFamily") is not None:
+            family = spec["fontFamily"]
+            family = FONT_FAMILY_MAP.get(str(family).lower(), family)
+            if _has_cjk(text) and family in (1, 2, 3):
+                family = int((result.get("appState") or {}).get("cjkFontFamilyId", 11))
+            element["fontFamily"] = family
+        if spec.get("lineHeight") is not None:
+            element["lineHeight"] = float(spec["lineHeight"])
+        if spec.get("color"):
+            element["strokeColor"] = spec["color"]
+        custom = dict(element.get("customData") or {})
+        custom["typographyRole"] = role
+        element["customData"] = custom
+        if element.get("containerId") is None and spec.get("fontSize") is not None:
+            element["width"] = max(
+                float(element.get("width", 0) or 0),
+                estimate_text_width(text, float(element["fontSize"])) + 20,
+            )
+
+
 # ─── 主转换 ────────────────────────────────────────────────────────────────
 def convert(ir, template_override=None, layout_engine=None, icons=False, library=False, library_dir=None):
     """IR dict → .excalidraw dict"""
+    if ir.get("frames") and (ir.get("delivery") or {}).get("profile") == "video-storyboard":
+        return convert_storyboard(ir, template_override, layout_engine, icons, library, library_dir)
     template = template_override or ir.get("template", "flowchart")
     theme_key = ir.get("theme", "default")
     theme = dict(THEMES.get(theme_key, THEMES["default"]))
@@ -1528,6 +1748,7 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
     if cjk_font_family:
         result["appState"]["cjkFontFamily"] = str(cjk_font_family)
         result["appState"]["cjkFontFallbacks"] = [str(name) for name in cjk_font_fallbacks]
+        result["appState"]["cjkFontFamilyId"] = int(theme.get("cjkFontFamilyId", 11))
     if ir.get("visual_contract") is not None:
         result["visual_contract"] = ir["visual_contract"]
 
@@ -1548,6 +1769,7 @@ def convert(ir, template_override=None, layout_engine=None, icons=False, library
 
     # Optional only: do not alter legacy IR output when no contract exists.
     _apply_visual_contract(elements, ir)
+    _apply_typography_contract(result, ir)
 
     return result
 
@@ -1786,7 +2008,8 @@ def main():
     for el in result["elements"]:
         by_type[el["type"]] = by_type.get(el["type"], 0) + 1
     print(f"  类型统计: {by_type}")
-    print(f"  主题: {ir.get('theme', 'default')}  布局: {args.layout or '内置'}  图标: {'是' if args.icons else '否'}  库组件: {'是' if use_library else '否'}")
+    reported_theme = ir.get("theme") or (ir.get("shared") or {}).get("theme", "default")
+    print(f"  主题: {reported_theme}  布局: {args.layout or '内置'}  图标: {'是' if args.icons else '否'}  库组件: {'是' if use_library else '否'}")
 
     if args.validate:
         import subprocess
