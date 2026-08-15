@@ -217,7 +217,6 @@ bash scripts/test_e2e.sh --sandbox
 - [Excalidraw v2 schema](references/excalidraw-schema.md)
 - [视觉蒸馏契约](references/visual-distillation-contract.md)
 - [变更记录](CHANGELOG.md)
-- [交接文档](HANDOFF.md)
 
 ## More 系列
 
