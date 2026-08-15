@@ -108,7 +108,7 @@ python3 scripts/ir_to_excalidraw.py --example fea --output examples/fea-workflow
 
 ### 4. 真实案例：论文工作流视频白板
 
-本项目曾根据真实的 `more-paper-workflow` 使用过程制作 6 帧录屏白板，用于把“梳理 → 选型 → 生成 → 校验 → 预览 → 交付”讲清楚。它展示了本 skill 的视频分镜交付、双语字体、安全边距、逐帧动画和严格视觉校验能力。
+本项目根据真实的 `more-paper-workflow` 使用过程制作 6 帧录屏白板，用于把“梳理 → 选型 → 生成 → 校验 → 预览 → 交付”讲清楚。它展示了本 skill 的视频分镜交付、双语字体、安全边距、逐帧动画和严格视觉校验能力。
 
 - [案例目录](examples/more-paper-workflow-video-rich-sketch/)
 - [可编辑 Excalidraw 白板](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.excalidraw)
