@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1020" viewBox="-60 -60 1720 1020">
+<rect x="-60" y="-60" width="1720" height="1020" fill="#f5f3ee"/>
+<defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#868e96"/></marker></defs>
+<rect x="0" y="0" width="1600" height="900" fill="none" stroke="#a5d8ff" stroke-width="2" stroke-dasharray="8 4"/>
+<text x="8" y="18" font-size="16" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#1971c2"><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive">05 </tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive">第</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive"> 7 </tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive">步写作枢纽：证据、图表、引用与公式</tspan></text>
+<text x="70" y="78" text-anchor="start" dominant-baseline="central" font-size="20" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#2563eb">05 / STEP 7</text>
+<text x="70" y="124" text-anchor="start" dominant-baseline="central" font-size="24" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#2563eb">EVIDENCE · WRITING · FIGURES · CITATIONS · EQUATIONS</text>
+<text x="70" y="183" text-anchor="start" dominant-baseline="central" font-size="40" font-family="&quot;Ma Shan Zheng&quot;, sans-serif" fill="#2b2b2b">写作，是证据化生产，不是文本续写</text>
+<text x="72" y="241" text-anchor="start" dominant-baseline="central" font-size="23" font-family="&quot;Long Cang&quot;, sans-serif" fill="#4b5563"><tspan font-family="&quot;Long Cang&quot;, sans-serif">第</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive"> 7 </tspan><tspan font-family="&quot;Long Cang&quot;, sans-serif">步把证据接收、论证计划、正文、图表、公式和逐主张引用审计放在同一完成门下。</tspan></text>
+<path d="M70.0,280.0 L1530.0,280.0" fill="none" stroke="#d1d5db" stroke-width="2"/>
+<ellipse cx="800" cy="510" rx="180" ry="85" fill="#dcfce7" stroke="#15803d" stroke-width="3"/>
+<text x="800" y="492" text-anchor="middle" dominant-baseline="central" font-size="22" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#6b7280">STEP 7</text>
+<text x="800" y="500.86538461538464" text-anchor="middle" dominant-baseline="central" font-size="38" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b">写作枢纽</text>
+<rect x="95" y="345" width="390" height="145" fill="#dbeafe" stroke="#2563eb" stroke-width="3" rx="8"/>
+<text x="290" y="378" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#6b7280">EVIDENCE INTAKE</text>
+<text x="290" y="400.1923076923077" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b"><tspan font-family="&quot;Long Cang&quot;, sans-serif">文库</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive"> · </tspan><tspan font-family="&quot;Long Cang&quot;, sans-serif">全文</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive"> · </tspan><tspan font-family="&quot;Long Cang&quot;, sans-serif">本地证据包</tspan></text>
+<text x="290" y="425.1923076923077" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b">按目标章节读取，不扫整库</text>
+<rect x="1115" y="345" width="390" height="145" fill="#cffafe" stroke="#0891b2" stroke-width="3" rx="8"/>
+<text x="1310" y="378" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#6b7280">WRITING CHAIN</text>
+<text x="1310" y="400.1923076923077" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b"><tspan font-family="&quot;Long Cang&quot;, sans-serif">风格画像</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive"> → </tspan><tspan font-family="&quot;Long Cang&quot;, sans-serif">写作蓝图</tspan></text>
+<text x="1310" y="425.1923076923077" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b"><tspan font-family="&quot;Long Cang&quot;, sans-serif">论证计划</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive"> → </tspan><tspan font-family="&quot;Long Cang&quot;, sans-serif">章节草稿</tspan></text>
+<rect x="1110" y="600" width="400" height="150" fill="#ede9fe" stroke="#7c3aed" stroke-width="3" rx="8"/>
+<text x="1310" y="631" text-anchor="middle" dominant-baseline="central" font-size="14" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#6b7280">CLAIM-LEVEL CITATION AUDIT</text>
+<text x="1310" y="657.6923076923077" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b"><tspan font-family="&quot;Long Cang&quot;, sans-serif">格式层</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive"> · </tspan><tspan font-family="&quot;Long Cang&quot;, sans-serif">对应层</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive"> · </tspan><tspan font-family="&quot;Long Cang&quot;, sans-serif">证据层</tspan></text>
+<text x="1310" y="682.6923076923077" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b">逐个主张出现位置审计</text>
+<rect x="95" y="600" width="390" height="150" fill="#fee2e2" stroke="#dc2626" stroke-width="3" rx="8"/>
+<text x="290" y="633" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#6b7280">EQUATION GUARD</text>
+<text x="290" y="657.6923076923077" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b"><tspan font-family="&quot;Long Cang&quot;, sans-serif">登记公式</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive">·</tspan><tspan font-family="&quot;Long Cang&quot;, sans-serif">变量</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive">·</tspan><tspan font-family="&quot;Long Cang&quot;, sans-serif">单位</tspan><tspan font-family="Virgil, &quot;Comic Sans MS&quot;, cursive">·</tspan><tspan font-family="&quot;Long Cang&quot;, sans-serif">假设</tspan></text>
+<text x="290" y="682.6923076923077" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b">阻断纯文本数学与源码泄漏</text>
+<path d="M493.0,415.0 L612.0,485.0" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arrowhead)"/>
+<path d="M1107.0,415.0 L988.0,485.0" fill="none" stroke="#0891b2" stroke-width="3" marker-end="url(#arrowhead)"/>
+<path d="M1102.0,625.0 L988.0,540.0" fill="none" stroke="#7c3aed" stroke-width="3" marker-end="url(#arrowhead)"/>
+<path d="M493.0,625.0 L612.0,540.0" fill="none" stroke="#dc2626" stroke-width="3" marker-end="url(#arrowhead)"/>
+<text x="800" y="331" text-anchor="middle" dominant-baseline="central" font-size="21" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#d97706">FIGURE ROUTING</text>
+<rect x="500" y="785" width="175" height="82" fill="#f3f4f6" stroke="#6b7280" stroke-width="3" rx="8"/>
+<text x="587.5" y="810" text-anchor="middle" dominant-baseline="central" font-size="12" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#6b7280">ORIGINAL</text>
+<text x="587.5" y="822.1538461538462" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b">原图优先</text>
+<rect x="700" y="785" width="175" height="82" fill="#fef3c7" stroke="#d97706" stroke-width="3" rx="8"/>
+<text x="787.5" y="810" text-anchor="middle" dominant-baseline="central" font-size="12" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#6b7280">QUICK</text>
+<text x="787.5" y="822.1538461538462" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b">可信数据新图</text>
+<rect x="900" y="785" width="175" height="82" fill="#cffafe" stroke="#0891b2" stroke-width="3" rx="8"/>
+<text x="987.5" y="810" text-anchor="middle" dominant-baseline="central" font-size="12" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#6b7280">DIAGRAM</text>
+<text x="987.5" y="822.1538461538462" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b">论文语义图</text>
+<rect x="1100" y="785" width="175" height="82" fill="#ffe4e6" stroke="#e11d48" stroke-width="3" rx="8"/>
+<text x="1187.5" y="810" text-anchor="middle" dominant-baseline="central" font-size="12" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#6b7280">REPRO</text>
+<text x="1187.5" y="812.1538461538462" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b">明确授权重绘</text>
+<text x="1187.5" y="832.1538461538462" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="&quot;Long Cang&quot;, sans-serif" fill="#2b2b2b">或数字化</text>
+<text x="805" y="668" text-anchor="middle" dominant-baseline="central" font-size="18" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#15803d">draft_ready  →  evidence_closed  →  ready_for_step8</text>
+<text x="805" y="709" text-anchor="middle" dominant-baseline="central" font-size="19" font-family="&quot;Long Cang&quot;, sans-serif" fill="#15803d">状态逐级增强；后两级必须绑定当前稿件哈希与审计结果</text>
+<rect x="1150" y="48" width="390" height="106" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" rx="8" transform="rotate(-1.7189 1345 101)"/>
+<text x="1170" y="76" text-anchor="start" dominant-baseline="central" font-size="14" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#2563eb" transform="rotate(-1.7189 1215 73)">GitHub</text>
+<text x="1170" y="97" text-anchor="start" dominant-baseline="central" font-size="12" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#2b2b2b" transform="rotate(-1.7189 1345 97)">github.com/bingyunjiang/more-paper-workflow</text>
+<text x="1170" y="129" text-anchor="start" dominant-baseline="central" font-size="17" font-family="&quot;Long Cang&quot;, sans-serif" fill="#e11d48" transform="rotate(-1.7189 1194 124)">作者</text>
+<text x="1228" y="125" text-anchor="start" dominant-baseline="central" font-size="12" font-family="Virgil, &quot;Comic Sans MS&quot;, cursive" fill="#6b7280" transform="rotate(-1.7189 1370.5 124)">Bingyun Jiang / bingyunjiang</text>
+<text x="1345" y="148" text-anchor="middle" dominant-baseline="central" font-size="18" font-family="&quot;Ma Shan Zheng&quot;, sans-serif" fill="#e11d48" transform="rotate(-1.7189 1345 141)">让天下没有难写的论文</text>
+</svg>

@@ -1,305 +1,236 @@
-[![Claude Code](https://img.shields.io/badge/Claude_Code-Skill-6B46F7?logo=anthropic&logoColor=white)](https://github.com/bingyunjiang/more-chat-excalidraw)
-[![Codex](https://img.shields.io/badge/Codex-Skill-0B1120?logo=openai&logoColor=white)](https://github.com/bingyunjiang/more-chat-excalidraw)
-[![Hermes](https://img.shields.io/badge/Hermes-Skill-FF6B35)](https://github.com/nousresearch/hermes-skills)
-[![Platform](https://img.shields.io/badge/macOS_|_Windows_|_Linux-lightgrey?logo=apple)]()
+<p align="center">
+  <strong>More Chat Excalidraw</strong><br>
+  <em>把自然语言变成可编辑、可验证、可交付的 Excalidraw 图表</em>
+</p>
 
-> **作者 / Author：** Dr. Jiang（Bingyun Jiang）　|　**微信 / WeChat：** Bingyunjiang　|　**邮箱 / Email：** bingyunjiang@qq.com　|　**GitHub：** [bingyunjiang/more-chat-excalidraw](https://github.com/bingyunjiang/more-chat-excalidraw)
+<p align="center">
+  <a href="https://github.com/bingyunjiang/more-chat-excalidraw/releases/tag/v0.1.0">v0.1.0</a> ·
+  <a href="https://github.com/bingyunjiang/more-chat-excalidraw/blob/main/LICENSE">MIT License</a> ·
+  <a href="https://github.com/bingyunjiang/more-chat-excalidraw/actions">CI</a> ·
+  <a href="https://github.com/bingyunjiang/more-chat-excalidraw/issues">Issues</a>
+</p>
 
-# More Chat Excalidraw
+<p align="center">
+  <a href="https://github.com/bingyunjiang/more-chat-excalidraw">
+    <img src="examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.png" alt="more-paper-workflow 真实案例：六帧 Excalidraw 视频白板" width="100%">
+  </a>
+</p>
 
-把自然对话变成可编辑的 Excalidraw 画布  
-Turn natural conversation into editable Excalidraw canvases
+<p align="center"><sub>真实案例预览：把论文工作流拆成可讲解、可编辑、可逐帧交付的 Excalidraw 白板。点击图片查看原图。</sub></p>
 
-[![Version](https://img.shields.io/badge/version-v0.1.0-2f6feb)](#版本历史)
-[![License](https://img.shields.io/badge/license-MIT-1f883d)](./LICENSE)
-[![Type](https://img.shields.io/badge/type-AI%20Agent%20Skill-8250df)](#项目表头)
-[![Language](https://img.shields.io/badge/language-ZH%20primary%20%7C%20EN-f59e0b)](#项目表头)
-[![Tests](https://img.shields.io/badge/tests-e2e%20suite-2f9e44)](scripts/test_e2e.sh)
+<p align="center">
+  <a href="#真实案例">查看案例</a> ·
+  <a href="#3-分钟开始">3 分钟开始</a> ·
+  <a href="#它能交付什么">查看能力</a>
+</p>
 
-**关键词 / Keywords：** Excalidraw · 流程图 · 架构图 · 时序图 · 思维导图 · 知识图谱 · Mermaid · Graphviz · 实时预览 · MCP · IR 中间格式 · 增量编辑 · 关键帧动画 · 本地优先 · auditable workflow
+<blockquote>
+  <strong>作者 / Author：</strong> Dr. Jiang（Bingyun Jiang）<br>
+  微信：Bingyunjiang　·　邮箱：bingyunjiang@qq.com　·　GitHub：<a href="https://github.com/bingyunjiang">bingyunjiang</a>
+</blockquote>
 
-## More 系列索引
+## 它是什么
 
-`more-*` 是一组强调过程透明、来源可追溯和结果可复核的 AI 工作流项目。
-
-每个项目都独立安装、独立运行、独立验收；下面的索引用于选对工具，不表示这些 skill 会自动互相调用或共享项目状态。
-
-| 项目 | 核心用途 |
-| --- | --- |
-| [more-paper-workflow](https://github.com/bingyunjiang/more-paper-workflow) | 论文定题、文献检索、证据组织、写作与引用审计 |
-| [more-sci-figure](https://github.com/bingyunjiang/more-sci-figure) | 科研图表数据提取、人工复核、论文级重绘与交付验证 |
-| [more-news-briefing](https://github.com/bingyunjiang/more-news-briefing) | 新闻与行业信息收集、去重、排序、核验和简报生成 |
-| [more-comic-digitizer](https://github.com/bingyunjiang/more-comic-digitizer) | 儿童手绘漫画数字化、审核、共创与电子出版 |
-| **[more-chat-excalidraw](https://github.com/bingyunjiang/more-chat-excalidraw)**（当前项目） | 自然对话生成、预览、打开和迭代编辑 Excalidraw 画布 |
-| [more-excalidraw-feishu](https://github.com/bingyunjiang/more-excalidraw-feishu) | Excalidraw 画布到飞书可编辑白板的转换 |
-| [more-feishu-excalidraw](https://github.com/bingyunjiang/more-feishu-excalidraw) | 飞书文档到 Excalidraw 画布的反向转换 |
-
-系列主页：[github.com/bingyunjiang](https://github.com/bingyunjiang)
-
-## 项目表头
-
-| 字段 | 内容 |
-| --- | --- |
-| 名称 | `more-chat-excalidraw` |
-| 版本 | `v0.1.0` |
-| 类型 | AI Agent Skill / 图表生成技能 |
-| 场景 | 流程图 / 架构图 / 时序图 / 思维导图 / ER 图 / 泳道图 / 层级图 / 关系图 / 对比图 / 时间线图 / 知识图谱 |
-| 本地运行 | macOS / Windows / Linux，Node.js 18+，Python 3 |
-| 关键词 | `Excalidraw`, `diagram`, `flowchart`, `architecture`, `Mermaid`, `Graphviz`, `MCP`, `IR`, `animation`, `real-time preview` |
-
-## 它解决什么问题
-
-把会议记录、思路草稿或技术方案变成一张能编辑、能分享的 Excalidraw 画布，常见做法是手动画或用其他工具导出。但手动画费时，截图不可编辑，通用导出丢失结构与手绘质感。
-
-| 常见做法 | More Chat Excalidraw |
-| --- | --- |
-| 手动绘制，费时费力 | 自然语言对话 → 结构化 IR → 自动布局成图 |
-| 截图分享，不可编辑 | 交付原生 `.excalidraw` v2 JSON，随时可编辑 |
-| 结构混乱、配色随意 | 10 种模板 + 语义色板 + 4 套主题，一键切换 |
-| 修改要整图重画 | 增量编辑保留元素 id，只改变化的部分 |
-| 无法衔接已有工具 | Mermaid 导入、知识图谱生成、MCP 协议调用 |
-
-## 核心闭环
+More Chat Excalidraw 是一个本地优先的 AI Agent Skill：你只需要描述想表达的内容，它就能完成模板选择、结构化、布局、校验、预览和编辑交付。
 
 ```text
-自然语言/文档/Mermaid/知识图谱
-  → 理解意图（template_selector 推荐模板）
-  → 结构化 IR（references/ir-format.md）
-  → ir_to_excalidraw.py（布局 + 配色 + 绑定 + 动画元数据）
-  → validate_excalidraw.py（结构 + 引用 + 视觉质量门）
-  → preview_server.js（SVG 轮询预览 / 内嵌编辑器 / 动画播放）
-  → render_preview.js（PNG / SVG / PDF / Storyboard 逐帧导出）
-  → open_in_excalidraw.js（打开本地 Excalidraw 编辑）
+一句话意图
+  → 选择表达方式
+  → 结构化 IR
+  → 可编辑 Excalidraw v2
+  → 结构 + 视觉质量门
+  → SVG / PNG / PDF / 逐帧 storyboard
 ```
 
-## 你可以用它做什么
+它解决的不是“画一个好看的截图”，而是把思路变成一份仍然可编辑、可追踪、可复核的图表资产。
 
-### 1. Excalidraw 手绘分析板
+## 为什么值得用
 
-```bash
-python3 scripts/ir_to_excalidraw.py --example thermal-runaway --output examples/thermal-runaway.excalidraw --validate
-node scripts/render_preview.js examples/thermal-runaway.excalidraw --format both
-```
+| 你遇到的问题 | More Chat Excalidraw 的回答 |
+| --- | --- |
+| 手动画图耗时，截图又不可编辑 | 自然语言 → IR → 原生 `.excalidraw` v2 |
+| 图表结构混乱，模板选不对 | 根据意图推荐模板、主题和手绘气质 |
+| 中英文混排容易失控 | 中文手写字体、英文层级、双语卡片规则统一 |
+| 改一个节点要整图重画 | 增量编辑保留元素 id，只更新必要部分 |
+| 交付前不知道哪里会出问题 | 结构校验、绑定检查、碰撞、安全区、字号和对比度审计 |
+| 一张图讲不清完整过程 | 支持 16:9 video-storyboard、逐帧导出和讲解元数据 |
 
-该案例不是普通流程图，而是“电芯热失控：触发—机理—防护”研究画布：中文使用本地 Excalidraw 已有的 `Ma Shan Zheng`，英文使用 Virgil；配合便签/批注框、红绿蓝语义箭头、虚线机理链、曲线汇聚与发散箭头共同表达分析关系。全局规则适用于全部 10 种模板和 4 套主题：中文默认 Ma Shan Zheng（11），可用 `font: long-cang|ma-shan-zheng|liu-jian-mao-cao` 或顶层 `cjkFontFamily` 切换；default/sketch 的英文保留 Virgil，minimal/blueprint 的英文保留 Helvetica。字体文件不会被重复复制或分发。
+## 真实案例
 
-### 2. 白底极简工程架构示例
+上面的主图来自真实的 `more-paper-workflow` 工作流案例：将“梳理 → 选型 → 生成 → 校验 → 预览 → 交付”组织成 6 帧录屏白板。
 
-```bash
-python3 scripts/ir_to_excalidraw.py --example battery-thermal --output examples/battery-thermal.excalidraw --validate
-node scripts/render_preview.js examples/battery-thermal.excalidraw --format both
-```
+它展示了：
 
-该案例展示电池包热管理多物理场仿真架构，采用工况与边界、多物理场模型、试验校核、设计决策四列布局；极简主题的中文仍使用手写体，纯英文使用 Helvetica，并配合低饱和分区和克制连线。
+- 中文手写字体与英文标题层级并存；
+- 每个 frame 保持 16:9 安全边距；
+- 研究流程、证据链、工具链和质量门放在同一套视觉叙事中；
+- 同一份源资产可打开编辑，也可导出 PNG、SVG、PDF。
 
-### 3. 工程有限元流程示例
+### 六帧画廊
 
-可直接对 Agent 说：
+<table>
+  <tr>
+    <td align="center"><img src="examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815-frame-01.svg" alt="Frame 01：为什么需要可信论文工作流" width="100%"><br><sub>01 · WHY</sub></td>
+    <td align="center"><img src="examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815-frame-02.svg" alt="Frame 02：工作流闭环" width="100%"><br><sub>02 · WORKFLOW</sub></td>
+    <td align="center"><img src="examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815-frame-03.svg" alt="Frame 03：工具链与能力层" width="100%"><br><sub>03 · TOOLCHAIN</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815-frame-04.svg" alt="Frame 04：从研究到写作的交接" width="100%"><br><sub>04 · HANDOFF</sub></td>
+    <td align="center"><img src="examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815-frame-05.svg" alt="Frame 05：证据与状态" width="100%"><br><sub>05 · EVIDENCE</sub></td>
+    <td align="center"><img src="examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815-frame-06.svg" alt="Frame 06：最终交付" width="100%"><br><sub>06 · DELIVERY</sub></td>
+  </tr>
+</table>
 
-> 使用 more-chat-excalidraw 绘制一张结构力学有限元仿真流程图，包含需求与工况、CAD 几何清理、材料本构、单元类型、网格划分、边界与载荷、接触/连接、求解器与步长、收敛判断、结果提取、网格无关性、试验或解析验证、结果归档；画出不收敛、网格未独立和验证失败的回路，使用蓝图主题，严格校验并输出 Excalidraw、PNG、SVG 和 PDF。
-
-也可直接运行内置示例：
-
-```bash
-python3 scripts/ir_to_excalidraw.py --example fea --output examples/fea-workflow.excalidraw --validate
-```
-
-该示例采用四阶段横向工程泳道，覆盖工况、几何、材料本构、单元/网格、边界与接触、求解收敛、网格无关性、验证及报告归档，并将失败回路布置在主流程之外。
-
-### 4. 真实案例：论文工作流视频白板
-
-本项目根据真实的 `more-paper-workflow` 使用过程制作 6 帧录屏白板，用于把“梳理 → 选型 → 生成 → 校验 → 预览 → 交付”讲清楚。它展示了本 skill 的视频分镜交付、双语字体、安全边距、逐帧动画和严格视觉校验能力。
-
-- [案例目录](examples/more-paper-workflow-video-rich-sketch/)
-- [可编辑 Excalidraw 白板](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.excalidraw)
-- [PNG 预览](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.png) · [SVG 预览](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.svg) · [PDF](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.pdf)
+| 资产 | 用途 |
+| --- | --- |
+| [`.excalidraw` 白板](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.excalidraw) | 在 Excalidraw 中继续编辑 |
+| [`PNG` 预览](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.png) | 快速查看完整画布 |
+| [`SVG` 矢量图](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.svg) | 网页和矢量交付 |
+| [`PDF` 文件](examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.pdf) | 汇报和归档 |
+| [6 个逐帧 SVG](examples/more-paper-workflow-video-rich-sketch/) | README 画廊和逐帧讲解 |
+| [案例说明](examples/more-paper-workflow-video-rich-sketch/README.md) | 查看来源与打开方法 |
 
 你可以直接对 Agent 说：
 
-> 梳理 more-paper-workflow 的实际工作流，制作 3–6 个 16:9 Excalidraw 视频分镜，每帧使用合适的图表模板，保留中文手绘字体、英文层级、提词器和严格视觉校验。
+> 梳理 more-paper-workflow 的实际工作流，制作 3–6 个 16:9 Excalidraw 视频分镜；每帧选择合适的图表模板，保留中文手绘字体、英文层级、提词器和严格视觉校验。
 
-### 5. 一句话生成图表
+## 3 分钟开始
 
-对 Agent 说"画一个微服务架构图"，自动推荐模板、生成 IR、完成布局配色并输出 `.excalidraw`：
+### 1. 准备环境
 
-```bash
-python3 scripts/template_selector.py --recommend "画一个微服务架构图"
-python3 scripts/ir_to_excalidraw.py --example architecture --output output/arch.excalidraw --validate
-```
-
-## 扩展能力
-
-### 1. 从 Mermaid 或知识图谱生成
-
-```bash
-# Mermaid → Excalidraw（flowchart / sequenceDiagram 子集）
-node scripts/mermaid_to_excalidraw.js --string "graph TD; A-->B" --output output/mmd.excalidraw
-
-# 知识图谱 → 架构图（实体/关系自动分层）
-python3 scripts/knowledge_graph.py --text arch.txt --output output/kg.excalidraw
-```
-
-### 2. 自动布局、主题与图标
-
-```bash
-# Graphviz 自动布局（可选）：dot 层次 / neato 力导向 / twopi 树形
-python3 scripts/ir_to_excalidraw.py --example architecture --layout dot --output output/arch.excalidraw
-
-# 4 套主题一键切换：default / sketch / blueprint / minimal
-python3 scripts/ir_to_excalidraw.py --example flowchart --theme blueprint --output output/flow.excalidraw
-
-# 云架构技术图标（自包含 67 个 SVG，无需外部资源）
-python3 scripts/ir_to_excalidraw.py --example architecture --icons --output output/arch-icons.excalidraw
-```
-
-### 3. 实时预览、编辑与动画
-
-```bash
-node scripts/preview_server.js output/arch.excalidraw --open
-```
-
-- `http://localhost:6060/`：SVG 轮询实时预览（`push_preview.js` 推送，约 1.5s 刷新）
-- `http://localhost:6060/editor`：内嵌完整 Excalidraw 编辑器，编辑后"保存到服务器"写回本地
-- `http://localhost:6060/animate`：关键帧动画逐帧播放（自动注入 `customData.animate`）
-- `python3 scripts/render_animation_gif.py <file.excalidraw>`：导出动画 GIF（[示例](output/animation-demo.gif)）
-
-### 4. 增量编辑与回退
-
-```bash
-python3 scripts/merge_excalidraw.py patch output/flow.excalidraw --set 'n3.backgroundColor=#ffc9c9' --move 'n5:20,0'
-python3 scripts/merge_excalidraw.py restore output/flow.excalidraw output/history/backup-*.excalidraw
-```
-
-### 5. 导出与交付
-
-```bash
-node scripts/render_preview.js output/arch.excalidraw /tmp/out --format both   # PNG + SVG
-node scripts/render_preview.js output/arch.excalidraw /tmp/out --format pdf   # PDF
-
-# 视频分镜：逐帧 + 完整 contact sheet + QA 报告
-python3 scripts/ir_to_excalidraw.py examples/storyboard-smoke.ir.json --output /tmp/storyboard.excalidraw --validate
-node scripts/render_preview.js /tmp/storyboard.excalidraw /tmp/storyboard-render \
-  --format both --frames --contact-sheet --require-native --require-png
-```
-
-录屏交付使用 `delivery.profile: "video-storyboard"`。每个 frame 可以使用不同图表模板，
-但共享 16:9 画布、安全边距、字体层级和动画顺序。详细 IR 见
-[references/video-storyboard.md](references/video-storyboard.md)。
-
-### 6. 通过 MCP 协议调用
-
-```bash
-node scripts/mcp_server.mjs
-```
-
-暴露 `generate_diagram` / `validate_diagram` / `push_preview` / `list_templates` 四个工具，供 Codex 等 MCP 客户端（stdio）直接调用。
-
-## 支持的图表类型
-
-| 类型 | 说明 |
-| --- | --- |
-| 流程图 Flowchart | 纵向/横向步骤 + 菱形决策 + 箭头 |
-| 架构图 Architecture | 分层：用户层 → 应用层 → 服务层 → 数据层 |
-| 时序图 Sequence | 角色竖线 + 横向箭头消息 |
-| 思维导图 Mind Map | 中心主题 + 一级/二级分支 |
-| 泳道图 Swimlane | 水平泳道按角色分区，流程穿越泳道 |
-| ER 图 ERD | 实体矩形 + 关系菱形 + 基数标注 |
-| 层级图 Hierarchy | 自上而下树形结构，适合组织/系统拆解 |
-| 关系图 Relationship | 节点 + 连线 + 关系标注，无严格方向 |
-| 对比图 Comparison | 左右两栏或表格，标明比较维度 |
-| 时间线图 Timeline | 水平时间轴 + 关键节点 + 事件标注 |
-
-## 前置条件
-
-- **Node.js 18+**、**Python 3**
-- **Playwright**（可选，PNG/PDF 高质量渲染）：`npm install -g playwright`
-- **Graphviz**（可选，自动布局）：`brew install graphviz`
-- **本地 Excalidraw**（可选，打开画布）：`http://localhost:5001/`
-
-本 skill 完全自包含，不依赖其他 skill。编辑器与渲染 bundle 源码在 `scripts/web/`
-（@excalidraw/excalidraw 0.18.1 + React 19，`cd scripts/web && npm run build`），
-MCP SDK/zod 从本 skill 内 `scripts/web/node_modules` 加载。
-
-### 安装与构建
+- Node.js 18+
+- Python 3
+- Playwright（可选，用于 PNG/PDF 高质量渲染）
+- Graphviz（可选，用于自动布局）
 
 ```bash
 npm ci --prefix scripts/web
 npm run build:all --prefix scripts/web
-node scripts/check_web_lock.mjs
 ```
 
-CI 会真实执行依赖安装、editor/render bundle 构建、MCP 工具调用与 e2e suite。Playwright、Graphviz、本地 Excalidraw 和端口服务均是可选环境能力；沙箱可能阻止端口、浏览器或 web root 写入，此时保留 SVG fallback 并明确报告环境受阻。生成默认字节级可复现；`EXCALIDRAW_UPDATED` 可显式控制更新时间。`--library` 默认使用内置 self-authored MIT 组件、无需下载；自定义或第三方 Library 仅可通过 `--library-dir` 显式覆盖。
-
-需要把视觉警告当作质量门时使用 `python3 scripts/validate_excalidraw.py <file> --visual --fail-on-warning`；默认模式仍兼容仅报告 warning。旧场景若报告箭头几何范围不一致，可先运行 `python3 scripts/validate_excalidraw.py <file> --fix-arrow-geometry`，该操作只根据 `points` 确定性修正箭头 `width/height`，不移动端点。
-
-## 快速开始
+### 2. 让 Agent 先选表达方式
 
 ```bash
-# 1. 模板选择：根据意图推荐最佳模板
 python3 scripts/template_selector.py --recommend "画一个微服务架构图"
-
-# 2. IR → Excalidraw（推荐生成路径）
-python3 scripts/ir_to_excalidraw.py --example flowchart --output output/flow.excalidraw --validate
-
-# 3. 实时预览
-node scripts/preview_server.js output/flow.excalidraw --open
-
-# 4. 推送更新
-node scripts/push_preview.js output/flow.excalidraw
-
-# 5. 校验 + 渲染
-python3 scripts/validate_excalidraw.py output/flow.excalidraw --visual
-node scripts/render_preview.js output/flow.excalidraw /tmp/out --format both
-
-# 6. 打开本地 Excalidraw 编辑
-node scripts/open_in_excalidraw.js output/flow.excalidraw
-
-# 7. 端到端测试
-bash scripts/test_e2e.sh
 ```
 
-## 沙箱兼容性
-
-- **preview_server.js**：需要绑定端口，沙箱内运行需 escalation；启动后一切写入都在内存和预览页，不碰本地 Excalidraw web root
-- **render_preview.js**：PNG/PDF 默认裁切到画布边界，不输出验证页眉和视口空白；沙箱内无法启动 HTTP 服务器或 Chromium 时，自动 fallback 到 SVG 渲染，并写出 render manifest；要求真实结果时使用 `--require-native --require-png`
-- **浏览器安全**：PNG/PDF 渲染只自动选择 Playwright 的 `chrome-headless-shell`，不启动完整的 “Google Chrome for Testing” GUI 应用；可用 `node scripts/render_preview.js --check-browser` 查看选择结果
-- **open_in_excalidraw.js**：沙箱内无法写入 web root 时，给出明确提示和手动操作命令（exit code 3）
-- **ir_to_excalidraw.py / validate_excalidraw.py**：纯 Python 标准库，沙箱内可直接运行
-
-## 质量与验证
-
-- **结构校验**：元素 id 唯一、字段类型、引用完整性（boundElements / containerId / frameId / 箭头绑定交叉检查）
-- **视觉质量门**：`--visual` 检查元素重叠、普通文本互相遮挡、悬空箭头、旋转后 frame 安全区、视频字号/对比度，以及边标签/箭线遮挡或穿过可读文本
-- **e2e 测试**：`bash scripts/test_e2e.sh` 覆盖生成、校验、渲染、预览、编辑器、保存、多画布、动画、Mermaid、知识图谱、Graphviz、增量编辑、MCP、确定性与 Library visual；具体结果以当前环境输出为准
-- **CI**：GitHub Actions（validate + smoke + e2e），见 `.github/workflows/ci.yml`
-
-## 版本历史
-
-| 版本 | 日期 | 要点 |
-| --- | --- | --- |
-| v0.1.0 | 2026-08-15 | 初始公开版：自然对话生成与编辑 Excalidraw 画布；包含 10 种模板、中文手写字体、视觉契约、Library、工程案例、视频 storyboard、逐帧导出与 strict 视觉质量门。 |
-
-详细变更见 [CHANGELOG.md](CHANGELOG.md)。
-
-## 许可
-
-MIT
-# 模板与风格交互选择
-
-现有 10 个模板已汇整为四类：流程与协作、系统与结构、交互与时间、分析与思考。Agent 不向用户倾倒完整内部清单，而是根据内容展示 1 个推荐项和最多 2 个差异明显的备选项。
+如果是录屏或逐帧讲解，直接说出交付目标：
 
 ```bash
-# 查看四类模板目录
-python3 scripts/template_selector.py --guide
-
-# 生成可直接展示给用户的选择菜单
-python3 scripts/template_selector.py --choices "分析有限元不收敛原因"
+python3 scripts/template_selector.py --recommend \
+  "梳理论文工作流并制作 16:9 视频分镜"
 ```
 
-交互示例：
+选择器会把“内容模板”和“交付方式”分开处理，不会因为要录视频就强行套用某一种图表。
 
-> 我推荐“关系分析板 + root-cause”，因为内容重点是不收敛根因和返工闭环。你可以选：1）关系分析板，2）步骤流程，3）角色泳道；也可以回复“你直接选”。
+### 3. 生成并校验
 
-只明确“流程图”时，Agent 仅让用户选择手绘气质；只明确 `root-cause` 时，仅让用户选择模板。模板与风格两者均明确，或用户说“你直接选”时不重复追问。CLI 始终非交互。完整目录见 [模板选择指南](references/template-choice-guide.md)。
+```bash
+# 普通图表
+python3 scripts/ir_to_excalidraw.py \
+  --example architecture \
+  --output /tmp/architecture.excalidraw \
+  --validate
 
-IR 示例：`{"template":"relationship","theme":"sketch","sketchStyle":"root-cause"}`。
+# 真实 storyboard smoke fixture
+python3 scripts/ir_to_excalidraw.py \
+  examples/storyboard-smoke.ir.json \
+  --output /tmp/storyboard.excalidraw \
+  --validate
+
+python3 scripts/validate_excalidraw.py \
+  /tmp/storyboard.excalidraw \
+  --visual --fail-on-warning
+```
+
+### 4. 预览、编辑和导出
+
+```bash
+# 本地实时预览与编辑
+node scripts/preview_server.js /tmp/architecture.excalidraw --open
+
+# SVG fallback：适合无浏览器或沙箱环境
+node scripts/render_preview.js /tmp/storyboard.excalidraw /tmp/storyboard-render \
+  --format svg --no-server --frames --contact-sheet
+
+# 正式 PNG/PDF 交付：要求真实 native renderer 和 PNG
+node scripts/render_preview.js /tmp/storyboard.excalidraw /tmp/storyboard-render \
+  --format both --frames --contact-sheet --require-native --require-png
+```
+
+## 它能交付什么
+
+### 10 种内容模板
+
+| 类别 | 模板 |
+| --- | --- |
+| 流程与协作 | Flowchart、Swimlane |
+| 系统与结构 | Architecture、ERD、Hierarchy |
+| 交互与时间 | Sequence、Timeline |
+| 分析与思考 | Mind Map、Relationship、Comparison |
+
+### 4 种交付模式
+
+| 交付模式 | 适合场景 |
+| --- | --- |
+| `single-diagram` | 一张图完成表达 |
+| `long-canvas` | 横向展开、连续阅读 |
+| `video-storyboard` | 录屏、逐帧讲解、16:9 分镜 |
+| `presentation-board` | 汇报、演示、投屏阅读 |
+
+### 多种输出与集成
+
+- 原生 `.excalidraw` v2：可继续编辑、增量修改和复用；
+- SVG / PNG / PDF：适合网页、汇报、论文和归档；
+- Mermaid：导入 flowchart / sequenceDiagram 子集；
+- Graphviz：dot / neato / twopi 自动布局；
+- 知识图谱：从实体与关系描述生成架构图；
+- MCP：通过 `generate_diagram`、`validate_diagram`、`push_preview`、`list_templates` 调用；
+- 动画：关键帧播放与 GIF 导出。
+
+## 可靠性不是最后再补的一步
+
+每次交付都可以经过以下质量门：
+
+1. 元素 id、类型、坐标和引用完整性；
+2. 箭头与节点的绑定关系；
+3. 文本互撞、箭线穿字、悬空箭头和布局密度；
+4. 旋转后的安全区、视频字号和文字对比度；
+5. native / fallback 渲染模式与 render manifest；
+6. 同一 IR 的字节级确定性回归。
+
+```bash
+python3 scripts/validate_excalidraw.py <file.excalidraw> \
+  --visual --fail-on-warning
+
+bash scripts/test_e2e.sh --sandbox
+```
+
+在沙箱中无法监听端口或启动 Chromium 时，工具会明确标记 fallback，不把 fallback 结果冒充成正式 native PNG。
+
+## 更多文档
+
+- [Storyboard 交付规范](references/video-storyboard.md)
+- [IR 中间格式](references/ir-format.md)
+- [模板选择指南](references/template-choice-guide.md)
+- [10 种图表模板](references/diagram-templates.md)
+- [Excalidraw v2 schema](references/excalidraw-schema.md)
+- [视觉蒸馏契约](references/visual-distillation-contract.md)
+- [变更记录](CHANGELOG.md)
+- [交接文档](HANDOFF.md)
+
+## More 系列
+
+More 系列强调过程透明、来源可追溯和结果可复核。相关项目包括：
+
+- [more-paper-workflow](https://github.com/bingyunjiang/more-paper-workflow)：论文定题、检索、证据组织与引用审计；
+- [more-sci-figure](https://github.com/bingyunjiang/more-sci-figure)：科研图表提取、重绘与交付验证；
+- [more-news-briefing](https://github.com/bingyunjiang/more-news-briefing)：新闻与行业信息核验和简报；
+- [more-comic-digitizer](https://github.com/bingyunjiang/more-comic-digitizer)：手绘漫画数字化与出版；
+- [more-excalidraw-feishu](https://github.com/bingyunjiang/more-excalidraw-feishu)：Excalidraw 与飞书白板转换。
+
+## 版本与许可
+
+- 当前版本：`v0.1.0`，见 [GitHub Release](https://github.com/bingyunjiang/more-chat-excalidraw/releases/tag/v0.1.0)；
+- 许可证：[MIT License](LICENSE)；
+- 运行平台：macOS / Windows / Linux。
