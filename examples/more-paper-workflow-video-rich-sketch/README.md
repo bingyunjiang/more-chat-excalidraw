@@ -10,6 +10,7 @@
 | `more-paper-workflow-video-rich-sketch-20260815.png` | 最终完整白板 PNG |
 | `more-paper-workflow-video-rich-sketch-20260815.svg` | 最终完整白板 SVG |
 | `more-paper-workflow-video-rich-sketch-20260815.pdf` | 最终完整白板 PDF |
+| `more-paper-workflow-video-rich-sketch-20260815-frame-01..06.svg` | README 画廊使用的逐帧 SVG |
 
 ## 案例特点
 
