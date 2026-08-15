@@ -6,22 +6,6 @@
 <p align="center">
   <a href="https://github.com/bingyunjiang/more-chat-excalidraw/releases/tag/v0.1.0">v0.1.0</a> ·
   <a href="https://github.com/bingyunjiang/more-chat-excalidraw/blob/main/LICENSE">MIT License</a> ·
-  <a href="https://github.com/bingyunjiang/more-chat-excalidraw/actions">CI</a> ·
-  <a href="https://github.com/bingyunjiang/more-chat-excalidraw/issues">Issues</a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/bingyunjiang/more-chat-excalidraw">
-    <img src="examples/more-paper-workflow-video-rich-sketch/more-paper-workflow-video-rich-sketch-20260815.png" alt="more-paper-workflow 真实案例：六帧 Excalidraw 视频白板" width="100%">
-  </a>
-</p>
-
-<p align="center"><sub>真实案例预览：把论文工作流拆成可讲解、可编辑、可逐帧交付的 Excalidraw 白板。点击图片查看原图。</sub></p>
-
-<p align="center">
-  <a href="#真实案例">查看案例</a> ·
-  <a href="#3-分钟开始">3 分钟开始</a> ·
-  <a href="#它能交付什么">查看能力</a>
 </p>
 
 <blockquote>
@@ -57,7 +41,7 @@ More Chat Excalidraw 是一个本地优先的 AI Agent Skill：你只需要描�
 
 ## 真实案例
 
-上面的主图来自真实的 `more-paper-workflow` 工作流案例：将“梳理 → 选型 → 生成 → 校验 → 预览 → 交付”组织成 6 帧录屏白板。
+真实的 `more-paper-workflow` 工作流案例：将“梳理 → 选型 → 生成 → 校验 → 预览 → 交付”组织成 6 帧录屏白板。
 
 它展示了：
 
